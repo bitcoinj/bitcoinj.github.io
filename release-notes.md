@@ -18,7 +18,27 @@ title: "Release notes"
 
 _0.12 is not out yet, this section reflects changes in git master_
 
-No changes yet! Upcoming work includes HD wallets, addr broadcast usage and Tor integration!
+Upcoming work includes HD wallets, addr broadcast usage!
+
+* Integrated Tor mode using the Orchid library. The user does not have to install the Tor client as it's all pure Java.
+* Reject messages are now deserialized, though not yet exposed in the API.
+* Upgraded to Guava 16 and Bouncy Castle 1.50
+* Thanks to Peter Dettman and the rest of the Bouncy Castle team, bitcoinj now uses deterministic ECDSA for signing.
+* Payment protocol code improvements:  Some X.509 utility code was refactored out of PaymentSession for general usage. StartCom was added to the default trust store which was promoted to override the system trust store on non-Android platforms. 
+* Many bugfixes, minor tweaks and small new APIs.
+
+##Version 0.11.2
+
+This is a bugfix release.
+
+* Risk analysis following the fee drop: you MUST upgrade to get this, or else users will start missing transactions sent to them.
+* Fix a crash that can occur when connecting to a peer that reports a chain height of zero.
+* Fix backoff behaviour so when the network is down and discovery fails, things backoff properly.
+* Email addresses are now extracted properly from S/MIME certs.
+* Disallow adding of keys that don't match the wallet's encryption state.
+* Correct handling of OP_0 (full verification mode)
+* A bundled/unified JAR is now always built.
+* Misc other crash and bug fixes.
 
 ##Version 0.11.1
 

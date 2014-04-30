@@ -26,6 +26,7 @@
 
 <ul id="markdown-toc">
   <li><a href="#version-012">Version 0.12</a></li>
+  <li><a href="#version-0112">Version 0.11.2</a></li>
   <li><a href="#version-0111">Version 0.11.1</a></li>
   <li><a href="#version-011">Version 0.11</a></li>
   <li><a href="#version-0103">Version 0.10.3</a></li>
@@ -54,7 +55,31 @@
 
   <p><em>0.12 is not out yet, this section reflects changes in git master</em></p>
 
-  <p>No changes yet! Upcoming work includes HD wallets, addr broadcast usage and Tor integration!</p>
+  <p>Upcoming work includes HD wallets, addr broadcast usage!</p>
+
+  <ul>
+    <li>Integrated Tor mode using the Orchid library. The user does not have to install the Tor client as it’s all pure Java.</li>
+    <li>Reject messages are now deserialized, though not yet exposed in the API.</li>
+    <li>Upgraded to Guava 16 and Bouncy Castle 1.50</li>
+    <li>Thanks to Peter Dettman and the rest of the Bouncy Castle team, bitcoinj now uses deterministic ECDSA for signing.</li>
+    <li>Payment protocol code improvements:  Some X.509 utility code was refactored out of PaymentSession for general usage. StartCom was added to the default trust store which was promoted to override the system trust store on non-Android platforms. </li>
+    <li>Many bugfixes, minor tweaks and small new APIs.</li>
+  </ul>
+
+  <h2 id="version-0112">Version 0.11.2</h2>
+
+  <p>This is a bugfix release.</p>
+
+  <ul>
+    <li>Risk analysis following the fee drop: you MUST upgrade to get this, or else users will start missing transactions sent to them.</li>
+    <li>Fix a crash that can occur when connecting to a peer that reports a chain height of zero.</li>
+    <li>Fix backoff behaviour so when the network is down and discovery fails, things backoff properly.</li>
+    <li>Email addresses are now extracted properly from S/MIME certs.</li>
+    <li>Disallow adding of keys that don’t match the wallet’s encryption state.</li>
+    <li>Correct handling of OP_0 (full verification mode)</li>
+    <li>A bundled/unified JAR is now always built.</li>
+    <li>Misc other crash and bug fixes.</li>
+  </ul>
 
   <h2 id="version-0111">Version 0.11.1</h2>
 
