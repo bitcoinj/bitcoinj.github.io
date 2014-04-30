@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>How to access bitcoinj from other languages</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#introduction">Introduction</a>    <ul>
+      <li><a href="#c">C++</a></li>
+      <li><a href="#objective-c">Objective-C</a></li>
+      <li><a href="#python">Python</a></li>
+      <li><a href="#ruby">Ruby</a></li>
+      <li><a href="#lisp">Lisp</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="how-to-access-bitcoinj-from-other-languages">How to access bitcoinj from other languages</h1>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <p>Java is a fine choice for something that needs to be widely understood, secure against buffer overflows and usable from Android phones. But it’s also old, verbose and just generally is not for everyone.</p>
+
+  <p>This page details how you can go about using bitcoinj from other languages.</p>
+
+  <h3 id="c">C++</h3>
+
+  <p>At the moment, the easiest way to use bitcoinj from C++ is to embed the JVM and use auto-generated JNI wrappers. Here’s an example of what such a program looks like:</p>
+
+  <p><a href="https://github.com/mikehearn/cppjvm/blob/master/mytest/bcj-hello-world.cpp">https://github.com/mikehearn/cppjvm/blob/master/mytest/bcj-hello-world.cpp</a></p>
+
+  <p>It relies on a fork of a tool called CPPJVM, which reflects Java class files and then generates C++ wrapper objects that invoke the Java methods/reads the fields.</p>
+
+  <p>The tool generates all the classes needed based on a recursive exploration of some root classes, listed here:</p>
+
+  <p><a href="https://github.com/mikehearn/cppjvm/blob/master/java/cppjvm/morkfile">https://github.com/mikehearn/cppjvm/blob/master/java/cppjvm/morkfile</a></p>
+
+  <p>Because <code>WalletAppKit</code> is there and you can reach most of the bitcoinj API via this class, most of the API has wrappers generated. If you’re missing a piece, you can add the class you want to that list, delete the “gen” directory and rerun make.</p>
+
+  <p>Callback interfaces (<code>WalletListener</code>, <code>PeerEventListener</code> etc) have to be bound manually and that isn’t complete. If you want to use bitcoinj from C++, you’ll need to finish off the thunks. Fortunately it’s easy and there aren’t many of them:</p>
+
+  <p><a href="https://github.com/mikehearn/cppjvm/blob/master/mytest/native-listeners.h">https://github.com/mikehearn/cppjvm/blob/master/mytest/native-listeners.h</a></p>
+
+  <p><a href="https://github.com/mikehearn/cppjvm/blob/master/mytest/native-listeners.cpp">https://github.com/mikehearn/cppjvm/blob/master/mytest/native-listeners.cpp</a></p>
+
+  <p>We are also exploring complete automated conversion of the bitcoinj sources into C++, so it could be used without any JVM at all. However this work is at an earlier, less usable stage.</p>
+
+  <h3 id="objective-c">Objective-C</h3>
+
+  <p>The Hive team maintain a library called <a href="https://github.com/hivewallet/BitcoinKit">BitcoinKit</a>, which is designed for building wallet apps on MacOS X. It does not expose the raw bitcoinj API, rather providing its own Objective-C API on top and using JNI under the covers.</p>
+
+  <h3 id="python">Python</h3>
+
+  <p>Python has many fans and can be fun to prototype in. The original Python implementation cannot interop with Java code, but we can gain access via another way using <a href="http://www.jython.org/index.html">Jython</a>. Jython is an implementation of Python (2.x) that is compatible with the original language/class libraries and provides an interactive interpreter that works just like regular Python’s for exploration and learning. As long as you don’t rely on any custom CPython extensions, you can just run your regular Python application out of the box, including UNIX style executable scripts.</p>
+
+  <p>Why would you do that? Primarily because you can import Java class libraries as you would Python class libraries (from com.google.bitcoin.core import Wallet). You also get a better garbage collector and real multi-threading support.</p>
+
+  <h3 id="ruby">Ruby</h3>
+
+  <p>In a similar vein to Jython, there is also <a href="http://jruby.org/">JRuby</a>.  Like Jython it runs Ruby on the JVM, with the same advantages - an excellent garbage collector, interop with Java code, real multi-threading support and so on. Like Jython the only thing it has issues with is modules that rely on C extension functions, but anything pure Ruby works.</p>
+
+  <h3 id="lisp">Lisp</h3>
+
+  <p>The block explorer at biteasy.com is written in Clojure, a dialect of Lisp that runs on the JVM. It uses bitcoinj directly.</p>
+
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>

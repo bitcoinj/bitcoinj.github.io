@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>How to optimise downloading the block chain.</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#chain-sync-optimisations">Chain sync optimisations</a>    <ul>
+      <li><a href="#fast-catchup">Fast catchup</a></li>
+      <li><a href="#checkpointing">Checkpointing</a></li>
+      <li><a href="#bloom-filtering">Bloom filtering</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="how-to-optimise-downloading-the-block-chain">How to optimise downloading the block chain.</h1>
+
+  <h2 id="chain-sync-optimisations">Chain sync optimisations</h2>
+
+  <p>Bitcoin is a system that throws around large quantities of data. Often you don’t really want all the data, just a subset of it. For instance any end user facing wallet app falls into this category - for performance reasons you don’t want to handle the entire block chain. The Wallet can work together with other classes in the library to implement various optimisations.</p>
+
+  <h3 id="fast-catchup">Fast catchup</h3>
+
+  <p>Keys can have an associated creation time. If the wallet knows the creation times of all its keys, when you add it to a <code>PeerGroup</code> the <em>fast catchup time</em> will be set for you. Block contents before the fast catchup time don’t have to be downloaded, only the headers, so it’s much faster to bootstrap the system in this way. If you’re implementing a wallet app, this is a very useful optimization that will be taken advantage of automatically.</p>
+
+  <p>The fast catchup time can be set explicitly using <code>PeerGroup.setFastCatchupTime</code>, although it will be recalculated for you any time you add a wallet or add keys to a wallet. The time is simply set to the min of the earliest key creation time of all wallets, obtained by calling <code>Wallet.getEarliestKeyCreationTime()</code>.</p>
+
+  <h3 id="checkpointing">Checkpointing</h3>
+
+  <p>Although fast catchup and Bloom filtering (see below) mean you can sync with the chain just by downloading headers and some transactions+Merkle branches, sometimes this is still too damn slow. A header is just 80 bytes, but there is one for every 10 minutes the system has been in operation. We can see through simple multiplication that headers alone takes around 4 megabytes of data for every year the system exists, so as of July 2013 a new user must still download and process over 16 megabytes of data to get started.</p>
+
+  <p>To solve this problem, we have checkpoint files. These are generated using the <code>BuildCheckpoints</code> tool that can be found in the tools module of the bitcoinj source code. <code>BuildCheckpoints</code> downloads headers and writes out a subset of them to a file. That file can then be shipped with your application. When you create a new <code>BlockStore</code> object, you can use that file to initialise it to whichever checkpointed block comes just before your wallets <em>fast catchup time</em> (i.e. the birthday of the oldest key in your wallet). Then you only need to download headers from that point onwards. </p>
+
+  <p>Unlike the other optimisations, checkpointing is not currently automatic or on by default. But using the feature is simple:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="kt">boolean</span> <span class="n">chainExistedAlready</span> <span class="o">=</span> <span class="n">chainFile</span><span class="o">.</span><span class="na">exists</span><span class="o">();</span>
+<span class="n">blockStore</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SPVBlockStore</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">chainFile</span><span class="o">);</span>
+<span class="k">if</span> <span class="o">(!</span><span class="n">chainExistedAlready</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">File</span> <span class="n">checkpointsFile</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;checkpoints&quot;</span><span class="o">);</span>    <span class="c1">// Replace path to the file here.</span>
+    <span class="n">FileInputStream</span> <span class="n">stream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="n">checkpointsFile</span><span class="o">);</span>
+    <span class="n">CheckpointManager</span><span class="o">.</span><span class="na">checkpoint</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">stream</span><span class="o">,</span> <span class="n">blockStore</span><span class="o">,</span> <span class="n">wallet</span><span class="o">.</span><span class="na">getEarliestKeyCreationTime</span><span class="o">());</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>Obviously, you have to do this before starting the <code>PeerGroup</code> or anything else that would try to use the <code>BlockStore</code>. And you should only do it when a new chain file is created - so it only speeds things up for the first run of your app. Checkpointing may become on by default in later versions of bitcoinj.</p>
+
+  <p>Checkpoints are called checkpoints because, like the upstream Satoshi client, once you’ve initialised the block store with one bitcoinj will refuse to re-organise (process chain splits) past that point. In fact, it won’t even recognise that a re-org has taken place because the earlier blocks don’t exist in the block store, thus the alternative fork of the chain will be seen merely as a set of orphan blocks. For this reason the <code>BuildCheckpoints</code> tool won’t add any checkpoints fresher than one month from when it’s run - it only takes a few seconds to download the last months worth of chain headers, and no fork is likely to ever be longer than one month.</p>
+
+  <h3 id="bloom-filtering">Bloom filtering</h3>
+
+  <p>By default the <code>PeerGroup</code> and <code>Wallet</code> will work together to calculate and upload <em>Bloom filters</em> to each connected peer. A <em>Bloom filter</em> is a compact, privacy preserving representation of the keys/addresses in a wallet. When one is passed to a remote peer, it changes its behaviour. Instead of relaying all broadcast transactions and the full contents of blocks, it matches each transaction it sees against the filter. If the filter matches, that transaction is sent to your app, otherwise it’s ignored. When a transaction is being sent to you because it’s in a block, it comes with a <em>Merkle branch</em> that mathematically proves the transaction was included in that block. BitcoinJ checks the Merkle branch for each transaction, and rejects any attempts to defraud you.</p>
+
+  <p>Bloom filters can be noisy. A noisy filter is one that matches more keys or addresses than are actually in your wallet. Noise is intentional and serves to protect your wallet privacy - a remote node can’t know if a matched transaction is really yours or not. In theory, wallet keys/addresses could be split up across each connected node for even more privacy, but bitcoinj does not implement that currently. The noise added to a Bloom filter is controllable using <code>PeerGroup.setBloomFilterFalsePositiveRate</code>. Essentially it’s a bandwidth vs privacy tradeoff - a higher FP rate confuses remote eavesdroppers more, but you have to download more useless data as a result. If you don’t call that method, bitcoinj calculates Bloom filters with almost no false positives. In future this behaviour may change to be more privacy preserving by default.</p>
+
+  <p>Note that when Bloom filtering is used, your security is downgraded by a small amount - whilst remote peers cannot convince you transactions were included in a block if they weren’t, they <em>can</em> exclude transactions entirely and thus mount a kind of denial-of-service attack on you. If a peer does this, then bitcoinj won’t notice and your balance may be incorrect until you rescan the block chain. You don’t have to do anything to take advantage of Bloom filtering. It’s done for you by the framework. From bitcoinj 0.10 onwards, peers that are too old to support Bloom filtering are automatically disconnected, to avoid you being flooded with broadcast traffic if you happen to connect to an old node.</p>
+
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>

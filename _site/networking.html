@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>How to handle networking/peer APIs</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#the-simple-case">The simple case</a></li>
+  <li><a href="#proxying">Proxying</a></li>
+  <li><a href="#experimental-using-tor">Experimental: Using Tor</a></li>
+  <li><a href="#using-the-lower-level-apis">Using the lower level API’s</a></li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="how-to-handle-networkingpeer-apis">How to handle networking/peer APIs</h1>
+
+  <p><em>This article applies to the code in git master only</em></p>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <p>The bitcoinj networking APIs have a few options targeted at different use-cases - you can spin up individual Peers and manage them yourself or bring up a <code>PeerGroup</code> to let it manage them, you can use one-off sockets or socket managers, and you can use blocking sockets or NIO/non-blocking sockets. This page attempts to explain the tradeoffs and use-cases for each choice, as well as provide some basic examples to doing more advanced networking.</p>
+
+  <p>The bitcoinj networking API is built up in a series of layers. On the bottom are simple wrapper classes that provide an API to open new connections using blocking sockets or java NIO (asynchronous select()-based sockets). On top of those sit various parsers that parse the network traffic into messages (ie into the Bitcoin messages). On top of those are <code>Peer</code> objects, which handle message handling (exchanging initial version handshake, downloading blocks, etc) for each individual remote peer and provide a simple event listener interface. Finally a <code>PeerGroup</code> can be layered on top to keep track of peers, ensuring there are always enough connections to the network and keeping track of network sync progress.</p>
+
+  <h2 id="the-simple-case">The simple case</h2>
+
+  <p>In the case that you simply want a connection to the P2P network (ie in the vast majority of cases), all you need to do is instantiate a PeerGroup and connect a few objects:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">PeerGroup</span> <span class="n">peerGroup</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PeerGroup</span><span class="o">(</span><span class="n">networkParameters</span><span class="o">,</span> <span class="n">blockChain</span><span class="o">);</span>
+<span class="n">peerGroup</span><span class="o">.</span><span class="na">setUserAgent</span><span class="o">(</span><span class="s">&quot;Sample App&quot;</span><span class="o">,</span> <span class="mf">1.0</span><span class="o">);</span>
+<span class="n">peerGroup</span><span class="o">.</span><span class="na">addWallet</span><span class="o">(</span><span class="n">wallet</span><span class="o">);</span>
+<span class="n">peerGroup</span><span class="o">.</span><span class="na">addPeerDiscovery</span><span class="o">(</span><span class="k">new</span> <span class="n">DnsDiscovery</span><span class="o">(</span><span class="n">networkParameters</span><span class="o">));</span>
+<span class="n">peerGroup</span><span class="o">.</span><span class="na">startAndWait</span><span class="o">();</span>
+<span class="n">peerGroup</span><span class="o">.</span><span class="na">downloadBlockChain</span><span class="o">();</span>
+</code></pre></div>
+
+  <p>After this code completes you’ve connected to some peers and fully downloaded the blockchain up to the latest block, filling in missing wallet transactions as it goes. peerGroup.startAndWait() and peerGroup.downloadBlockChain() can be replaced with asynchronous versions peerGroup.start() followed by peerGroup.startBlockchainDownload(listener) when the future returned by start() completes.</p>
+
+  <h2 id="proxying">Proxying</h2>
+
+  <p>If you wish to connect to the network using a SOCKS proxy, you must use blocking sockets instead of nio ones. This makes network slightly less efficient, but it should not be noticeable for anything short of very heavy workloads. Then you simply set the Java system properties for a SOCKS proxy (as below) and connections will automatically flow over the proxy. </p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">&quot;socksProxyHost&quot;</span><span class="o">,</span> <span class="s">&quot;127.0.0.1&quot;</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">&quot;socksProxyPort&quot;</span><span class="o">,</span> <span class="s">&quot;9050&quot;</span><span class="o">);</span>
+<span class="n">peerGroup</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PeerGroup</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">chain</span><span class="o">,</span> <span class="k">new</span> <span class="n">BlockingClientManager</span><span class="o">());</span>
+</code></pre></div>
+
+  <h2 id="experimental-using-tor">Experimental: Using Tor</h2>
+
+  <p>When using Tor, most apps will connect to the network via a local SOCKS proxy. Whilst you could do that as well it has a number of disadvantages, most obviously that you need a local Tor client running already.</p>
+
+  <p>With bitcoinj we have a better choice, which is using the <a href="http://www.subgraph.com/orchid.html">Orchid</a> library - a pure Java implementation of the Tor protocol.</p>
+
+  <p>Orchid is not currently available via Maven, so you need to include a JAR into your app yourself. As the support is not yet fully integrated into bitcoinj, you would need to follow the instructions in <a href="https://code.google.com/p/bitcoinj/issues/detail?id=499">this feature request</a>. Using Tor for Bitcoin connections can be as simple as constructing a <code>TorClient</code> object, calling it’s start method, and then using:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">peerGroup</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PeerGroup</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">chain</span><span class="o">,</span> <span class="k">new</span> <span class="n">BlockingClientManager</span><span class="o">(</span><span class="n">torClient</span><span class="o">.</span><span class="na">getSocketFactory</span><span class="o">());</span>
+</code></pre></div>
+
+  <p>However, it is important to note that currently this does NOT give full anonymity in use, because the DNS queries that are used to look up node addresses via <code>DnsDiscovery</code> will not be routed via Tor. Also, hidden service nodes will not be used.</p>
+
+  <p>Tor support is likely to get more complete and integrated in future versions of the library.</p>
+
+  <h2 id="using-the-lower-level-apis">Using the lower level API’s</h2>
+
+  <p>You can build a Peer at a lower level, controlling the socket to be used, using code like this:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">Peer</span> <span class="n">peer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Peer</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">bitcoin</span><span class="o">.</span><span class="na">chain</span><span class="o">(),</span> <span class="k">new</span> <span class="n">PeerAddress</span><span class="o">(</span><span class="n">InetAddress</span><span class="o">.</span><span class="na">getLocalHost</span><span class="o">(),</span> <span class="mi">8333</span><span class="o">),</span> <span class="s">&quot;test app&quot;</span><span class="o">,</span> <span class="s">&quot;0.1&quot;</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">connectionOpened</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">connectionOpened</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;TCP connect done&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">};</span>
+<span class="n">peer</span><span class="o">.</span><span class="na">addEventListener</span><span class="o">(</span><span class="k">new</span> <span class="n">AbstractPeerEventListener</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onPeerConnected</span><span class="o">(</span><span class="n">Peer</span> <span class="n">peer</span><span class="o">,</span> <span class="kt">int</span> <span class="n">peerCount</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Version handshake done&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">});</span>
+<span class="k">new</span> <span class="nf">BlockingClient</span><span class="o">(</span><span class="n">address</span><span class="o">,</span> <span class="n">peer</span><span class="o">,</span> <span class="mi">10000</span><span class="o">,</span> <span class="n">SocketFactory</span><span class="o">.</span><span class="na">getDefault</span><span class="o">(),</span> <span class="kc">null</span><span class="o">);</span>
+</code></pre></div>
+
+  <p>Of course you would provide your own <code>SocketFactory</code> instead of using the default.</p>
+
+  <p>If you want access to a raw stream of messages with no higher level logic, subclass <code>PeerSocketHandler</code> and override the <code>processMessage</code> abstract method. This class implements <code>StreamParser</code> which breaks raw byte streams into the right subclass of <code>Message</code> for you, and then lets you handle those messages as you see fit. Create instances of your new object and pass them to an implementation of <code>ClientConnectionManager</code>, typically either <code>BlockingClientManager</code> or <code>NioClientManager</code> to use epoll/select based async IO.</p>
+
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>

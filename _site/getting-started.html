@@ -1,0 +1,416 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>An introduction to using the library</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#before-we-start">Before we start</a>    <ul>
+      <li><a href="#a-health-warning">A health warning</a></li>
+      <li><a href="#initial-setup">Initial setup</a></li>
+    </ul>
+  </li>
+  <li><a href="#basic-structure">Basic structure</a></li>
+  <li><a href="#setup">Setup</a></li>
+  <li><a href="#keys-and-addresses">Keys and addresses</a></li>
+  <li><a href="#wallet-app-kit">Wallet app kit</a></li>
+  <li><a href="#handling-events">Handling events</a>    <ul>
+      <li><a href="#a-note-about-writing-gui-apps">A note about writing GUI apps</a></li>
+    </ul>
+  </li>
+  <li><a href="#receiving-money">Receiving money</a></li>
+  <li><a href="#sending-coins">Sending coins</a></li>
+  <li><a href="#customizing-the-sending-process-and-setting-fees">Customizing the sending process and setting fees</a></li>
+  <li><a href="#where-to-go-from-here">Where to go from here?</a></li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="an-introduction-to-using-the-library">An introduction to using the library</h1>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <div class="highlight"><pre><code class="python"><span class="c">##     Details automatically derivable from      ##</span>
+<span class="c">## payment variables and configuration settings  ##</span>
+
+<span class="c">## (Required) PaymentRequests must indicate when they were created</span>
+<span class="c">## in number of seconds elapsed since 1970-01-01T00:00 UTC (Unix</span>
+<span class="c">## epoch time format).</span>
+<span class="n">details</span><span class="o">.</span><span class="n">time</span>        <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">())</span> <span class="c">## Current epoch (Unix) time</span>
+
+<span class="c">## (Optional) The PaymentRequest may also set an expiration time after</span>
+<span class="c">## which they&#39;re no longer valid. You probably want to give receivers</span>
+<span class="c">## the ability to configure the expiration time delta; here we used the</span>
+<span class="c">## reasonable default of 10 minutes.</span>
+<span class="n">details</span><span class="o">.</span><span class="n">expires</span>     <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">())</span> <span class="o">+</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">10</span>  <span class="c">## 10 minutes from now</span>
+
+<span class="c">## (Required) We&#39;ve now set everything we need to create the</span>
+<span class="c">## PaymentDetails, so we&#39;ll use the SerializeToString function from the</span>
+<span class="c">## protocol buffer code to store the PaymetDetails in the appropriate</span>
+<span class="c">## field of the PaymentRequest</span>
+<span class="n">request</span><span class="o">.</span><span class="n">serialized_payment_details</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span>
+
+<span class="c">## (Required for pki_type != none) Serialize the certificate chain and</span>
+<span class="c">## store it in the PaymentRequest</span>
+<span class="n">request</span><span class="o">.</span><span class="n">pki_data</span>  <span class="o">=</span> <span class="n">x509</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span>
+
+<span class="c">## (Required for pki_type != none) We&#39;ve filled out everything in the</span>
+<span class="c">## PaymentRequest except the signature, but before we sign it, we have</span>
+<span class="c">## to initialize the signature field by setting it to a zero-byte</span>
+<span class="c">## placeholder.</span>
+<span class="n">request</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+<span class="c">## (Required for pki_type != none) Then make the signature by signing</span>
+<span class="c">## the completed and serialized PaymentRequest. We&#39;ll use the private</span>
+<span class="c">## key we stored in memory in the configuration section and the same</span>
+<span class="c">## hashing formula we specified in `pki_type` (sha256 in this case)</span>
+<span class="n">request</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="n">sign</span><span class="p">(</span><span class="n">private_key</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">(),</span> <span class="s">&quot;sha256&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="highlight"><pre><code class="python"><span class="c">## Output PaymentRequest ##</span>
+
+<span class="c">## (Required) BIP71 defines the content types for PaymentRequests,</span>
+<span class="c">## Payments, and PaymentACKs. We&#39;ll skip the CGI module and add the HTTP</span>
+<span class="c">## headers ourselves</span>
+<span class="k">print</span> <span class="s">&quot;Content-Type: application/bitcoin-paymentrequest&quot;</span>
+<span class="k">print</span> <span class="s">&quot;Content-Transfer-Encoding: binary&quot;</span>
+<span class="k">print</span> <span class="s">&quot;&quot;</span>
+
+<span class="c">## (Required) Now, to finish, we just dump out the serialized</span>
+<span class="c">## PaymentRequest (which contains the serialized PaymentDetails). The</span>
+<span class="c">## serialized data is in binary, so we can&#39;t use Python&#39;s print()</span>
+<span class="c">## because it would add an extraneous newline.</span>
+<span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
+
+<span class="c">#### END SAMPLE SCRIPT ####</span>
+</code></pre></div>
+
+  <p><em>This document describes how to use the code in 0.11, git master may be slightly different</em></p>
+
+  <p>In this document we will go through the <code>ForwardingService</code> example app that comes with the distribution. When run, <code>ForwardingService</code> prints out an address and starts listening on the network. Sending coins to that address will result in them being sent onwards to an address given on the command line (minus a small fee).</p>
+
+  <p>You can <a href="https://code.google.com/p/bitcoinj/source/browse/examples/src/main/java/com/google/bitcoin/examples/ForwardingService.java">read the full program</a>.</p>
+
+  <p>Note that this tutorial assumes familiarity with the basics of the Bitcoin protocol. If you aren’t already familiar with the structure of the block chain and how transactions work, please read <a href="https://bitcoin.org/bitcoin.pdf">Satoshi’s white paper</a> before this tutorial.</p>
+
+  <h2 id="before-we-start">Before we start</h2>
+
+  <h3 id="a-health-warning">A health warning</h3>
+
+  <p>This API is not like other libraries. A Bitcoin library allows you to directly handle money, possibly large sums of other people’s money. It is important to understand the following. <strong>After completing this tutorial you are NOT qualified to write production applications</strong>. You will have a flavor of how to write applications, but Bitcoin is a subtle and complex system.</p>
+
+  <p><strong>FAILURE TO UNDERSTAND WHAT YOU ARE DOING CAN CAUSE MONEY TO BE STOLEN OR PERMANENTLY DESTROYED</strong></p>
+
+  <p>These documents will help you learn how to use bitcoinj, but they are not yet completely comprehensive. If you are ever in any doubt at all, or just want some code review, please ask on our mailing list or on our forum for advice and a second opinion. Also, make sure you keep up with the latest versions of the software. Bug fixes happen all the time and any one of them could be required for the safety of your wallet. It’s important that you frequently rebase onto new versions of the library, even though bitcoinj does not have a stable API.</p>
+
+  <h3 id="initial-setup">Initial setup</h3>
+
+  <p>bitcoinj has logging and assertions built in. Assertions are always checked by default regardless of whether the -ea flag is specified. Logging is handled by the <a href="http://www.slf4j.org">SLF4J</a> library. It lets you choose which logging system you’d prefer to use, eg, JDK logging, Android logging, etc. By default we use the simple logger which prints most stuff of interest to stderr. You can pick a new logger by switching out the jar file in the lib directory.</p>
+
+  <p>bitcoinj uses Maven as its build system and is distributed via git. There are source code/jar downloads you can use, but it’s more secure to get it directly from the source repository.</p>
+
+  <p>To get the code and install it, grab Maven from <a href="http://maven.apache.org">the Maven website</a>, and add it to your path. Also make sure you have git installed. Probably your Java IDE has some Maven and Git integration too, but having them available via the command line is still very useful.</p>
+
+  <p>Now get the latest version of the code. You can use the instructions on the <a href="/using-maven">UsingMaven</a> page - just run the commands there and you’ll get the right version of the code (unless this website is itself compromised). This is intended to protect against compromised mirrors or source downloads - because git works using source tree hashes, if you get a source hash in the right manner, you are guaranteed to end up with the right code.</p>
+
+  <h2 id="basic-structure">Basic structure</h2>
+
+  <p>A bitcoinj application uses the following objects:</p>
+
+  <ul>
+    <li>a <code>NetworkParameters</code> instance which selects the network (production or test) you are on.</li>
+    <li>a <code>Wallet</code> instance to store your <code>ECKey</code>s and other data.</li>
+    <li>a <code>PeerGroup</code> instance to manage the network connections.</li>
+    <li>a <code>BlockChain</code> instance which manages the shared, global data structure which makes Bitcoin work.</li>
+    <li>a <code>BlockStore</code> instance which keeps the block chain data structure somewhere, like on disk.</li>
+    <li><code>WalletEventListener</code> implementations, which receive wallet events.</li>
+  </ul>
+
+  <p>To simplify setting them up, there is also a <code>WalletAppKit</code> object that creates the above objects and connects them together. Whilst you can do this manually (and for most “real” apps you would), this demo app shows how to use the app kit.</p>
+
+  <p>Let’s go through the code and see how it works.</p>
+
+  <h2 id="setup">Setup</h2>
+
+  <p>We use a utility function to configure log4j to have more compact, less verbose log formatting. Then we check the command line arguments.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">BriefLogFormatter</span><span class="o">.</span><span class="na">init</span><span class="o">();</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">args</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Usage: address-to-send-back-to [regtest|testnet]&quot;</span><span class="o">);</span>
+    <span class="k">return</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>Then we select the network we’re going to use based on an optional command line parameter:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Figure out which network we should connect to. Each one gets its own set of files.</span>
+<span class="n">NetworkParameters</span> <span class="n">params</span><span class="o">;</span>
+<span class="n">String</span> <span class="n">filePrefix</span><span class="o">;</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">args</span><span class="o">[</span><span class="mi">1</span><span class="o">].</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;testnet&quot;</span><span class="o">))</span> <span class="o">{</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">TestNet3Params</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="n">filePrefix</span> <span class="o">=</span> <span class="s">&quot;forwarding-service-testnet&quot;</span><span class="o">;</span>
+<span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">args</span><span class="o">[</span><span class="mi">1</span><span class="o">].</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;regtest&quot;</span><span class="o">))</span> <span class="o">{</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">RegTestParams</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="n">filePrefix</span> <span class="o">=</span> <span class="s">&quot;forwarding-service-regtest&quot;</span><span class="o">;</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">MainNetParams</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="n">filePrefix</span> <span class="o">=</span> <span class="s">&quot;forwarding-service&quot;</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>There are multiple separate, independent Bitcoin networks:</p>
+
+  <ul>
+    <li>The main or “production” network where people buy and sell things</li>
+    <li>The public test network (testnet) which is reset from time to time and exists for us to play about with new features. </li>
+    <li>Regression test mode, which is not a public network and requires you to run a bitcoin daemon with the -regtest flag yourself.</li>
+  </ul>
+
+  <p>Each network has its own genesis block, its own port number and its own address prefix bytes to prevent you accidentally trying to send coins across networks (which won’t work). These facts are encapsulated into a <code>NetworkParameters</code> singleton object. As you can see, each network has its own class and you fetch the relevant <code>NetworkParameters</code> object by calling <code>get()</code> on one of those objects.</p>
+
+  <p>It’s strongly recommended that you develop your software on the testnet or using regtest mode. If you accidentally lose test coins, it’s no big deal as they are valueless, and you can get lots of them for free from a <a href="http://testnet.mojocoin.com">TestNet Faucet</a>. Make sure to send the coins back to the faucet when you’re done with them, so others can use them too.</p>
+
+  <p>In regtest mode there’s no public infrastructure, but you can get a new block whenever you want without having to wait for one by running <code>"bitcoind -regtest setgenerate true"</code> on the same machine as the regtest mode bitcoind is running.</p>
+
+  <h2 id="keys-and-addresses">Keys and addresses</h2>
+
+  <p>Bitcoin transactions typically send money to a public elliptic curve key. The sender creates a transaction containing the address of the recipient, where the address is an encoded form of a hash of their public key. The recipient then signs a transaction claiming the coins with their own private key. A key is represented with the <code>ECKey</code> class. <code>ECKey</code> can contain private keys, or just public keys that are missing the private part. Note that in elliptic curve cryptography public keys are derived from private keys, so knowing a private key inherently means knowing the public key as well. This is different to some other crypto systems you may be familiar with, like RSA.</p>
+
+  <p>An address is a textual encoding of a public key. Actually, it is a 160-bit hash of a public key, with a version byte and some checksum bytes, encoded into text using a Bitcoin-specific encoding called base58. Base58 is designed to avoid letters and numbers that could be confused with each other when written down, such as 1 and uppercase i.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Parse the address given as the first parameter.</span>
+<span class="n">forwardingAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">args</span><span class="o">[</span><span class="mi">0</span><span class="o">]);</span>
+</code></pre></div>
+
+  <p>Because an address encodes the network for which the key is intended to be used, we need to pass in the network parameters here. The second parameter is just the user provided string. The constructor will throw if it’s unparseable or for the wrong network.</p>
+
+  <h2 id="wallet-app-kit">Wallet app kit</h2>
+
+  <p>bitcoinj consists of various layers, each of which operates at a lower level than the last. A typical application that wants to send and receive money needs at least a <code>BlockChain</code>, a <code>BlockStore</code>, a <code>PeerGroup</code> and a <code>Wallet</code>. All those objects need to be connected to each other so data flows correctly. Read <a href="/how-things-fit-together">HowThingsFitTogether</a> for more information on how data flows through a bitcoinj based application.</p>
+
+  <p>To simplify this process, which often amounts to boilerplate, we provide a high level wrapper called <code>WalletAppKit</code>. It configures bitcoinj in <em>simplified payment verification</em> mode (as opposed to full verification), which is the most appropriate mode to choose at this time unless you are an expert and wish to experiment with the (incomplete, likely buggy) full mode. It provides a few simple properties and hooks to let you modify the default configuration.</p>
+
+  <p>In future, there may be more kits that configure bitcoinj differently for different kinds of applications that may have different needs. But for now, there’s only one.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Start up a basic app using a class that automates some boilerplate. Ensure we always have at least one key.</span>
+<span class="n">kit</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WalletAppKit</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;.&quot;</span><span class="o">),</span> <span class="n">filePrefix</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onSetupCompleted</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// This is called in a background thread after startAndWait is called, as setting up various objects</span>
+        <span class="c1">// can do disk and network IO that may cause UI jank/stuttering in wallet apps if it were to be done</span>
+        <span class="c1">// on the main thread.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">wallet</span><span class="o">().</span><span class="na">getKeychainSize</span><span class="o">()</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">)</span>
+            <span class="n">wallet</span><span class="o">().</span><span class="na">addKey</span><span class="o">(</span><span class="k">new</span> <span class="n">ECKey</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">};</span>
+
+<span class="k">if</span> <span class="o">(</span><span class="n">params</span> <span class="o">==</span> <span class="n">RegTestParams</span><span class="o">.</span><span class="na">get</span><span class="o">())</span> <span class="o">{</span>
+    <span class="c1">// Regression test mode is designed for testing and development only, so there&#39;s no public network for it.</span>
+    <span class="c1">// If you pick this mode, you&#39;re expected to be running a local &quot;bitcoind -regtest&quot; instance.</span>
+    <span class="n">kit</span><span class="o">.</span><span class="na">connectToLocalHost</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="c1">// Download the block chain and wait until it&#39;s done.</span>
+<span class="n">kit</span><span class="o">.</span><span class="na">startAndWait</span><span class="o">();</span>
+</code></pre></div>
+
+  <p>The kit takes three arguments - the <code>NetworkParameters</code> (almost all APIs in the library require this), a directory in which to store files, and an optional string that is prefixed to any created files. This is useful if you have multiple different bitcoinj apps in the same directory that you wish to keep separated. In this case the file prefix is “forwarding-service” plus the network name, if not the main net (see the code above).</p>
+
+  <p>It also provides an overridable method that we can put our own code in, to customise the objects it creates for us. We override that here. Note that the appkit will actually create and set up the objects on a background thread, and thus <code>onSetupCompleted</code> is also called from a background thread.</p>
+
+  <p>Here, we simply check that the wallet has at least one key, and if not we add a fresh one. If we load a wallet from disk then of course this codepath is not taken.</p>
+
+  <p>Next up, we check if we’re using regtest mode. If we are, then we tell the kit to connect only to localhost where a bitcoind in regtest mode is expected to be running.</p>
+
+  <p>Finally, we call <code>kit.startAndWait()</code>. <code>WalletAppKit</code> is a <a href="https://code.google.com/p/guava-libraries/wiki/ServiceExplained">Guava Service</a>. Guava is a widely used utility library from Google that augments the standard Java library with some useful additional features. A service is an object that can be started and stopped (but only once), and you can receive callbacks when it finishes starting up or shutting down. You can also just block the calling thread until it’s started, which is what we do here.</p>
+
+  <p>The <code>WalletAppKit</code> will consider itself started when the block chain has been fully synced, which can sometimes take a while. You can read <a href="/speeding-up-chain-sync">SpeedingUpChainSync</a> to learn how to make this process faster, but for a toy demo app it’s not needed to implement any extra optimisations.</p>
+
+  <p>The kit has accessors on it that give access to the underlying objects it configures. You can’t call these (they will assert) until the class is either started or in the process of starting up, because the objects would not be created.</p>
+
+  <p>After the app has started up, you’ll notice there are two files in the directory where the app runs: a .wallet file, and a .spvchain file. They go together and must not be separated.</p>
+
+  <h2 id="handling-events">Handling events</h2>
+
+  <p>We want to know when we receive money so we can forward it. This is an <em>event</em> and like most Java APIs in bitcoinj you learn about events by registering <em>event listeners</em>, which are just objects that implement an interface. There are a handful of event listener interfaces in the library:</p>
+
+  <ul>
+    <li><code>WalletEventListener</code> - for things that happen to your wallet</li>
+    <li><code>BlockChainListener</code> - for events related to the block chain</li>
+    <li><code>PeerEventListener</code> - for events related to a peer in the network</li>
+    <li><code>TransactionConfidence.Listener</code> - for events related to the level of rollback security a transaction has</li>
+  </ul>
+
+  <p>Most apps don’t need to use all of these. Because each interface provides a group of related events and you probably don’t care about all of them, we also provide base classes that implement the interface with empty methods. These are called <code>Abstract*Listener</code>.</p>
+
+  <p>The naming of these interfaces and classes is a little inconsistent and will likely change in a future release of the library.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">kit</span><span class="o">.</span><span class="na">wallet</span><span class="o">().</span><span class="na">addEventListener</span><span class="o">(</span><span class="k">new</span> <span class="n">AbstractWalletEventListener</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCoinsReceived</span><span class="o">(</span><span class="n">Wallet</span> <span class="n">w</span><span class="o">,</span> <span class="n">Transaction</span> <span class="n">tx</span><span class="o">,</span> <span class="n">BigInteger</span> <span class="n">prevBalance</span><span class="o">,</span> <span class="n">BigInteger</span> <span class="n">newBalance</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Runs in the dedicated &quot;user thread&quot;.</span>
+    <span class="o">}</span>
+<span class="o">});</span>
+</code></pre></div>
+
+  <p>Events in bitcoinj are run in a dedicated background thread that’s just used for running event listeners, called the <em>user thread</em>. That means it may run in parallel to other code in your application, and if you’re writing a GUI app, it means you aren’t allowed to directly modify the GUI because you aren’t in the GUI or “main” thread. However, your event listeners do not themselves need to be thread safe as events will queue up and execute in order. Nor do you have to worry about many other issues that commonly arise when using multi-threaded libraries (for instance, it’s safe to re-enter the library and it’s safe to do blocking operations).</p>
+
+  <h3 id="a-note-about-writing-gui-apps">A note about writing GUI apps</h3>
+
+  <p>Most widget toolkits like Swing, JavaFX or Android have what is called <em>thread affinity</em>, meaning you can only use them from a single thread. To get back from a background thread to the main thread, you normally pass a closure to some utility function that schedules the closure to be run when the GUI thread is idle.</p>
+
+  <p>To simplify the task of writing GUI apps with bitcoinj, you can specify an arbitrary <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executor.html">Executor</a> whenever you register an event listener. That executor will be asked to run the event listener. By default, this means passing the given <code>Runnable</code> to the user thread, but you can override that like this:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">Executor</span> <span class="n">runInUIThread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Executor</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span> <span class="kd">public</span> <span class="kt">void</span> <span class="n">execute</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">runnable</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">SwingUtilities</span><span class="o">.</span><span class="na">invokeLater</span><span class="o">(</span><span class="n">runnable</span><span class="o">);</span>   <span class="c1">// For Swing.</span>
+        <span class="n">Platform</span><span class="o">.</span><span class="na">runLater</span><span class="o">(</span><span class="n">runnable</span><span class="o">);</span>   <span class="c1">// For JavaFX.</span>
+
+        <span class="c1">// For Android: handler was created in an Activity.onCreate method.</span>
+        <span class="n">handler</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="n">runnable</span><span class="o">);</span>  
+    <span class="o">}</span>
+<span class="o">};</span>
+
+<span class="n">kit</span><span class="o">.</span><span class="na">wallet</span><span class="o">().</span><span class="na">addEventListener</span><span class="o">(</span><span class="n">listener</span><span class="o">,</span> <span class="n">runInUIThread</span><span class="o">);</span>
+</code></pre></div>
+
+  <p>Now methods on “listener” will be invoked in the UI thread automatically.</p>
+
+  <p>Because this can get repetitive and annoying, you can also change the default executor, so all events always run on your UI thread:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">Threading</span><span class="o">.</span><span class="na">USER_THREAD</span> <span class="o">=</span> <span class="n">runInUIThread</span><span class="o">;</span>
+</code></pre></div>
+
+  <p>In some cases bitcoinj can generate a large number of events very fast, this is typical when syncing the block chain with a wallet that has a lot of transactions in it as each one can generate a transaction confidence changed event (as they get buried deeper and deeper). It’s very likely that in future the way wallet events work will change to avoid this problem, but for now that’s how the API works. If the user thread falls behind then memory bloat can occur as event listener invocations queue up on the heap. To avoid this, you can register event handlers with <code>Threading.SAME_THREAD</code> as the executor, in which case they will run immediately on bitcoinj controlled background threads. However you must be exceptionally careful when using this mode - any exceptions that occur in your code may unwind bitcoinj stacks and cause peer disconnection, also, re-entering the library may cause lock inversions or other issues. Generally you should avoid doing it unless you really need the extra performance and know exactly what you’re doing.</p>
+
+  <h2 id="receiving-money">Receiving money</h2>
+
+  <div class="highlight"><pre><code class="java"><span class="n">kit</span><span class="o">.</span><span class="na">wallet</span><span class="o">().</span><span class="na">addEventListener</span><span class="o">(</span><span class="k">new</span> <span class="n">AbstractWalletEventListener</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCoinsReceived</span><span class="o">(</span><span class="n">Wallet</span> <span class="n">w</span><span class="o">,</span> <span class="n">Transaction</span> <span class="n">tx</span><span class="o">,</span> <span class="n">BigInteger</span> <span class="n">prevBalance</span><span class="o">,</span> <span class="n">BigInteger</span> <span class="n">newBalance</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Runs in the dedicated &quot;user thread&quot;.</span>
+        <span class="c1">//</span>
+        <span class="c1">// The transaction &quot;tx&quot; can either be pending, or included into a block (we didn&#39;t see the broadcast).</span>
+        <span class="n">BigInteger</span> <span class="n">value</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="na">getValueSentToMe</span><span class="o">(</span><span class="n">w</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Received tx for &quot;</span> <span class="o">+</span> <span class="n">Utils</span><span class="o">.</span><span class="na">bitcoinValueToFriendlyString</span><span class="o">(</span><span class="n">value</span><span class="o">)</span> <span class="o">+</span> <span class="s">&quot;: &quot;</span> <span class="o">+</span> <span class="n">tx</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Transaction will be forwarded after it confirms.&quot;</span><span class="o">);</span>
+        <span class="c1">// Wait until it&#39;s made it into the block chain (may run immediately if it&#39;s already there).</span>
+        <span class="c1">//</span>
+        <span class="c1">// For this dummy app of course, we could just forward the unconfirmed transaction. If it were</span>
+        <span class="c1">// to be double spent, no harm done. Wallet.allowSpendingUnconfirmedTransactions() would have to</span>
+        <span class="c1">// be called in onSetupCompleted() above. But we don&#39;t do that here to demonstrate the more common</span>
+        <span class="c1">// case of waiting for a block.</span>
+        <span class="n">Futures</span><span class="o">.</span><span class="na">addCallback</span><span class="o">(</span><span class="n">tx</span><span class="o">.</span><span class="na">getConfidence</span><span class="o">().</span><span class="na">getDepthFuture</span><span class="o">(</span><span class="mi">1</span><span class="o">),</span> <span class="k">new</span> <span class="n">FutureCallback</span><span class="o">&lt;</span><span class="n">Transaction</span><span class="o">&gt;()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSuccess</span><span class="o">(</span><span class="n">Transaction</span> <span class="n">result</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// &quot;result&quot; here is the same as &quot;tx&quot; above, but we use it anyway for clarity.</span>
+                <span class="n">forwardCoins</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+            <span class="o">}</span>
+
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onFailure</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{}</span>
+        <span class="o">});</span>
+    <span class="o">}</span>
+<span class="o">});</span>
+</code></pre></div>
+
+  <p>Here we can see what happens when our app receives money. We print out how much we received, formatted into text using a static utility method.</p>
+
+  <p>Then we do something a bit more advanced. We call this method:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">ListenableFuture</span><span class="o">&lt;</span><span class="n">Transaction</span><span class="o">&gt;</span> <span class="n">future</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="na">getConfidence</span><span class="o">().</span><span class="na">getDepthFuture</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+</code></pre></div>
+
+  <p>Every transaction has a confidence object associated with it. The notion of <em>confidence</em> encapsulates the fact that Bitcoin is a global consensus system which constantly strives to reach agreement on a global ordering of transactions. Because this is a hard problem (when faced with malicious actors), it’s possible for a transaction to be <em>double spent</em> (in bitcoinj terminology we say it’s “dead”). That is, it’s possible for us to believe that we have received money, and later we discover the rest of the world disagrees with us.</p>
+
+  <p><em>Confidence objects</em> contain data we can use to make risk based decisions about how likely we are to have actually received money. They can also help us learn when confidence changes or reaches a certain threshold.</p>
+
+  <p><em>Futures</em> are an important concept in concurrent programming and bitcoinj make heavy use of them, in particular, we use the Guava extension to the standard Java <code>Future</code> class, which is called <a href="https://code.google.com/p/guava-libraries/wiki/ListenableFutureExplained">ListenableFuture</a>. A <code>ListenableFuture</code> represents the result of some future calculation or state. You can wait for it to complete (blocking the calling thread), or register a callback that will be invoked. Futures can also fail, in which case you get back an exception instead of a result.</p>
+
+  <p>Here we request a <em>depth future</em>. This future completes when a transaction is buried by at least that many blocks in the chain. A depth of one means it appeared in the top block in the chain. So here, we’re saying “run this code when the transaction has at least one confirmation”. Normally you’d use a utility method called <code>Futures.addCallback</code>, although there is another way to register listeners as well which can be seen in the code snippet below.</p>
+
+  <p>Then we just invoke a method we define ourselves called <code>forwardCoins</code> when the transaction that sends us money confirms.</p>
+
+  <p>There’s an important thing to note here. It’s possible for a depth future to run, and then the depth of a transaction changes to be less than the future’s parameter. This is because at any time the Bitcoin network may undergo a “reorganisation”, in which the best known chain switches from one to another. If your transaction appears in the new chain at a different place, the depth may actually go down instead of up. When processing an inbound payment, you should ensure that if a transaction’s confidence goes down, you try to abort whatever service you were providing for that money. You can learn more about this topic by reading up on the bitcoinj <a href="/security-model">SecurityModel</a>.</p>
+
+  <p>Handling of re-orgs and double spends is a complex topic that is not covered in this tutorial. You can learn more by reading the other articles.</p>
+
+  <h2 id="sending-coins">Sending coins</h2>
+
+  <p>The final part of the ForwardingService is sending the coins we just received onwards.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">BigInteger</span> <span class="n">value</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="na">getValueSentToMe</span><span class="o">(</span><span class="n">kit</span><span class="o">.</span><span class="na">wallet</span><span class="o">());</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Forwarding &quot;</span> <span class="o">+</span> <span class="n">Utils</span><span class="o">.</span><span class="na">bitcoinValueToFriendlyString</span><span class="o">(</span><span class="n">value</span><span class="o">)</span> <span class="o">+</span> <span class="s">&quot; BTC&quot;</span><span class="o">);</span>
+<span class="c1">// Now send the coins back! Send with a small fee attached to ensure rapid confirmation.</span>
+<span class="kd">final</span> <span class="n">BigInteger</span> <span class="n">amountToSend</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="na">subtract</span><span class="o">(</span><span class="n">Transaction</span><span class="o">.</span><span class="na">REFERENCE_DEFAULT_MIN_TX_FEE</span><span class="o">);</span>
+<span class="kd">final</span> <span class="n">Wallet</span><span class="o">.</span><span class="na">SendResult</span> <span class="n">sendResult</span> <span class="o">=</span> <span class="n">kit</span><span class="o">.</span><span class="na">wallet</span><span class="o">().</span><span class="na">sendCoins</span><span class="o">(</span><span class="n">kit</span><span class="o">.</span><span class="na">peerGroup</span><span class="o">(),</span> <span class="n">forwardingAddress</span><span class="o">,</span> <span class="n">amountToSend</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Sending ...&quot;</span><span class="o">);</span>
+<span class="c1">// Register a callback that is invoked when the transaction has propagated across the network.</span>
+<span class="c1">// This shows a second style of registering ListenableFuture callbacks, it works when you don&#39;t</span>
+<span class="c1">// need access to the object the future returns.</span>
+<span class="n">sendResult</span><span class="o">.</span><span class="na">broadcastComplete</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+         <span class="c1">// The wallet has changed now, it&#39;ll get auto saved shortly or when the app shuts down.</span>
+         <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Sent coins onwards! Transaction hash is &quot;</span> <span class="o">+</span> <span class="n">sendResult</span><span class="o">.</span><span class="na">tx</span><span class="o">.</span><span class="na">getHashAsString</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">});</span>
+</code></pre></div>
+
+  <p>Firstly we query how much money we received (of course this is the same as <code>newBalance</code> in the <code>onCoinsReceived</code> callback above, due to the nature of our app).</p>
+
+  <p>Then we decide how much to send - it’s the same as what we received, minus a fee. We don’t have to attach a fee, but if we don’t, it might take a while to confirm. The default fee is quite low.</p>
+
+  <p>To send coins, we use the wallets <code>sendCoins</code> method. It takes three arguments: a <code>TransactionBroadcaster</code> (which is usually a <code>PeerGroup</code>), the address to send coins to (here we use the address we parsed from the command line earlier) and how much money to send.</p>
+
+  <p><code>sendCoins</code> returns a <code>SendResult</code> object containing both the transaction that was created, and a <code>ListenableFuture</code> that can be used to find out when the network has accepted the payment. If the wallet doesn’t contain enough money, the <code>sendCoins</code> method will throw an exception containing some info about how much money was missing.</p>
+
+  <h2 id="customizing-the-sending-process-and-setting-fees">Customizing the sending process and setting fees</h2>
+
+  <p>Transactions in Bitcoin can have fees attached. This is useful as an anti-denial-of-service mechanism, but it’s primarily intended to incentivise mining in later years of the system when inflation has dropped off. You can control the fee attached to a transaction by customizing a send request:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">Wallet</span><span class="o">.</span><span class="na">SendRequest</span> <span class="n">req</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="na">SendRequest</span><span class="o">.</span><span class="na">to</span><span class="o">(</span><span class="n">address</span><span class="o">,</span> <span class="n">value</span><span class="o">);</span>
+<span class="n">req</span><span class="o">.</span><span class="na">feePerKilobyte</span> <span class="o">=</span> <span class="n">Utils</span><span class="o">.</span><span class="na">toNanoCoins</span><span class="o">(</span><span class="s">&quot;0.0005&quot;</span><span class="o">);</span>
+<span class="n">Wallet</span><span class="o">.</span><span class="na">SendResult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="na">sendCoins</span><span class="o">(</span><span class="n">peerGroup</span><span class="o">,</span> <span class="n">req</span><span class="o">);</span>
+<span class="n">Transaction</span> <span class="n">createdTx</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">tx</span><span class="o">;</span>
+</code></pre></div>
+
+  <p>Note that here, we actually set a fee per kilobyte of created transaction. This is how Bitcoin works - priority of a transaction is determined by fee divided by size, thus larger transactions require higher fees to be considered “the same” as smaller transactions.</p>
+
+  <h2 id="where-to-go-from-here">Where to go from here?</h2>
+
+  <p>There are many other features in bitcoinj that this tutorial does not cover. You can read the other articles to learn more about full verification, wallet encryption and so on, and of course the JavaDocs detail the full API.</p>
+
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>

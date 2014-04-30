@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Working with the wallet</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#setup">Setup</a></li>
+  <li><a href="#creating-spends">Creating spends</a></li>
+  <li><a href="#when-to-commit-a-transaction">When to commit a transaction</a></li>
+  <li><a href="#understanding-balances-and-coin-selection">Understanding balances and coin selection</a></li>
+  <li><a href="#using-fees">Using fees</a></li>
+  <li><a href="#learning-about-changes">Learning about changes</a></li>
+  <li><a href="#saving-the-wallet-at-the-right-times">Saving the wallet at the right times</a></li>
+  <li><a href="#creating-multi-sends-and-other-contracts">Creating multi-sends and other contracts</a></li>
+  <li><a href="#encrypting-the-private-keys">Encrypting the private keys</a></li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="working-with-the-wallet">Working with the wallet</h1>
+
+  <p><em>Learn how to use the wallet class and craft custom transactions with it.</em></p>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <p>The Wallet class is one of the most important classes in bitcoinj. It stores keys and the transactions that assign value to/from those keys. It lets you create new transactions which spend the previously stored transactions outputs, and it notifies you when the contents of the wallet have changed.</p>
+
+  <p>You’ll need to learn how to use the Wallet to build many kinds of apps.</p>
+
+  <p>This article assumes you’ve read Satoshi’s white paper and the <a href="working-with-transactions">WorkingWithTransactions</a> article.</p>
+
+  <h2 id="setup">Setup</h2>
+
+  <p>For optimal operation the wallet needs to be connected to a <code>BlockChain</code> and a <code>Peer</code> or <code>PeerGroup</code>. The block chain can be passed a Wallet in its constructor. It will send the wallet blocks as they are received so the wallet can find and extract <em>relevant transactions</em>, that is, transactions which send or receive coins to keys stored within it. The Peer/Group will send the wallet transactions which are broadcast across the network before they appear in a block.</p>
+
+  <p>A Wallet starts out its life with no keys and no transactions. To use it, you need to add at least one key and then download the block chain, which will load the wallet up with transactions that can be analyzed and spent.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">Wallet</span> <span class="n">wallet</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Wallet</span><span class="o">(</span><span class="n">params</span><span class="o">);</span>
+<span class="n">wallet</span><span class="o">.</span><span class="na">addKey</span><span class="o">(</span><span class="k">new</span> <span class="n">ECKey</span><span class="o">());</span>
+<span class="n">BlockChain</span> <span class="n">chain</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BlockChain</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">wallet</span><span class="o">,</span> <span class="o">...);</span>
+<span class="n">PeerGroup</span> <span class="n">peerGroup</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PeerGroup</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="n">chain</span><span class="o">);</span>
+<span class="n">peerGroup</span><span class="o">.</span><span class="na">addWallet</span><span class="o">(</span><span class="n">wallet</span><span class="o">);</span>
+<span class="n">peerGroup</span><span class="o">.</span><span class="na">startAndWait</span><span class="o">();</span>
+</code></pre></div>
+
+  <p>If you import non-fresh keys to a wallet that already has transactions in it, to get the transactions for the added keys you must clear the wallet (using the <code>clearTransactions</code> method) and re-download the chain. Currently, there is no way to replay the chain into a wallet that already has transactions in it and attempting to do so may corrupt the wallet. This is likely to change in future. Alternatively, you could download the raw transaction data from some other source, like a block explorer, and then insert the transactions directly into the wallet. However this is currently unsupported and untested. For most users, importing existing keys is a bad idea and reflects some deeper missing feature. Talk to us if you feel a burning need to import keys into wallets regularly.</p>
+
+  <p>The Wallet works with other classes in the system to speed up synchronisation with the block chain, but only some optimisations are on by default. To understand what is done and how to configure a Wallet/PeerGroup for optimal performance, please read <a href="/speeding-up-chain-sync">SpeedingUpChainSync</a>.</p>
+
+  <h2 id="creating-spends">Creating spends</h2>
+
+  <p>After catching up with the chain, you may have some coins available for spending:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;You have &quot;</span> <span class="o">+</span> <span class="n">Utils</span><span class="o">.</span><span class="na">bitcoinValueToFriendlyString</span><span class="o">(</span><span class="n">wallet</span><span class="o">.</span><span class="na">getBalance</span><span class="o">())</span> <span class="o">+</span> <span class="s">&quot; BTC&quot;</span><span class="o">);</span>
+</code></pre></div>
+
+  <p>Spending money consists of four steps:</p>
+
+  <ol>
+    <li>Create a send request</li>
+    <li>Complete it</li>
+    <li>Commit the transaction and then save the wallet</li>
+    <li>Broadcast the generated transaction</li>
+  </ol>
+
+  <p>For convenience there are helper methods that do these steps for you. In the simplest case:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Get the address 1RbxbA1yP2Lebauuef3cBiBho853f7jxs in object form.</span>
+<span class="n">Address</span> <span class="n">targetAddress</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="s">&quot;1RbxbA1yP2Lebauuef3cBiBho853f7jxs&quot;</span><span class="o">);</span>
+<span class="c1">// Do the send of the coins in the background. This could throw InsufficientMoneyException.</span>
+<span class="n">Wallet</span><span class="o">.</span><span class="na">SendResult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="na">sendCoins</span><span class="o">(</span><span class="n">peerGroup</span><span class="o">,</span> <span class="n">targetAddress</span><span class="o">,</span> <span class="n">Utils</span><span class="o">.</span><span class="na">toNanoCoins</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">23</span><span class="o">));</span>
+<span class="c1">// Save the wallet to disk, optional if using auto saving (see below).</span>
+<span class="n">wallet</span><span class="o">.</span><span class="na">saveToFile</span><span class="o">(....);</span>
+<span class="c1">// Wait for the transaction to propagate across the P2P network, indicating acceptance.</span>
+<span class="n">result</span><span class="o">.</span><span class="na">broadcastComplete</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+</code></pre></div>
+
+  <p>The <code>sendCoins</code> method returns both the transaction that was created, and a <code>ListenableFuture</code> that let’s you block until the transaction has been accepted by the network (sent to one peer, heard back from the others). You can also register a callback on the returned future to learn when propagation was complete, or register your own <code>TransactionConfidence.Listener</code> on the transaction to watch the progress of propagation and mining yourself.</p>
+
+  <p>At a lower level, we can do these steps ourselves:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Make sure this code is run in a single thread at once.</span>
+<span class="n">Wallet</span><span class="o">.</span><span class="na">SendRequest</span> <span class="n">request</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="na">SendRequest</span><span class="o">.</span><span class="na">to</span><span class="o">(</span><span class="n">address</span><span class="o">,</span> <span class="n">value</span><span class="o">);</span>
+<span class="c1">// The SendRequest object can be customized at this point to modify how the transaction will be created.</span>
+<span class="n">wallet</span><span class="o">.</span><span class="na">completeTx</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+<span class="c1">// Ensure these funds won&#39;t be spent again.</span>
+<span class="n">wallet</span><span class="o">.</span><span class="na">commitTx</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">tx</span><span class="o">);</span>
+<span class="n">wallet</span><span class="o">.</span><span class="na">saveToFile</span><span class="o">(...);</span>
+<span class="c1">// A proposed transaction is now sitting in request.tx - send it in the background.</span>
+<span class="n">ListenableFuture</span><span class="o">&lt;</span><span class="n">Transaction</span><span class="o">&gt;</span> <span class="n">future</span> <span class="o">=</span> <span class="n">peerGroup</span><span class="o">.</span><span class="na">broadcastTransaction</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">tx</span><span class="o">);</span>
+
+<span class="c1">// The future will complete when we&#39;ve seen the transaction ripple across the network to a sufficient degree.</span>
+<span class="c1">// Here, we just wait for it to finish, but we can also attach a listener that&#39;ll get run on a background</span>
+<span class="c1">// thread when finished. Or we could just assume the network accepts the transaction and carry on.</span>
+<span class="n">future</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+</code></pre></div>
+
+  <p>To create a transaction we first build a <code>SendRequest</code> object using one of the static helper methods. A <code>SendRequest</code> consists of a partially complete (invalid) <code>Transaction</code> object. It has other fields let you customize things that aren’t done yet like the fee, change address and maybe in future privacy features like how coins are selected. You can modify the partial transaction if you like, or simply construct your own from scratch. The static helper methods on <code>SendRequest</code> are simply different ways to construct the partial transaction.</p>
+
+  <p>Then we complete the request - that means the transaction in the send request has inputs/outputs added and signed to make the transaction valid. It’s now acceptable to the Bitcoin network.</p>
+
+  <p>Note that between <code>completeTx</code> and <code>commitTx</code> no lock is being held. So it’s possible for this code to race and fail if the wallet changes out from underneath you - for example, if the keys in the wallet have been exported and used elsewhere, and a transaction that spends the selected outputs comes in between the two calls. When you use the simpler construction the wallet is locked whilst both operations are run, ensuring that you don’t end up trying to commit a double spend.</p>
+
+  <h2 id="when-to-commit-a-transaction">When to commit a transaction</h2>
+
+  <p>To <em>commit</em> a transaction means to update the spent flags of the wallets transactions so they won’t be re-used. It’s important to commit a transaction at the right time and there are different strategies for doing so. </p>
+
+  <p>The default sendCoins() behaviour is to commit and then broadcast, which is a good choice most of the time. It means there’s no chance of accidentally creating a double spend if there’s a network problem or if there are multiple threads trying to create and broadcast transactions simultaneously. On the other hand, it means that if the network doesn’t accept your transaction for some reason (eg, insufficient fees/non-standard form) the wallet thinks the money is spent when it wasn’t and you’ll have to fix things yourself.</p>
+
+  <p>You can also just not call <code>wallet.commitTx</code> and use <code>peerGroup.broadcastTransaction</code> instead. Once a transaction has been seen by a bunch of peers it will be given to the wallet which will then commit it for you. The main reason you may want to commit after successful broadcast is if you’re experimenting with new code and are creating transactions that won’t necessarily be accepted. It’s annoying to have to constantly roll back your wallet in this case. Once you know the network will always accept your transactions you can create the send request, complete it and commit the resulting transaction all under a single lock so multiple threads won’t create double spends by mistake.</p>
+
+  <h2 id="understanding-balances-and-coin-selection">Understanding balances and coin selection</h2>
+
+  <p>The <code>Wallet.getBalance()</code> call has by default behaviour that may surprise you. If you broadcast a transaction that sends money and then immediately afterwards check the balance, it may be lower than what you expect (or even be zero).</p>
+
+  <p>The reason is that bitcoinj has a somewhat complex notion of <em>balance</em>. You need to understand this in order to write robust applications. The <code>getBalance()</code> method has two alternative forms. In one, you pass in a <code>Wallet.BalanceType</code> enum. It has two values, <code>AVAILABLE</code> and <code>ESTIMATED</code>. Often these will be the same, but sometimes they will vary. The other overload of <code>getBalance()</code> takes a <code>CoinSelector</code> object.</p>
+
+  <p>The <code>ESTIMATED</code> balance is perhaps what you may imagine as a “balance” - it’s simply all outputs in the wallet which are not yet spent. However, that doesn’t mean it’s really safe to spend them. Because Bitcoin is a global consensus system, deciding when you can really trust you received money and the transaction won’t be rolled back can be a subtle art. </p>
+
+  <p>This concept of safety is therefore exposed via the <code>AVAILABLE</code> balance type, and the <code>CoinSelector</code> abstraction. A coin selector is just an object that implements the <code>Wallet.CoinSelector</code> interface. That interface has a single method, which given a list of all unspent outputs and a target value, returns a smaller list of outputs that adds up to at least the target (and possibly more). Coin selection can be a complex process that trades off safety, privacy, fee-efficiency and other factors, which is why it’s pluggable.</p>
+
+  <p>The default coin selector bitcoinj provides (<code>Wallet.DefaultCoinSelector</code>) implements a relatively safe policy: it requires at least one confirmation for any transaction to be considered for selection, except for transactions created by the wallet itself which are considered spendable as long as it was seen propagating across the network. This is the balance you get back when you use <code>getBalance(BalanceType.AVAILABLE)</code> or the simplest form, <code>getBalance()</code> - it’s the amount of money that the spend creation methods will consider for usage. The reason for this policy is as follows:</p>
+
+  <ol>
+    <li>You trust your own transactions implicitly, as you “know” you are yourself trustworthy. However, it’s still possible for bugs and other things to cause you to create unconfirmable transactions - for instance if you don’t include sufficient fees. Therefore we don’t want to spend change outputs unless we saw that network nodes relayed the transaction, giving a high degree of confidence that it will be mined upon.</li>
+    <li>For other transactions, we wait until we saw at least one block because in SPV mode, you cannot check for yourself that a transaction is valid. If your internet connection was hacked, you might be talking to a fake Bitcoin network that feeds you a nonsense transaction which spends non-existent Bitcoins. Please read the <a href="/security-model">SecurityModel</a> article to learn more about this. Waiting for the transaction to appear in a block gives you confidence the transaction is real. The original Bitcoin client waits for 6 confirmations, but this value was picked at a time when mining hash rate was much lower and it was thus much easier to forge a small fake chain. We’ve not yet heard reports of merchants being defrauded using invalid blocks, so waiting for one block is sufficient.</li>
+  </ol>
+
+  <p>The default coin selector also takes into account the age of the outputs, in order to maximise the probability of your transaction getting confirmed in the next block. </p>
+
+  <p>The default selector is somewhat customisable via subclassing. But normally the only customisation you’re interested in is being able to spend unconfirmed transactions. If your application knows the money you’re receiving is valid via some other mechanism (e.g. you are connected to a trusted node), or you just don’t care about fraud because the value at stake is very low, then you can call <code>Wallet.allowSpendingUnconfirmedTransactions()</code> to make the wallet drop the 1-block policy.</p>
+
+  <p>You can also choose the coin selector on a per-payment basis, using the <code>SendRequest.coinSelector</code> field.</p>
+
+  <p>As a consequence of all of the above, if you query the <code>AVAILABLE</code> balance immediately after doing a <code>PeerGroup.broadcastTransaction</code>, you are likely to see a balance lower than what you anticipate, as you’re racing the process of broadcasting the transacation and seeing it propagate across the network. If you instead call <code>getBalance()</code> after the returned <code>ListenableFuture&lt;Transaction&gt;</code> completes successfully, you will see the balance you expect.</p>
+
+  <h2 id="using-fees">Using fees</h2>
+
+  <p>Transactions can have fees attached to them when they are completed by the wallet. To control this, the <code>SendRequest</code> object has several fields that can be used. The simplest is <code>SendRequest.fee</code> which is an absolute override. If set, that is the fee that will be attached. A more useful field is <code>SendRequest.feePerKb</code> which allows you to scale the final fee with the size of the completed transaction. When block space is limited, miners decide ranking by fee-per-1000-bytes so typically you do want to pay more for larger transactions, otherwise you may fall below miners fee thresholds. </p>
+
+  <p>There are also some fee rules in place intended to avoid cheap flooding attacks. Most notably, any transaction that has an output of value less than 0.01 coins ($1) requires the min fee which is currently set to be 10,000 satoshis (0.0001 coins or at June 2013 exchange rates about $0.01). By default nodes will refuse to relay transactions that don’t meet that rule, although mining them is of course allowed. You can disable it and thus create transactions that may be un-relayable by changing <code>SendRequest.ensureMinRequiredFee</code> to false.</p>
+
+  <p>bitcoinj will by default ensure you always attach a small fee per kilobyte to each transaction regardless of whether one is technically necessary or not. The amount of fee used depends on the size of the transaction. There are several reasons for this:</p>
+
+  <ul>
+    <li>Most apps were already setting a fixed fee anyway.</li>
+    <li>There is only 27kb in each block for free “high priority” transactions. This is a quite small amount of space which will often be used up already.</li>
+    <li>SPV clients have no way to know whether that 27kb of free-high-priority space is already full in the next block.</li>
+    <li>The default fee is quite low.</li>
+    <li>It more or less guarantees that the transaction will confirm quickly.</li>
+  </ul>
+
+  <p>Over time, it’d be nice to get back to a state where most transactions are free. However it will require some changes on the C++ and mining side along with careful co-ordinated rollouts.</p>
+
+  <h2 id="learning-about-changes">Learning about changes</h2>
+
+  <p>The wallet provides the <code>WalletEventListener</code> interface for learning about changes to its contents. You can derive from <code>AbstractWalletEventListener</code> to get a default implementation of these methods. You get callbacks on:</p>
+
+  <ul>
+    <li>Receiving money.</li>
+    <li>Money being sent from the wallet (regardless of whether the tx was created by it or not).</li>
+    <li>Changes in transaction confidence. See <a href="working-with-transactions">WorkingWithTransactions</a> for information about this.</li>
+  </ul>
+
+  <h2 id="saving-the-wallet-at-the-right-times">Saving the wallet at the right times</h2>
+
+  <p>By default the Wallet is just an in-memory object, it won’t save by itself. You can use <code>saveToFile()</code> or <code>saveToOutputStream()</code> when you want to persist the wallet. It’s best to use <code>saveToFile()</code> if possible because this will write to a temporary file and then atomically rename it, giving you assurance that the wallet won’t be half-written or corrupted if something goes wrong half way through the saving process.</p>
+
+  <p>It can be difficult to know exactly when to save the wallet, and if you do it too aggressively you can negatively affect the performance of your app. To help solve this, the wallet can auto-save itself to a named file. Use the <code>autoSaveToFile()</code> method to set this up. You can optionally provide a delay period, eg, of a few hundred milliseconds. This will create a background thread that saves the wallet every N milliseconds if it needs saving. Note that some important operations, like adding a key, always trigger an immediate auto-save. Delaying writes of the wallet can help improve performance in some cases, eg, if you’re catching up a wallet that is very busy (has lots of transactions moving in and out). You can register an auto-save listener to learn when the wallet saved itself.</p>
+
+  <h2 id="creating-multi-sends-and-other-contracts">Creating multi-sends and other contracts</h2>
+
+  <p>The default <code>Wallet.SendRequest</code> static methods help you construct transactions of common forms, but what if you want something more advanced? You can customize or build your own transaction and put it into a <code>SendRequest</code> yourself.</p>
+
+  <p>Here’s a simple example - sending to multiple addresses at once. A fresh <code>Transaction</code> object is first created with the outputs specifying where to send various quantities of coins. Then the incomplete, invalid transaction is <em>completed</em>, meaning the wallet adds inputs (and a change output) as necessary to make the transaction valid.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="n">Address</span> <span class="n">target1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="s">&quot;17kzeh4N8g49GFvdDzSf8PjaPfyoD1MndL&quot;</span><span class="o">);</span>
+<span class="n">Address</span> <span class="n">target2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Address</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="s">&quot;1RbxbA1yP2Lebauuef3cBiBho853f7jxs&quot;</span><span class="o">);</span>
+<span class="n">Transaction</span> <span class="n">tx</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Transaction</span><span class="o">(</span><span class="n">params</span><span class="o">);</span>
+<span class="n">tx</span><span class="o">.</span><span class="na">addOutput</span><span class="o">(</span><span class="n">Utils</span><span class="o">.</span><span class="na">toNanoCoins</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">10</span><span class="o">),</span> <span class="n">target1</span><span class="o">);</span>
+<span class="n">tx</span><span class="o">.</span><span class="na">addOutput</span><span class="o">(</span><span class="n">Utils</span><span class="o">.</span><span class="na">toNanoCoins</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">20</span><span class="o">),</span> <span class="n">target2</span><span class="o">);</span>
+<span class="n">Wallet</span><span class="o">.</span><span class="na">SendRequest</span> <span class="n">request</span> <span class="o">=</span> <span class="n">Wallet</span><span class="o">.</span><span class="na">SendRequest</span><span class="o">.</span><span class="na">forTx</span><span class="o">(</span><span class="n">tx</span><span class="o">);</span>
+<span class="k">if</span> <span class="o">(!</span><span class="n">wallet</span><span class="o">.</span><span class="na">completeTx</span><span class="o">(</span><span class="n">request</span><span class="o">))</span> <span class="o">{</span>
+  <span class="c1">// Cannot afford this!</span>
+<span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+  <span class="n">wallet</span><span class="o">.</span><span class="na">commitTx</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">tx</span><span class="o">);</span>
+  <span class="n">peerGroup</span><span class="o">.</span><span class="na">broadcastTransaction</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">tx</span><span class="o">).</span><span class="na">get</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>You can add arbitrary <code>TransactionOutput</code> objects and in this way, build transactions with exotic reclaim conditions. For examples of what is achievable, see <a href="https://en.bitcoin.it/wiki/Contracts">contracts</a>.</p>
+
+  <p>At this time <code>SendRequest</code> does not allow you to request unusual forms of signing like <code>SIGHASH_ANYONECANPAY</code>. If you want to do that, you must use the lower level APIs. Fortunately it isn’t hard - you can see examples of how to do that in the article <a href="working-with-contracts">WorkingWithContracts</a>.</p>
+
+  <h2 id="encrypting-the-private-keys">Encrypting the private keys</h2>
+
+  <p>It’s a good idea to encrypt your private keys if you only spend money from your wallet rarely. The <code>Wallet.encrypt("password")</code> method will derive an AES key from an Scrypt hash of the given password string and use it to encrypt the private keys in the wallet, you can then provide the password when signing transactions or to fully decrypt the wallet. You can also provide your own AES keys if you don’t want to derive them from a password, and you can also customize the Scrypt hash parameters.</p>
+
+  <p><a href="http://www.tarsnap.com/scrypt.html">Scrypt</a> is a hash function designed to be harder to brute force at high speed than alternative algorithms. By selecting difficult parameters, a password can be made to take multiple seconds to turn into a key.</p>
+
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>

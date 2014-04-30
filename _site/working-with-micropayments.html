@@ -1,0 +1,261 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Working with micropayment channels</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#protocol-overview">Protocol overview</a></li>
+  <li><a href="#api-design">API design</a></li>
+  <li><a href="#tutorial">Tutorial</a>    <ul>
+      <li><a href="#server">Server</a></li>
+      <li><a href="#client">Client</a></li>
+    </ul>
+  </li>
+  <li><a href="#choosing-channel-parameters">Choosing channel parameters</a></li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="working-with-micropayment-channels">Working with micropayment channels</h1>
+
+  <p><em>Learn how to efficiently send repeated micropayments to a chosen recipient.</em></p>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <p>Bitcoin has great potential as a platform for enabling <em>micropayments</em>, payments much smaller than what the traditional financial system can handle. Indeed, you can send a very tiny amount of value in a Bitcoin transaction without doing anything special and it will work, even if what you’re sending is only a fraction of a (dollar) cent. But doing so is subject to a few significant caveats.</p>
+
+  <ol>
+    <li>If you send too many transactions too fast, they will get down-prioritised or not relayed by various anti flooding algorithms built into the Bitcoin network.</li>
+    <li>There is a minimum amount of value a single transaction can send, determined by the number of bytes required to send and claim it along with the fees charged.</li>
+    <li>The recipient of the micropayments ends up with a wallet full of “dust” which can be expensive to spend, fee-wise. This is a rough equivalent of the same problem you’d have with metal coins, if you charged lots of people a penny, repeatedly. You’d end up with a bag full of tiny metal coins that most merchants would refuse to accept as payment, because the overhead of the transaction would be larger than what the money was worth.</li>
+  </ol>
+
+  <p>Sometimes these restrictions don’t matter - you only wish to make a single, very small payment and the recipient won’t be receiving a lot of them anyway. But other times these restrictions are too limiting and we must search for an alternative approach. This article describes how to use <em>payment channels</em>, a way to set up a pending transfer of value from one wallet to another such that the amount that will be transferred is incrementable at high speed and by very small amounts. Whilst this does not allow you to send micropayments at high speed to different recipients each time, many applications can fit within this framework - typically anything that involves micro-billing for a metered service.</p>
+
+  <p>Starting from bitcoinj 0.10, you can use payment channels to implement various kinds of metered billing application. We provide a sub-library that implements a client/server protocol for this, along with an example client/server app showing how easy it is to use. Because payment channel technology is still new and experimental, if you wish to use it please get in touch with us first and let us know what you’re doing, so we ensure you keep up as the code evolves.</p>
+
+  <h2 id="protocol-overview">Protocol overview</h2>
+
+  <p>The <a href="https://en.bitcoin.it/wiki/Contracts#Example_7:_Rapidly-adjusted_.28micro.29payments_to_a_pre-determined_party">micropayment protocol</a> allows one party (the client) to make repeated micropayments to another party (the server). It works in two stages. Firstly, some value is locked up with a multi-signature transaction that places it under the control of both parties. The parties collaborate to create a signed refund transaction that spends all the value back to the client, but is time locked using the nLockTime feature of the Bitcoin protocol. This ensures that the refund won’t become valid until some period of time has passed (currently, one day).</p>
+
+  <p>The refund transaction is prepared in such a way that the client gets a fully signed copy <em>before</em> the initial multi-signature transaction (the <em>contract</em>) is sent to the server. In this way, we avoid a potential crash/attack that could cause the client to lose money - once the client receives the refund transaction, only then is the money locked to both parties control. If the server halts at any point in the protocol, the client can always get their money back.</p>
+
+  <p>Once the refund transaction has been obtained by the client, it transmits the multi-signature contract to the server which then signs it and broadcasts it, thus locking in the money and opening the channel. To make a payment the client prepares and signs a new copy of the refund transaction that refunds slightly less money than before. The signature is sent to the server, which then verifies the signature is correct and stores it. The signature uses fairly lax SIGHASH modes so the server has a lot of leeway to modify the refund transaction as it wishes, but normally it will just add an output that sends back to its own wallet.</p>
+
+  <p>In this way once the payment channel is established, a micropayment can be made with just one signature operation by the client and one verify by the server.</p>
+
+  <p>Eventually the client will decide that it is done. At this point it sends a message to the server asking it to close the channel. The server then signs the final version of the contract with its own key and broadcasts it, resulting in the final state of the channel being confirmed in the block chain. If the server doesn’t co-operate or has vanished before the client gets a chance to cleanly close the channel then the client must wait 24 hours until the initial refund transaction becomes valid.</p>
+
+  <p>As you can see, because the refund transaction lets the client take back all its money if the channel is still in use as it approaches the expiry time, the server must close the channel and a new one must be built from scratch.</p>
+
+  <h2 id="api-design">API design</h2>
+
+  <p>Bitcoinj provides a series of objects that implement the client and server parts of the above arrangement. The wire protocol uses TCP to send uint-length-prefixed protocol buffers, but the system is designed to be embeddable so you can easily bind micropayments into other protocols, like HTTP or XMPP.</p>
+
+  <ol>
+    <li>At the heart of the API are two <em>state objects</em>, <code>PaymentChannelClientState</code> and <code>PaymentChannelServerState</code>. These classes operate independently of any particular network protocol and provide a state machine in which you’re responsible for providing and retrieving the correct objects at the right times. For example, when calling the <code>incrementPaymentBy</code> method, what you get back is a byte array containing a signature, but the state objects won’t do any transmission of that data for you.</li>
+    <li>Normally though you want to serialize these state machine transitions into byte arrays, ready for network transmission. Also, you want to persist that state machine to disk such that you can resume micropayments across application restarts or network connectivity interruptions. This is implemented by <code>PaymentChannelClient</code> and <code>PaymentChannelServer</code>. These objects take the basic channel parameters and an object that implements a client/server specific interface. They construct the state machines, serialize the transitions to protocol buffer based messages, and use a wallet extension (see third point) to ensure data on the channel is stored inside the wallet file. They also do error checking of the protocol to ensure a malicious client or server can’t do anything strange.</li>
+    <li>The protocol requires certain actions to be taken at certain times, where time is defined by the time fields in the block chain. The <code>StoredPaymentChannel{Client/Server}States</code> act as wallet extensions and watch the block chain to take the right actions at the right times. That means if you drive the state machine classes directly, refund transactions won’t be broadcast at the right time for you and you’ll have to implement that logic yourself.</li>
+    <li>Although getting/providing protocol buffers is a big step up over raw Java objects, it’s still not quite enough as we have to handle reading and writing them to the network. Often the micropayment protocol will be embedded inside another protocol. But if you want it to run standalone (e.g. for testing), we provide the <code>PaymentChannelClientConnection</code> and <code>PaymentChannelServerListener</code> classes. They take host/port pairs and the channel parameters then construct and glue together the rest of the objects. They delegate the actual network handling code to a separate package (com.google.bitcoin.protocols.niowrapper) which simply reads/writes length prefixed protocol buffers over a TCP connection.</li>
+  </ol>
+
+  <p>Although this may seem like a lot of objects, the abstractions have a purpose. Imagine building a protocol that lets you pay for not seeing display ads on the web by making private micropayments to ad networks at the time the ad is going to be served. A separate TCP connection is probably not the right tool to be used here. Instead it would make more sense to extend HTTP with some special headers and link the browser to your wallet app, so the micropayments protocol flows over those inline HTTP headers. In that case you’d want to use the state machine and possibly protobuf serialization, but the network code itself might not be that useful. Going even further, if you’re embedding the protocol into something that already has its own serialization mechanism you might want to reuse the core state machines but avoid protocol buffers entirely. All these use cases are possible.</p>
+
+  <h2 id="tutorial">Tutorial</h2>
+
+  <h3 id="server">Server</h3>
+
+  <p>Let’s take a walk through the toy server included in the examples package.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">NetworkParameters</span> <span class="n">params</span> <span class="o">=</span> <span class="n">TestNet3Params</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+
+    <span class="c1">// Bring up all the objects we need, create/load a wallet, sync the chain, etc. We override WalletAppKit so we</span>
+    <span class="c1">// can customize it by adding the extension objects - we have to do this before the wallet file is loaded so</span>
+    <span class="c1">// the plugin that knows how to parse all the additional data is present during the load.</span>
+    <span class="n">appKit</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WalletAppKit</span><span class="o">(</span><span class="n">params</span><span class="o">,</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;.&quot;</span><span class="o">),</span> <span class="s">&quot;payment_channel_example_server&quot;</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">addWalletExtensions</span><span class="o">()</span> <span class="o">{</span>
+            <span class="c1">// The StoredPaymentChannelServerStates persists channels so we can resume them</span>
+            <span class="c1">// after a restart.</span>
+            <span class="n">storedStates</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StoredPaymentChannelServerStates</span><span class="o">(</span><span class="n">wallet</span><span class="o">(),</span> <span class="n">peerGroup</span><span class="o">());</span>
+            <span class="n">wallet</span><span class="o">().</span><span class="na">addExtension</span><span class="o">(</span><span class="n">storedStates</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+    <span class="n">appKit</span><span class="o">.</span><span class="na">startAndWait</span><span class="o">();</span>
+
+    <span class="c1">// We provide a peer group, a wallet, a timeout in seconds, the amount we require to start a channel and</span>
+    <span class="c1">// an implementation of HandlerFactory, which we just implement ourselves.</span>
+    <span class="k">new</span> <span class="nf">PaymentChannelServerListener</span><span class="o">(</span><span class="n">appKit</span><span class="o">.</span><span class="na">peerGroup</span><span class="o">(),</span> <span class="n">appKit</span><span class="o">.</span><span class="na">wallet</span><span class="o">(),</span> <span class="mi">15</span><span class="o">,</span> <span class="n">Utils</span><span class="o">.</span><span class="na">COIN</span><span class="o">,</span> <span class="k">this</span><span class="o">).</span><span class="na">bindAndStart</span><span class="o">(</span><span class="mi">4242</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>Here is the core of a normal, plain old bitcoinj app. We select our network parameters, the testnet in this case, and then construct a <code>WalletAppKit</code> which gives us everything we need to do business with Bitcoin. The only unusual thing here is that we subclass the app kit and override one of its methods, <code>addWalletExtensions</code>.</p>
+
+  <p><em>Wallet extensions</em> are a plugin mechanism that lets you persist arbitrary data inside a bitcoinj wallet file (which is basically a large protocol buffer). They are Java objects implementing a specific interface and the payment channels code provides an extension so channel state can be saved automatically. The extension object has to be added to the wallet object <em>before</em> it’s loaded from disk however, to ensure that the saved extension data is deserialized correctly. We do that here by using a hook that <code>WalletAppKit</code> provides for us. All apps that use micropayment channels need to do this.</p>
+
+  <p>It’s important to note that the wallet extension takes a <code>PeerGroup</code> as an argument. The reason is so that as a channel approaches its expiry time, the server knows to close it and broadcast the final state before the client has a chance to use its refund transaction. If the server is only running intermittently then it’s possible for it to lose all the money that was accumulated so far, so if your server is transient make sure the operating system wakes it up at the right times!</p>
+
+  <p>Once we have brought up our connections to the Bitcoin network and synced the chain, we bind and start the server object. We give a timeout that is used for network communications (this is distinct from the max lifetime of the channel, which is currently hard coded). It is given “this” as a parameter - the reason is that the <code>PaymentChannelServerListener</code> class will call us back when a new inbound connection is made. We’re expected to return from that global callback an object that will receive callbacks for that specific connection. So let’s do that.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="n">ServerConnectionEventHandler</span> <span class="nf">onNewConnection</span><span class="o">(</span><span class="kd">final</span> <span class="n">SocketAddress</span> <span class="n">clientAddress</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// Each connection needs a handler which is informed when that payment channel gets adjusted. Here we just log</span>
+    <span class="c1">// things. In a real app this object would be connected to some business logic.</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">ServerConnectionEventHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">channelOpen</span><span class="o">(</span><span class="n">Sha256Hash</span> <span class="n">channelId</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Channel open for {}: {}.&quot;</span><span class="o">,</span> <span class="n">clientAddress</span><span class="o">,</span> <span class="n">channelId</span><span class="o">);</span>
+
+            <span class="c1">// Try to get the state object from the stored state set in our wallet</span>
+            <span class="n">PaymentChannelServerState</span> <span class="n">state</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">storedStates</span><span class="o">.</span><span class="na">getChannel</span><span class="o">(</span><span class="n">channelId</span><span class="o">).</span><span class="na">getState</span><span class="o">(</span><span class="n">appKit</span><span class="o">.</span><span class="na">wallet</span><span class="o">(),</span> <span class="n">appKit</span><span class="o">.</span><span class="na">peerGroup</span><span class="o">());</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">VerificationException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// This indicates corrupted data, and since the channel was just opened, cannot happen</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;   with a maximum value of {}, expiring at UNIX timestamp {}.&quot;</span><span class="o">,</span>
+                    <span class="c1">// The channel&#39;s maximum value is the value of the multisig contract which locks in some</span>
+                    <span class="c1">// amount of money to the channel</span>
+                    <span class="n">state</span><span class="o">.</span><span class="na">getMultisigContract</span><span class="o">().</span><span class="na">getOutput</span><span class="o">(</span><span class="mi">0</span><span class="o">).</span><span class="na">getValue</span><span class="o">(),</span>
+                    <span class="c1">// The channel expires at some offset from when the client&#39;s refund transaction becomes</span>
+                    <span class="c1">// spendable.</span>
+                    <span class="n">state</span><span class="o">.</span><span class="na">getRefundTransactionUnlockTime</span><span class="o">()</span> <span class="o">+</span> <span class="n">StoredPaymentChannelServerStates</span><span class="o">.</span><span class="na">CHANNEL_EXPIRE_OFFSET</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">paymentIncrease</span><span class="o">(</span><span class="n">BigInteger</span> <span class="n">by</span><span class="o">,</span> <span class="n">BigInteger</span> <span class="n">to</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Client {} paid increased payment by {} for a total of &quot;</span> <span class="o">+</span> <span class="n">to</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="n">clientAddress</span><span class="o">,</span> <span class="n">by</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">channelClosed</span><span class="o">(</span><span class="n">PaymentChannelCloseException</span><span class="o">.</span><span class="na">CloseReason</span> <span class="n">reason</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Client {} closed channel for reason {}&quot;</span><span class="o">,</span> <span class="n">clientAddress</span><span class="o">,</span> <span class="n">reason</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>The interface is simple - we’re informed when a channel is successfully opened, along with a “channel ID” which identifies it in a way independent of the network layer. Once we have the channelId, we can query the wallet extension that we created earlier to get the canonical state object, which we can get more detailed information about the channel from. For most use cases, this is likely not necessary, as the wallet extension deals with channel expiration for you and channel maximum value is not a particularly useful statistic (a minimum is already specified in the server listener constructor, which most clients will default to).</p>
+
+  <p>After the channelOpen callback, we’re told when we received a new payment, and, finally we’re told when the channel is closed, and why.</p>
+
+  <h3 id="client">Client</h3>
+
+  <p>On the client side, the first part looks much the same, except in the wallet we add a <code>StoredPaymentChannelClientStates</code> - note <strong>Client</strong> instead of <strong>Server</strong>.</p>
+
+  <p>Next up, we pick some channel parameters and then try to construct a <code>PaymentChannelClientConnection</code> object. This might resume a previous payment channel if we have one available with the same channel ID. The channel ID is just an opaque string that is sent as a hash to the server. In this case we set it to be the hostname, so talking to the same server will always use the same channel even if both sides are restarted or their IP address changes.</p>
+
+  <p>We then start a loop where we try and construct the channel, but if we don’t have enough money in our wallet yet we wait until we do and then try again.</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Create the object which manages the payment channels protocol, client side. Tell it where the server to</span>
+<span class="c1">// connect to is, along with some reasonable network timeouts, the wallet and our temporary key. We also have</span>
+<span class="c1">// to pick an amount of value to lock up for the duration of the channel.</span>
+<span class="c1">//</span>
+<span class="c1">// Note that this may or may not actually construct a new channel. If an existing unclosed channel is found in</span>
+<span class="c1">// the wallet, then it&#39;ll re-use that one instead.</span>
+<span class="kd">final</span> <span class="kt">int</span> <span class="n">timeoutSecs</span> <span class="o">=</span> <span class="mi">15</span><span class="o">;</span>
+<span class="kd">final</span> <span class="n">InetSocketAddress</span> <span class="n">server</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">host</span><span class="o">,</span> <span class="mi">4242</span><span class="o">);</span>
+<span class="n">PaymentChannelClientConnection</span> <span class="n">client</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+<span class="k">while</span> <span class="o">(</span><span class="n">client</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="n">String</span> <span class="n">channelID</span> <span class="o">=</span> <span class="n">host</span><span class="o">;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PaymentChannelClientConnection</span><span class="o">(</span>
+                <span class="n">server</span><span class="o">,</span> <span class="n">timeoutSecs</span><span class="o">,</span> <span class="n">appKit</span><span class="o">.</span><span class="na">wallet</span><span class="o">(),</span> <span class="n">myKey</span><span class="o">,</span> <span class="n">maxAcceptableRequestedAmount</span><span class="o">,</span> <span class="n">channelID</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ValueOutOfRangeException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// We don&#39;t have enough money in our wallet yet. Wait and try again.</span>
+        <span class="n">waitForSufficientBalance</span><span class="o">(</span><span class="n">maxAcceptableRequestedAmount</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>The <code>waitForSufficientBalance</code> method is simple and not specific to micropayments, but we include it here for completeness:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="kd">private</span> <span class="kt">void</span> <span class="nf">waitForSufficientBalance</span><span class="o">(</span><span class="n">BigInteger</span> <span class="n">amount</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// Not enough money in the wallet.</span>
+    <span class="n">BigInteger</span> <span class="n">amountPlusFee</span> <span class="o">=</span> <span class="n">amount</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">Wallet</span><span class="o">.</span><span class="na">SendRequest</span><span class="o">.</span><span class="na">DEFAULT_FEE_PER_KB</span><span class="o">);</span>
+    <span class="n">ListenableFuture</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">balanceFuture</span> <span class="o">=</span> <span class="n">appKit</span><span class="o">.</span><span class="na">wallet</span><span class="o">().</span><span class="na">getBalanceFuture</span><span class="o">(</span><span class="n">amountPlusFee</span><span class="o">,</span> <span class="n">Wallet</span><span class="o">.</span><span class="na">BalanceType</span><span class="o">.</span><span class="na">AVAILABLE</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(!</span><span class="n">balanceFuture</span><span class="o">.</span><span class="na">isDone</span><span class="o">())</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Please send &quot;</span> <span class="o">+</span> <span class="n">Utils</span><span class="o">.</span><span class="na">bitcoinValueToFriendlyString</span><span class="o">(</span><span class="n">amountPlusFee</span><span class="o">)</span> <span class="o">+</span>
+                <span class="s">&quot; BTC to &quot;</span> <span class="o">+</span> <span class="n">myKey</span><span class="o">.</span><span class="na">toAddress</span><span class="o">(</span><span class="n">params</span><span class="o">));</span>
+        <span class="n">Futures</span><span class="o">.</span><span class="na">getUnchecked</span><span class="o">(</span><span class="n">balanceFuture</span><span class="o">);</span>  <span class="c1">// Wait.</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>Once we have a successfully constructed <code>PaymentChannelClientConnection</code> we wait for it to newly open (or resume):</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Opening the channel requires talking to the server, so it&#39;s asynchronous.</span>
+<span class="n">Futures</span><span class="o">.</span><span class="na">addCallback</span><span class="o">(</span><span class="n">client</span><span class="o">.</span><span class="na">getChannelOpenFuture</span><span class="o">(),</span> <span class="k">new</span> <span class="n">FutureCallback</span><span class="o">&lt;</span><span class="n">PaymentChannelClientConnection</span><span class="o">&gt;()</span> <span class="o">{</span>
+    <span class="nd">@Override</span> <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">PaymentChannelClientConnection</span> <span class="n">client</span><span class="o">)</span> <span class="o">{</span> <span class="o">....</span> <span class="o">}</span>
+    <span class="nd">@Override</span> <span class="kd">public</span> <span class="kt">void</span> <span class="n">onFailure</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span> <span class="o">....</span> <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+  <p>Because it involves some network chatter, this process is asynchronous and we get back a future that let’s us know when it’s done or failed. We can of course chain these futures together with others and do all the usual operations on them.</p>
+
+  <p>In our <code>onSuccess</code> method we have this:</p>
+
+  <div class="highlight"><pre><code class="java"><span class="c1">// Success! We should be able to try making micropayments now. Try doing it 10 times.</span>
+<span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="n">client</span><span class="o">.</span><span class="na">incrementPayment</span><span class="o">(</span><span class="n">Utils</span><span class="o">.</span><span class="na">CENT</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ValueOutOfRangeException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&quot;Failed to increment payment by a CENT, remaining value is {}&quot;</span><span class="o">,</span> <span class="n">client</span><span class="o">.</span><span class="na">state</span><span class="o">().</span><span class="na">getValueRefunded</span><span class="o">());</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(-</span><span class="mi">3</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Successfully sent payment of one CENT, total remaining on channel is now {}&quot;</span><span class="o">,</span> <span class="n">client</span><span class="o">.</span><span class="na">state</span><span class="o">().</span><span class="na">getValueRefunded</span><span class="o">());</span>
+    <span class="n">Uninterruptibles</span><span class="o">.</span><span class="na">sleepUninterruptibly</span><span class="o">(</span><span class="mi">500</span><span class="o">,</span> <span class="n">MILLISECONDS</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="c1">// Now tell the server we&#39;re done so they should broadcast the final transaction and refund us what&#39;s</span>
+<span class="c1">// left. If we never do this then eventually the server will time out and do it anyway and if the</span>
+<span class="c1">// server goes away for longer, then eventually WE will time out and the refund tx will get broadcast</span>
+<span class="c1">// by ourselves.</span>
+<span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Closing channel!&quot;</span><span class="o">);</span>
+<span class="n">client</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</code></pre></div>
+
+  <p>So we send 1 bitcent every half a second, and then when we’re done we close the channel.</p>
+
+  <h2 id="choosing-channel-parameters">Choosing channel parameters</h2>
+
+  <p>To build a payment channel you have to choose a few parameters, notably, how much money you should lock up. Note that on the client side you specify a maximum, and then the server requests the actual amount it is willing to accept in a single channel, so there’s no guarantee the total amount the client side specifies will end up in a multi-signature contract. There’s no hard and fast rule around what to pick here, it depends on what your app’s users are willing to tolerate.</p>
+
+  <p>Note that the expiry period for channels is currently unconfigurable - it’s always a day.</p>
+
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>

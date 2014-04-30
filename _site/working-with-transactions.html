@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Working with transactions</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#what-is-a-transaction">What is a transaction?</a></li>
+  <li><a href="#the-transaction-class">The Transaction class</a></li>
+  <li><a href="#confidence-levels">Confidence levels</a>    <ul>
+      <li><a href="#understanding-difficulty-and-confidence">Understanding difficulty and confidence</a></li>
+    </ul>
+  </li>
+  <li><a href="#how-transactions-can-be-used">How transactions can be used</a>    <ul>
+      <li><a href="#direct-transfer">Direct transfer</a></li>
+      <li><a href="#participation-in-contracts">Participation in contracts</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="working-with-transactions">Working with transactions</h1>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <p>Transactions are the fundamental atoms of the Bitcoin protocol. They encapsulate a claim upon some value, and the conditions needed for that value to itself later be claimed.</p>
+
+  <p>This article will discuss:</p>
+
+  <ul>
+    <li>What a transaction is</li>
+    <li>The Transaction class and what it gives you</li>
+    <li>Transaction confidences</li>
+    <li>Different ways in which transactions can be used</li>
+  </ul>
+
+  <h2 id="what-is-a-transaction">What is a transaction?</h2>
+
+  <p>Transactions are, at heart, a collection of <em>inputs</em> and <em>outputs</em>. They also have a lock time, which is not used in the current Bitcoin network, and a few bits of metadata only represented in bitcoinj like when the transaction was last seen and a confidence measurement. All this is represented using the <code>Transaction</code> class.</p>
+
+  <p>An output is a data structure specifying a <em>value</em> and a <em>script</em>, conventionally called the <em>scriptPubKey</em>. An output allocates some of the value gathered by the transactions inputs to a particular program. Anyone who can satisfy the program (make it return true) is allowed to claim that outputs value in their own transaction. Output scripts most often check signatures against public keys, but they can do many other things.</p>
+
+  <p>An input is a data structure that contains a <em>script</em>, which in practice is just a list of byte arrays, and an <em>outpoint</em>, which is a reference to an output of another transaction. Because Bitcoin identifies transactions by their hash, an outpoint is therefore a (hash, index) pair in which the index simply identifies which output in the given transaction is intended. We say the input is <em>connected</em> to an output. Input scripts, conventionally called <em>scriptSigs</em> can theoretically contain any script opcodes, but because the programs are run with no input there is little point in doing that, therefore, real input scripts only ever push constants like signatures and keys onto the stack.</p>
+
+  <p>Inputs also contain <em>sequence numbers</em>. Sequence numbers are not currently used on the Bitcoin network and are not exposed by bitcoinj. They exist to support <a href="https://en.bitcoin.it/wiki/Contracts">contracts</a>.</p>
+
+  <p>The mismatch, if any, between the value gathered by a transactions inputs and spent by its outputs is called the <em>fee</em>. Obviously, a transaction that has more value in its outputs than gathered by its inputs is considered invalid, but the reverse is not true. Value not re-allocated can be legitimately claimed by whoever successfully mines a block containing that transaction.</p>
+
+  <p>Note that an input does not contain a value field. To find the value of an input, you must check the value of its connected output. That implies that given a standalone transaction, you cannot know what its fee is, unless you also have all of the transactions its inputs connect to.</p>
+
+  <p>Transactions can be serialized and either broadcast across the P2P network, in which case miners may start trying to include it in a block, or passed around outside the network using other protocols.</p>
+
+  <h2 id="the-transaction-class">The Transaction class</h2>
+
+  <p>The <code>Transaction</code> class lets you deserialize, serialize, build and inspect transactions. It also helps you track interesting metadata about a transaction such as which blocks (if any) it has been included in, and how much confidence you can have that the transaction won’t be reversed/double spent.</p>
+
+  <p>Inputs are represented with the <code>TransactionInput</code> class, and outputs are of course handled by the <code>TransactionOutput</code> class. Inputs can be unsigned, in which case the transaction won’t be considered valid by the network, but the intermediate state can be useful to work with sometimes.</p>
+
+  <p><strong>Common tasks</strong>:</p>
+
+  <ol>
+    <li>Access inputs and outputs using getInputs(), getOutputs(), addInput() and addOutput(). Note that addInput() has two forms, one which takes a <code>TransactionInput</code> - logical enough. The other takes a <code>TransactionOutput</code>, and will create an unsigned input for you that connects to that output.</li>
+    <li>Sign the transactions inputs with <code>signInputs()</code>. Currently you must always pass <code>SigHash.ALL</code> as the first parameter. Other types of <code>SigHash</code> flags will become supported in future. They are used for contracts. This method also requires a wallet that contains the keys used by the inputs connected outputs. If you don’t have the private keys, then obviously you cannot claim the value.</li>
+    <li>Find which blocks the transaction appears in using <code>getAppearsInHashes()</code>. Because the transaction only stores the hashes of the block headers, you may need to use a populated <code>BlockStore</code> to get the block data itself.</li>
+    <li>Learn about the state of the transaction in the chain using <code>getConfidence</code>. This returns a <code>TransactionConfidence</code> object representing various bits of data about when and where the transaction was included into the block chain.</li>
+  </ol>
+
+  <h2 id="confidence-levels">Confidence levels</h2>
+
+  <p>A transaction has an associated <em>confidence</em>. This is data you can use to calculate the probability of the transaction being reversed (double spent). This is always a risk in Bitcoin although at high network speeds, the probability becomes extremely low, certainly relative to traditional payment systems.</p>
+
+  <p>Confidence is modelled with the <code>TransactionConfidence</code> object. You can get one by calling <code>Transaction.getConfidence()</code>. Confidence data does not exist in Bitcoin serialization, but will survive Java and protobuf serialization. </p>
+
+  <p>A confidence object has one of several states:</p>
+
+  <ul>
+    <li>If <strong>BUILDING</strong>, then the transaction is included in the best chain and your confidence in it is increasing.</li>
+    <li>If <strong>PENDING</strong>, then the transaction is unconfirmed and should be included shortly as long as it is being broadcast from time to time and is considered valid by the network. A pending transaction will be announced if the containing wallet has been attached to a live <code>PeerGroup</code> using <code>PeerGroup.addWallet()</code>. You can estimate how likely the transaction is to be included by measuring how many nodes announce it after sending it to one peer, using <code>TransactionConfidence.numBroadcastPeers()</code>. Or if you saw it from a trusted peer, you can assume it’s valid and will get mined sooner or later as well. </li>
+    <li>If <strong>DEAD</strong>, then it means the transaction won’t confirm unless there is another re-org, because some other transaction is spending one of its inputs. Such transactions should be alerted to the user so they can take action, eg, suspending shipment of goods if they are a merchant.</li>
+    <li><strong>UNKNOWN</strong> is used if we have no information about the confidence of this transaction, because for example it has been deserialized from a Bitcoin structure but not broadcast or seen in the chain yet. UNKNOWN is the default state.</li>
+  </ul>
+
+  <p>The confidence type, available via <code>TransactionConfidence.getConfidenceType()</code>, is a general statement of the transactions state. You can get a more precise view using getters on the object. For example, in the <code>BUILDING</code> state, <code>getDepthInBlocks()</code> should tell you how deeply buried the transaction is, in terms of blocks. The deeper it is buried in the chain, the less chance you have of the transaction being reversed.</p>
+
+  <p>Depth in blocks is easy to understand and roughly corresponds to how long the transaction has been confirmed for (1 block == 10 minutes on average). However, this is not a stable measure of how much effort it takes to reverse a transaction because the amount of <em>work done</em> on a block varies over time, depending on how much mining is happening, which itself depends on the exchange rate (vs the dollar/euro/etc). You can get a better idea of how hard it is to reverse a transaction using <code>getWorkDone()</code> which will tell you the estimated number of hashes done on top of a transaction (the precise number of course cannot be known as it depends on chance).</p>
+
+  <h3 id="understanding-difficulty-and-confidence">Understanding difficulty and confidence</h3>
+
+  <p>The most common reason you are interested in confidence is you wish to measure the risk of losing money that was sent to you, for example, to delay dispatching of goods or provision of services. The Bitcoin community uses a rule of thumb of zero confirmations for things that aren’t of much value like MP3s or ebooks, one or two blocks for things (10-20 minutes) for things that stand a risk of a double spend attack, or 6 blocks (an hour) for where rock solid certainty is required, like with currency exchanges.</p>
+
+  <p>In practice, reports of merchants suffering double-spend fraud are rare so this discussion is somewhat theoretical.</p>
+
+  <p>You’ll notice that the rules of thumb quoted above are expressed as blocks, not work done. So if the exchange rate and thus mining falls, 2 blocks provides less assurance than before, meaning you may wish to wait longer. Conversely if the exchange rate rises, mining activity will increase, meaning you can wait less time before a transaction is valid, resulting in happier customers. This is why we also provide a way to measure confidence as work done.</p>
+
+  <h2 id="how-transactions-can-be-used">How transactions can be used</h2>
+
+  <p>The most common and obvious way to use transactions is to:</p>
+
+  <ol>
+    <li>Download them into your wallet from the block chain or network broadcasts</li>
+    <li>Create spends and then broadcast them</li>
+  </ol>
+
+  <p>However there are many other possibilities.</p>
+
+  <h3 id="direct-transfer">Direct transfer</h3>
+
+  <p>It’s possible to send someone money by directly giving them a transaction, which they can then broadcast at their leisure, or further modify. These use cases aren’t well supported today, but in future may become a common way to use Bitcoin.</p>
+
+  <h3 id="participation-in-contracts">Participation in contracts</h3>
+
+  <p><a href="https://en.bitcoin.it/wiki/Contracts">Contracts</a> allow for a variety of low trust trades to take place, mediated by the Bitcoin network. By carefully constructing transactions with particular scripts, signatures and structures you can have low-trust dispute mediation, coins locked to arbitrary conditions (eg, futures contracts), assurance contracts, <a href="https://en.bitcoin.it/wiki/Smart_Property">smart property</a> and many other possibilities.</p>
+
+  <p>You can learn more about this topic in the article <a href="working-with-contracts">WorkingWithContracts</a>.</p>
+
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Limitations and missing features.</title>
+<link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
+<link rel="stylesheet" type="text/css" href="/css/main.css" />
+<script type="text/javascript" src="/js/main.js"></script>
+</head>
+<body>
+
+<div class="headercontainer"><div class="header">
+<a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
+<ul class="menu" id="menu">
+  <li><a href="/#introduction">Introduction</a></li>
+  <li><a href="/#getting-started">Getting started</a></li>
+  <li><a href="/#documentation">Documentation</a></li>
+  <li><a href="/#community">Community</a></li>
+</ul>
+</div></div>
+
+<div class="content">
+  <div id="toc" class="toc">
+  <div>
+
+<ul id="markdown-toc">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#bugs-and-other-problems">Bugs and other problems</a></li>
+  <li><a href="#security-issues">Security issues</a></li>
+  <li><a href="#privacy-issues">Privacy issues</a></li>
+  <li><a href="#protocol-compliance">Protocol compliance</a></li>
+  <li><a href="#micropayment-channels">Micropayment channels</a></li>
+  <li><a href="#api-warts">API warts</a></li>
+</ul>
+
+  </div>
+</div>
+
+<div class="toccontent">
+
+  <h1 id="limitations-and-missing-features">Limitations and missing features.</h1>
+
+  <h2 id="introduction">Introduction</h2>
+
+  <p><em>This page reflects git master, not the current release</em></p>
+
+  <p>bitcoinj is a work in progress, and lacks some features you probably consider important. It also has strange quirks and other issues that should be fixed, but nobody has had time to do so (there were always higher priorities).</p>
+
+  <p>A lot of these quirks persist because the primary goal of the project has always been to support SPV smartphone wallets, with other use cases being treated as secondary priorities. Hence making the Android wallet perform well has repeatedly evicted other features and refactorings.</p>
+
+  <p>For a full list, see <a href="https://code.google.com/p/bitcoinj/issues/list">the bug tracker</a>. What is listed below is a small selection of the most important limitations. Patches are always welcome.</p>
+
+  <h2 id="bugs-and-other-problems">Bugs and other problems</h2>
+
+  <ul>
+    <li>The Wallet code doesn’t scale, at all. All transactions that were ever relevant to the wallet are loaded into memory, all the time, and re-written every time the wallet is saved. This results in a simple on-disk format accessible to many kinds of apps, but has poor performance for heavy users. Also, even if spent transactions are removed, the algorithms used for selecting coins and working with unspent transactions have quadratic time complexity or worse. In time we’ll probably switch to a log structured wallet file format to solve this.</li>
+  </ul>
+
+  <h2 id="security-issues">Security issues</h2>
+
+  <ul>
+    <li>The default coin selector is not very smart, which means you can do a denial-of-service attack against anyone for whom you have an address by sending lots of tiny coins. bitcoinj will try and use them to fulfil spends and hit the size/fee limits mentioned in the previous points. Also, the wallet can only create one transaction for one spend request (like all other Bitcoin implementations). If a transaction goes over-size, you simply cannot create spends anymore unless you manually break the values required down yourself.</li>
+    <li>SPV mode vs full verification is an important topic to understand, read the <a href="/security-model">SecurityModel</a> page for more information on this.</li>
+    <li>Support for double spend detection is incomplete. Double spends are only handled in a few specific cases. General support requires upgrades to the global Bitcoin protocol.</li>
+    <li>BitcoinJ always bootstraps from DNS seeds. It does not store or use address broadcasts. That means if DNS seeds were all to go down, bitcoinj apps would stop working, and if they were compromised and started returning attacker-controlled nodes the apps would become subject to a Sybil attack (see the <a href="/security-model">SecurityModel</a> page for more information on this).</li>
+    <li>Some features, like seeing pending transactions, rely on polling your randomly selected peers. This opens up users/wallets that are relying on unconfirmed transactions to sybil attacks. In future versions we may switch to using Tor by default to resolve this.</li>
+    <li>Bouncy Castle is used for ECDSA signing by default, and this library is both slow and almost certainly vulnerable to various timing attacks. A new version of Bouncy Castle has recently become available which is faster and supports deterministic ECDSA, but we haven’t upgraded yet.</li>
+    <li>The code has not been professionally audited by security specialists and may have other, unexpected security holes (unfortunately this is true for most bitcoin related software). The library has been written for mobile wallets that don’t contain large amounts of value and that is still the primary focus.</li>
+  </ul>
+
+  <h2 id="privacy-issues">Privacy issues</h2>
+
+  <ul>
+    <li>Keys are always generated randomly, with no determinism. Thus most wallets and users default to reusing keys, which leaks private data. Work on deterministic wallets is well underway and should be be ready for the next release.</li>
+    <li>Bloom filters are always set very tightly at the moment. The reason is that the API has no notion of bandwidth modes, and no code to measure bandwidth usage and adjust FP rates to keep it within bounds. Because bitcoinj is used on a wide variety of internet connections, this work needs to be done before we can start garbling filters.</li>
+    <li>The Bloom filtering code has various bugs and obscure attacks that would allow a malicious peer to learn more about your address list than should be possible.</li>
+  </ul>
+
+  <h2 id="protocol-compliance">Protocol compliance</h2>
+
+  <ul>
+    <li>Full verification mode does not support the v2 block format (where the height is embedded in the coinbase transactions). It also may still contain chain splitting bugs. It’s experimental and should be treated as such.</li>
+  </ul>
+
+  <h2 id="micropayment-channels">Micropayment channels</h2>
+
+  <ul>
+    <li>Security issue: the Bitcoin network allows transaction malleability. With the code in 0.10, a malicious server could modify the contract tx before broadcasting it, rendering the refund useless and allowing extortion of the user.</li>
+  </ul>
+
+  <h2 id="api-warts">API warts</h2>
+
+  <ul>
+    <li><code>BigInteger</code> is used throughout the code to represent value amounts, though a long is large enough (using BigInteger is inefficient). Parts of the code refer to the smallest amount of Bitcoin possible as a “nanocoin” whereas the typical name is a “satoshi” or just “value units”. The reason is that the earliest bitcoinj code pre-dates the adoption of the term satoshi for the smallest value unit.</li>
+    <li>The <code>ECKey</code> class has many different constructors that take a mix of byte arrays and <code>BigInteger</code>s, but beyond checking the javadocs there’s no obvious way to know what each constructor does. They need to be replaced with uniform and consistent static constructor methods.</li>
+    <li>The <code>Wallet</code> class is huge and has a bunch of inner classes that could be refactored out. At some point we’ll probably move this to a separate package.</li>
+    <li>Some core objects like <code>Block</code> and <code>Transaction</code> should be immutable but aren’t. The <code>TransactionConfidence</code> objects are attached to <code>Transaction</code>, but should really be separated - this means that <code>Transaction</code> objects occasionally need to be canonicalised using an interning table and the right time to do this is often non-obvious.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+
+<script>fallbackSVG();</script>
+<script>updateToc();</script>
+
+</html>
