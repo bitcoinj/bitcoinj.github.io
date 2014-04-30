@@ -192,7 +192,7 @@ table tr.even td{
 	text-align:justify;
 	min-height:400px;
 	max-width:900px;
-	margin:100px auto 0 auto;
+	margin:100px auto 200px auto;
 }
 .content p,.content li{
 	line-height:1.5em;
