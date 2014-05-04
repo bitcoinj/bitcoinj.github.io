@@ -16,63 +16,6 @@ title: "An introduction to using the library"
 
 ##Introduction
 
-{% highlight python %}
-##     Details automatically derivable from      ##
-## payment variables and configuration settings  ##
-
-## (Required) PaymentRequests must indicate when they were created
-## in number of seconds elapsed since 1970-01-01T00:00 UTC (Unix
-## epoch time format).
-details.time        = int(time()) ## Current epoch (Unix) time
-
-## (Optional) The PaymentRequest may also set an expiration time after
-## which they're no longer valid. You probably want to give receivers
-## the ability to configure the expiration time delta; here we used the
-## reasonable default of 10 minutes.
-details.expires     = int(time()) + 60 * 10  ## 10 minutes from now
-
-## (Required) We've now set everything we need to create the
-## PaymentDetails, so we'll use the SerializeToString function from the
-## protocol buffer code to store the PaymetDetails in the appropriate
-## field of the PaymentRequest
-request.serialized_payment_details = details.SerializeToString()
-
-## (Required for pki_type != none) Serialize the certificate chain and
-## store it in the PaymentRequest
-request.pki_data  = x509.SerializeToString()
-
-## (Required for pki_type != none) We've filled out everything in the
-## PaymentRequest except the signature, but before we sign it, we have
-## to initialize the signature field by setting it to a zero-byte
-## placeholder.
-request.signature = ""
-
-## (Required for pki_type != none) Then make the signature by signing
-## the completed and serialized PaymentRequest. We'll use the private
-## key we stored in memory in the configuration section and the same
-## hashing formula we specified in `pki_type` (sha256 in this case)
-request.signature = sign(private_key, request.SerializeToString(), "sha256")
-{% endhighlight %}
-
-{% highlight python %}
-## Output PaymentRequest ##
-
-## (Required) BIP71 defines the content types for PaymentRequests,
-## Payments, and PaymentACKs. We'll skip the CGI module and add the HTTP
-## headers ourselves
-print "Content-Type: application/bitcoin-paymentrequest"
-print "Content-Transfer-Encoding: binary"
-print ""
-
-## (Required) Now, to finish, we just dump out the serialized
-## PaymentRequest (which contains the serialized PaymentDetails). The
-## serialized data is in binary, so we can't use Python's print()
-## because it would add an extraneous newline.
-file.write(stdout, request.SerializeToString())
-
-#### END SAMPLE SCRIPT ####
-{% endhighlight %}
-
 _This document describes how to use the code in 0.11, git master may be slightly different_
 
 In this document we will go through the `ForwardingService` example app that comes with the distribution. When run, `ForwardingService` prints out an address and starts listening on the network. Sending coins to that address will result in them being sent onwards to an address given on the command line (minus a small fee).
