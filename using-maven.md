@@ -14,7 +14,7 @@ If your project uses Maven for its build, you can depend on bitcoinj by adding t
     <dependency>
       <groupId>com.google</groupId>
       <artifactId>bitcoinj</artifactId>
-      <version>0.11.1</version>
+      <version>0.11.2</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -37,11 +37,11 @@ This will make bitcoinj log to standard Java logging. You can also make it log t
 To get bitcoinj you can use git and check out your own copy:
 
 ~~~
-git clone https://code.google.com/p/bitcoinj/ bitcoinj
+git clone https://github.com/bitcoinj/bitcoinj.git
 cd bitcoinj
 git fetch --all
-git checkout 95abd140f016ec89e84c05b1469d57b4def7badf
+git checkout 2733004e71cca805c0615e516d9f358b9f44e502
 mvn install
 ~~~
 
-This will give you v0.11.1. If PGP is your thing, you can run `git tag -v v0.11.1` to check Andreas Schildbach's signature of the release.
+This will give you v0.11.2. If PGP is your thing, you can run `git tag -v v0.11.2` to check Andreas Schildbach's signature of the release.

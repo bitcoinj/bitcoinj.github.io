@@ -20,7 +20,7 @@ _This document describes how to use the code in 0.11, git master may be slightly
 
 In this document we will go through the `ForwardingService` example app that comes with the distribution. When run, `ForwardingService` prints out an address and starts listening on the network. Sending coins to that address will result in them being sent onwards to an address given on the command line (minus a small fee).
 
-You can [read the full program](https://code.google.com/p/bitcoinj/source/browse/examples/src/main/java/com/google/bitcoin/examples/ForwardingService.java).
+You can [read the full program](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/java/com/google/bitcoin/examples/ForwardingService.java).
 
 Note that this tutorial assumes familiarity with the basics of the Bitcoin protocol. If you aren't already familiar with the structure of the block chain and how transactions work, please read [Satoshi's white paper](https://bitcoin.org/bitcoin.pdf) before this tutorial.
 
