@@ -97,7 +97,7 @@ There are multiple separate, independent Bitcoin networks:
 
 Each network has its own genesis block, its own port number and its own address prefix bytes to prevent you accidentally trying to send coins across networks (which won't work). These facts are encapsulated into a `NetworkParameters` singleton object. As you can see, each network has its own class and you fetch the relevant `NetworkParameters` object by calling `get()` on one of those objects.
 
-It's strongly recommended that you develop your software on the testnet or using regtest mode. If you accidentally lose test coins, it's no big deal as they are valueless, and you can get lots of them for free from a [TestNet Faucet](http://testnet.mojocoin.com). Make sure to send the coins back to the faucet when you're done with them, so others can use them too.
+It's strongly recommended that you develop your software on the testnet or using regtest mode. If you accidentally lose test coins, it's no big deal as they are valueless, and you can get lots of them for free from a [TestNet Faucet](http://faucet.xeno-genesis.com/). Make sure to send the coins back to the faucet when you're done with them, so others can use them too.
 
 In regtest mode there's no public infrastructure, but you can get a new block whenever you want without having to wait for one by running `"bitcoind -regtest setgenerate true"` on the same machine as the regtest mode bitcoind is running.
 
