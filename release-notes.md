@@ -18,14 +18,42 @@ title: "Release notes"
 
 _0.12 is not out yet, this section reflects changes in git master_
 
-Upcoming work includes HD wallets, addr broadcast usage!
-
-* Integrated Tor mode using the Orchid library. The user does not have to install the Tor client as it's all pure Java.
-* Reject messages are now deserialized, though not yet exposed in the API.
+* Multiple privacy enhancements:
+  * Wallets are now hierarchical and deterministic (HD) by default, using the BIP32 specification. This is a big change.
+  * Integrated Tor mode using the Orchid library. The user does not have to install the Tor client as it's all pure Java. WalletAppKit users can enable usage of Tor with a single line of code. However please be aware that Orchid is known to contain deadlocks, so this support should be considered experimental for now.
+  * Transaction outputs are now shuffled.
+* Reject messages are now deserialized and logged, though not yet exposed in the API.
 * Upgraded to Guava 16 and Bouncy Castle 1.50
 * Thanks to Peter Dettman and the rest of the Bouncy Castle team, bitcoinj now uses deterministic ECDSA for signing.
 * Payment protocol code improvements:  Some X.509 utility code was refactored out of PaymentSession for general usage. StartCom was added to the default trust store which was promoted to override the system trust store on non-Android platforms. 
+* Thanks to Andreas Schildbach:
+  * We are now BIP62 (canonical push encodings) compliant.
+  * A new Coin class replaces usage of BigInteger for marking values that are quantities of bitcoin.
+  * The wallet now saves the fee paid on transactions we calculated ourselves. This is useful for putting it into a wallet user interface.
+* Added new DNS seed from Addy Yeow.
+* Wallets can now have string->byte[] mappings attached to them, for lighter weight extensions.
 * Many bugfixes, minor tweaks and small new APIs.
+
+API changes:
+
+* Wallet.completeTx now throws more precise unchecked exceptions in edge cases, instead of IllegalArgumentException.
+* The use of BigInteger to represent quantities of Bitcoin has been replaced with the more efficient, type safe and useful class Coin. Coin is mostly source compatible with BigInteger so you can probably just do a search and replace to update your codebase.
+* NetworkParameters.getProofOfWorkLimit was renamed to getMaxTarget for consistency with other Bitcoin codebases.
+* The library no longer uses the misleading term "nanocoins" to mean satoshis (the old term predated the use of the word satoshi to describe the smallest possible amount of bitcoin).
+* The ECKey API has changed quite a bit: several constructors were replaced with clearer static factory methods that make it more obvious how their parameters are interpreted. The new methods don't change their behaviour depending on the pattern of nulls passed into them.
+* Some unit testing utilities have been moved to the new testing subpackage and cleaned up/rearranged. It should be easier to write unit tests for your app that need a simulated network now.
+
+##Version 0.11.3
+
+This is a bugfix release.
+
+* Various fixes to Bloom filtering for failures that could occur in rare edge cases.
+* A fix for transactions that are dropped by risk analysis and then later confirmed.
+* Fix wallet autosaving on Windows.
+* Minor security fix for non-ncaonical block difficulty encodings. Thanks to Sergio Damian Lerner for the report.
+* DNS seeds update
+* Now throws a transaction if a BIP70 payment request doesn't match the expected network params.
+* A few other small misc changes.
 
 ##Version 0.11.2
 

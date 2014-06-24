@@ -14,7 +14,7 @@ If your project uses Maven for its build, you can depend on bitcoinj by adding t
     <dependency>
       <groupId>com.google</groupId>
       <artifactId>bitcoinj</artifactId>
-      <version>0.11.2</version>
+      <version>0.11.3</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
