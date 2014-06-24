@@ -28,7 +28,7 @@ Note that this tutorial assumes familiarity with the basics of the Bitcoin proto
 
 ###A health warning
 
-This API is not like other libraries. A Bitcoin library allows you to directly handle money, possibly large sums of other people's money. It is important to understand the following. **After completing this tutorial you are NOT qualified to write production applications**. You will have a flavor of how to write applications, but Bitcoin is a subtle and complex system.
+This library is not like other libraries. A Bitcoin API allows you to directly handle money, possibly large sums of other people's money. It is important to understand the following. **After completing this tutorial you are NOT qualified to write production applications**. You will have a flavor of how to write applications, but Bitcoin is a subtle and complex system.
 
 **FAILURE TO UNDERSTAND WHAT YOU ARE DOING CAN CAUSE MONEY TO BE STOLEN OR PERMANENTLY DESTROYED**
 
@@ -42,7 +42,7 @@ bitcoinj uses Maven as its build system and is distributed via git. There are so
 
 To get the code and install it, grab Maven from [the Maven website](http://maven.apache.org), and add it to your path. Also make sure you have git installed. Probably your Java IDE has some Maven and Git integration too, but having them available via the command line is still very useful.
 
-Now get the latest version of the code. You can use the instructions on the [UsingMaven](/using-maven) page - just run the commands there and you'll get the right version of the code (unless this website is itself compromised). This is intended to protect against compromised mirrors or source downloads - because git works using source tree hashes, if you get a source hash in the right manner, you are guaranteed to end up with the right code.
+Now get the latest version of the code. You can use the instructions on the [Using Maven](/using-maven) page - just run the commands there and you'll get the right version of the code (unless this website is itself compromised). This is intended to protect against compromised mirrors or source downloads - because git works using source tree hashes, if you get a source hash in the right manner, you are guaranteed to end up with the right code.
 
 ##Basic structure
 
@@ -116,7 +116,7 @@ Because an address encodes the network for which the key is intended to be used,
 
 ##Wallet app kit
 
-bitcoinj consists of various layers, each of which operates at a lower level than the last. A typical application that wants to send and receive money needs at least a `BlockChain`, a `BlockStore`, a `PeerGroup` and a `Wallet`. All those objects need to be connected to each other so data flows correctly. Read [HowThingsFitTogether](/how-things-fit-together) for more information on how data flows through a bitcoinj based application.
+bitcoinj consists of various layers, each of which operates at a lower level than the last. A typical application that wants to send and receive money needs at least a `BlockChain`, a `BlockStore`, a `PeerGroup` and a `Wallet`. All those objects need to be connected to each other so data flows correctly. Read ["How things fit together"](/how-things-fit-together) for more information on how data flows through a bitcoinj based application.
 
 To simplify this process, which often amounts to boilerplate, we provide a high level wrapper called `WalletAppKit`. It configures bitcoinj in _simplified payment verification_ mode (as opposed to full verification), which is the most appropriate mode to choose at this time unless you are an expert and wish to experiment with the (incomplete, likely buggy) full mode. It provides a few simple properties and hooks to let you modify the default configuration.
 
@@ -155,7 +155,7 @@ Next up, we check if we're using regtest mode. If we are, then we tell the kit t
 
 Finally, we call `kit.startAndWait()`. `WalletAppKit` is a [Guava Service](https://code.google.com/p/guava-libraries/wiki/ServiceExplained). Guava is a widely used utility library from Google that augments the standard Java library with some useful additional features. A service is an object that can be started and stopped (but only once), and you can receive callbacks when it finishes starting up or shutting down. You can also just block the calling thread until it's started, which is what we do here.
 
-The `WalletAppKit` will consider itself started when the block chain has been fully synced, which can sometimes take a while. You can read [SpeedingUpChainSync](/speeding-up-chain-sync) to learn how to make this process faster, but for a toy demo app it's not needed to implement any extra optimisations.
+The `WalletAppKit` will consider itself started when the block chain has been fully synced, which can sometimes take a while. You can [learn about how to make this faster](/speeding-up-chain-sync), but for a toy demo app it's not needed to implement any extra optimisations.
 
 The kit has accessors on it that give access to the underlying objects it configures. You can't call these (they will assert) until the class is either started or in the process of starting up, because the objects would not be created.
 
@@ -259,13 +259,13 @@ Every transaction has a confidence object associated with it. The notion of _con
 
 _Confidence objects_ contain data we can use to make risk based decisions about how likely we are to have actually received money. They can also help us learn when confidence changes or reaches a certain threshold.
 
-_Futures_ are an important concept in concurrent programming and bitcoinj make heavy use of them, in particular, we use the Guava extension to the standard Java `Future` class, which is called [ListenableFuture](https://code.google.com/p/guava-libraries/wiki/ListenableFutureExplained). A `ListenableFuture` represents the result of some future calculation or state. You can wait for it to complete (blocking the calling thread), or register a callback that will be invoked. Futures can also fail, in which case you get back an exception instead of a result.
+_Futures_ are an important concept in concurrent programming and bitcoinj makes heavy use of them, in particular, we use the Guava extension to the standard Java `Future` class, which is called [ListenableFuture](https://code.google.com/p/guava-libraries/wiki/ListenableFutureExplained). A `ListenableFuture` represents the result of some future calculation or state. You can wait for it to complete (blocking the calling thread), or register a callback that will be invoked. Futures can also fail, in which case you get back an exception instead of a result.
 
 Here we request a _depth future_. This future completes when a transaction is buried by at least that many blocks in the chain. A depth of one means it appeared in the top block in the chain. So here, we're saying "run this code when the transaction has at least one confirmation". Normally you'd use a utility method called `Futures.addCallback`, although there is another way to register listeners as well which can be seen in the code snippet below.
 
 Then we just invoke a method we define ourselves called `forwardCoins` when the transaction that sends us money confirms.
 
-There's an important thing to note here. It's possible for a depth future to run, and then the depth of a transaction changes to be less than the future's parameter. This is because at any time the Bitcoin network may undergo a "reorganisation", in which the best known chain switches from one to another. If your transaction appears in the new chain at a different place, the depth may actually go down instead of up. When processing an inbound payment, you should ensure that if a transaction's confidence goes down, you try to abort whatever service you were providing for that money. You can learn more about this topic by reading up on the bitcoinj [SecurityModel](/security-model).
+There's an important thing to note here. It's possible for a depth future to run, and then the depth of a transaction changes to be less than the future's parameter. This is because at any time the Bitcoin network may undergo a "reorganisation", in which the best known chain switches from one to another. If your transaction appears in the new chain at a different place, the depth may actually go down instead of up. When processing an inbound payment, you should ensure that if a transaction's confidence goes down, you try to abort whatever service you were providing for that money. You can learn more about this topic by reading up on the [SPV security model](/security-model).
 
 Handling of re-orgs and double spends is a complex topic that is not covered in this tutorial. You can learn more by reading the other articles.
 
