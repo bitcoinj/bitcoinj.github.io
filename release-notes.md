@@ -18,9 +18,9 @@ title: "Release notes"
 
 _0.12 is not out yet, this section reflects changes in git master_
 
-* Multiple privacy enhancements:
-  * Wallets are now hierarchical and deterministic (HD) by default, using the BIP32 specification. This is a big change.
-  * Integrated Tor mode using the Orchid library. The user does not have to install the Tor client as it's all pure Java. WalletAppKit users can enable usage of Tor with a single line of code. However please be aware that Orchid is known to contain deadlocks, so this support should be considered experimental for now.
+* Privacy enhancements:
+  * Wallets are now hierarchical and deterministic (HD) by default, using the BIP32 specification. Support for mnemonic codes (BIP 39) is also included. Change and receive addresses are no longer being reused. Old wallets are upgraded in place using the private key of the oldest non-rotating key as the seed bytes, so old backups remain valid.
+  * Integrated Tor mode using the Orchid library. The user does not have to install the Tor client as it's all pure Java. WalletAppKit users can enable usage of Tor with a single line of code. However please be aware that Orchid is known to contain bugs, so this support should be considered experimental for now.
   * Transaction outputs are now shuffled.
 * Thanks to Kosta Korenkov, we have the start of a "married wallet" implementation. Married wallets are multi-sig HD wallets that are connected to a third party risk analysis service or device. When married, the wallet tracks two BIP32 key trees, keeps them in sync and starts vending P2SH addresses. The current implementation is however not complete: a wallet can be married but the standard spend/tx creation API will then break, as it doesn't know how to fetch the second signature.
 * Reject messages are now deserialized and logged, though not yet exposed in the API.
