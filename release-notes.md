@@ -44,6 +44,7 @@ API changes:
 * The ECKey and HD API's have changed quite a bit: several constructors were replaced with clearer static factory methods that make it more obvious how their parameters are interpreted. The new methods don't change their behaviour depending on the pattern of nulls passed into them.
 * Some unit testing utilities have been moved to the new testing subpackage and cleaned up/rearranged. It should be easier to write unit tests for your app that need a simulated network now. DeterministicKey now derives from ECKey.
 * We now use Utils.HEX.encode() and Utils.HEX.decode() to do translation to and from base 16.
+* `Transaction.hashTransactionForSignature` was renamed to just `hashForSignature`s
 
 ##Version 0.11.3
 

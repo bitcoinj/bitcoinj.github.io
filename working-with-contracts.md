@@ -24,7 +24,10 @@ In this article, we'll look at a few common techniques that are used when implem
 
 ##Creating multi-signature outputs
 
-Contracts very often use multi-signature outputs in order to allocate value to a group of users ... typically, the participants in the contract protocol. Multi-signature outputs are easy to create with bitcoinj. Let's see how to do it:
+Contracts very often use multi-signature outputs in order to allocate value to a group of users ... typically, the participants in the contract protocol. Multi-signature outputs are easy to create with bitcoinj. For the next few examples, we will _not_ be using P2SH (pay to script hash),
+so the set of keys chosen won't be representable as a 3... type address. We'll learn more about P2SH at the end.
+
+Let's see how to do it:
 
 {% highlight java %}
 // Create a random key.
@@ -123,5 +126,11 @@ As you can see, the process involves building a transaction that spends the firs
 ##Other SIGHASH modes
 
 You can specify alternative SIGHASH modes to control what is signed and how the other parties can modify the transaction without breaking your signature. These modes are documented on the contracts page linked to above. However, please note that the API for this is likely to change a bit in future.
+
+##P2SH (pay to script hash)
+
+Many kinds of application that use contracts don't need to expose their inner workings to end users, because they can use custom protocols to move the necessary data around instead. But if you want to represent a complex script in a form that a regular wallet can send to, you can create a P2SH address. This looks a bit like a regular Bitcoin address but instead of encoding the hash of a public key, it encodes the hash of a complete script. A P2SH output includes a special kind of non-script which is pattern matched and special rules applied instead of being executed as normal. The scriptSig of the spending input then includes both the "real" scriptPubKey, which must hash to the value in the output, and the inputs to the so-called redeem script.
+
+There are utility methods for creating P2SH style scripts using the `ScriptBuilder` class. When signing for a P2SH output, you should pass the redeem script (not the P2SH scriptPubKey) to `Transaction.hashTransactionForSignature`.
 
 </div>
