@@ -20,8 +20,6 @@ If your project uses Maven for its build, you can depend on bitcoinj by adding t
   </dependencies>
 {% endhighlight %}
 
-Currently you will have to install bitcoinj into your local repo yourself, as it's not yet in Maven Central.
-
 And if you want logging, you can also add
 
 {% highlight xml %}
@@ -34,14 +32,14 @@ And if you want logging, you can also add
 
 This will make bitcoinj log to standard Java logging. You can also make it log to log4j, Android logging, stderr, and other things. Check out the SLF4J framework to learn more.
 
-To get bitcoinj you can use git and check out your own copy:
+To get the source you can also use git and check out your own copy:
 
 ~~~
 git clone https://github.com/bitcoinj/bitcoinj.git
 cd bitcoinj
 git fetch --all
-git checkout 2733004e71cca805c0615e516d9f358b9f44e502
+git checkout 6ec53fc19bf5675088eb613d0659df2a358695cd
 mvn install
 ~~~
 
-This will give you v0.11.2. If PGP is your thing, you can run `git tag -v v0.11.2` to check Andreas Schildbach's signature of the release.
+This will give you v0.11.3. If PGP is your thing, you can run `git tag -v v0.11.3` to check Andreas Schildbach's signature of the release.

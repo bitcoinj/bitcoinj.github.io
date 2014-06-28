@@ -41,8 +41,8 @@ API changes:
 * The use of BigInteger to represent quantities of Bitcoin has been replaced with the more efficient, type safe and useful class Coin. Coin is mostly source compatible with BigInteger so you can probably just do a search and replace to update your codebase. Utils.bitcoinValueToFriendlyString and friends moved to CoinFormat.
 * NetworkParameters.getProofOfWorkLimit was renamed to getMaxTarget for consistency with other Bitcoin codebases.
 * The library no longer uses the misleading term "nanocoins" to mean satoshis (the old term predated the use of the word satoshi to describe the smallest possible amount of bitcoin).
-* The ECKey API has changed quite a bit: several constructors were replaced with clearer static factory methods that make it more obvious how their parameters are interpreted. The new methods don't change their behaviour depending on the pattern of nulls passed into them.
-* Some unit testing utilities have been moved to the new testing subpackage and cleaned up/rearranged. It should be easier to write unit tests for your app that need a simulated network now.
+* The ECKey and HD API's have changed quite a bit: several constructors were replaced with clearer static factory methods that make it more obvious how their parameters are interpreted. The new methods don't change their behaviour depending on the pattern of nulls passed into them.
+* Some unit testing utilities have been moved to the new testing subpackage and cleaned up/rearranged. It should be easier to write unit tests for your app that need a simulated network now. DeterministicKey now derives from ECKey.
 * We now use Utils.HEX.encode() and Utils.HEX.decode() to do translation to and from base 16.
 
 ##Version 0.11.3
