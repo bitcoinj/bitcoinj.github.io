@@ -20,20 +20,6 @@ If your project uses Maven for its build, you can depend on bitcoinj by adding t
   </dependencies>
 {% endhighlight %}
 
-Currently you will have to install bitcoinj into your local repo yourself, as it's not yet in Maven Central.
-
-And if you want logging, you can also add
-
-{% highlight xml %}
-  <dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-jdk14</artifactId>
-    <version>1.6.4</version>
-  </dependency>
-{% endhighlight %}
-
-This will make bitcoinj log to standard Java logging. You can also make it log to log4j, Android logging, stderr, and other things. Check out the SLF4J framework to learn more.
-
 To get bitcoinj you can use git and check out your own copy:
 
 ~~~
