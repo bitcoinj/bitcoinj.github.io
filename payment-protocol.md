@@ -156,7 +156,6 @@ Ideally, you would also allow the user to create payment requests too. Currently
 * On the desktop, allowing the user to drag/drop a payment request file (represent this as an icon). For example, a user could drag it onto an email compose window to attach the payment request to an email vs copy/pasting an address and amount manually. Gmail supports files being dropped onto the editor and other HTML5 apps can also accept drag/dropped data.
 * On mobile, allow the user to "share" the payment request file, this will allow the user to send it via chat apps, attach to emails, share via DropBox/Google Drive and so on.
 
-In future, once signing support becomes available, we'll make it easy for users to sign payment requests with any certificates they may have installed (and ideally, make it easy for users to sign up for them too).
 
 ##Testing
 
