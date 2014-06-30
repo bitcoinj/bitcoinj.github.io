@@ -131,7 +131,7 @@ kit = new WalletAppKit(params, new File("."), filePrefix) {
         // can do disk and network IO that may cause UI jank/stuttering in wallet apps if it were to be done
         // on the main thread.
         if (wallet().getKeychainSize() < 1)
-            wallet().addKey(new ECKey());
+            wallet().importKey(new ECKey());
     }
 };
 
@@ -177,7 +177,7 @@ The naming of these interfaces and classes is a little inconsistent and will lik
 {% highlight java %}
 kit.wallet().addEventListener(new AbstractWalletEventListener() {
     @Override
-    public void onCoinsReceived(Wallet w, Transaction tx, BigInteger prevBalance, BigInteger newBalance) {
+    public void onCoinsReceived(Wallet w, Transaction tx, Coin prevBalance, Coin newBalance) {
         // Runs in the dedicated "user thread".
     }
 });
@@ -220,12 +220,12 @@ In some cases bitcoinj can generate a large number of events very fast, this is 
 {% highlight java %}
 kit.wallet().addEventListener(new AbstractWalletEventListener() {
     @Override
-    public void onCoinsReceived(Wallet w, Transaction tx, BigInteger prevBalance, BigInteger newBalance) {
+    public void onCoinsReceived(Wallet w, Transaction tx, Coin prevBalance, Coin newBalance) {
         // Runs in the dedicated "user thread".
         //
         // The transaction "tx" can either be pending, or included into a block (we didn't see the broadcast).
-        BigInteger value = tx.getValueSentToMe(w);
-        System.out.println("Received tx for " + Utils.bitcoinValueToFriendlyString(value) + ": " + tx);
+        Coin value = tx.getValueSentToMe(w);
+        System.out.println("Received tx for " + value.toFriendlyString() + ": " + tx);
         System.out.println("Transaction will be forwarded after it confirms.");
         // Wait until it's made it into the block chain (may run immediately if it's already there).
         //
@@ -274,10 +274,10 @@ Handling of re-orgs and double spends is a complex topic that is not covered in 
 The final part of the ForwardingService is sending the coins we just received onwards.
 
 {% highlight java %}
-BigInteger value = tx.getValueSentToMe(kit.wallet());
-System.out.println("Forwarding " + Utils.bitcoinValueToFriendlyString(value) + " BTC");
+Coin value = tx.getValueSentToMe(kit.wallet());
+System.out.println("Forwarding " + value.toFriendlyString() + " BTC");
 // Now send the coins back! Send with a small fee attached to ensure rapid confirmation.
-final BigInteger amountToSend = value.subtract(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE);
+final Coin amountToSend = value.subtract(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE);
 final Wallet.SendResult sendResult = kit.wallet().sendCoins(kit.peerGroup(), forwardingAddress, amountToSend);
 System.out.println("Sending ...");
 // Register a callback that is invoked when the transaction has propagated across the network.
@@ -306,7 +306,7 @@ Transactions in Bitcoin can have fees attached. This is useful as an anti-denial
 
 {% highlight java %}
 Wallet.SendRequest req = Wallet.SendRequest.to(address, value);
-req.feePerKilobyte = Utils.toNanoCoins("0.0005");
+req.feePerKb = Coin.parseCoin("0.0005");
 Wallet.SendResult result = wallet.sendCoins(peerGroup, req);
 Transaction createdTx = result.tx;
 {% endhighlight %}

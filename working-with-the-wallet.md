@@ -32,7 +32,7 @@ A Wallet starts out its life with no keys and no transactions. To use it, you ne
 
 {% highlight java %}
 Wallet wallet = new Wallet(params);
-wallet.addKey(new ECKey());
+wallet.importKey(new ECKey());
 BlockChain chain = new BlockChain(params, wallet, ...);
 PeerGroup peerGroup = new PeerGroup(params, chain);
 peerGroup.addWallet(wallet);

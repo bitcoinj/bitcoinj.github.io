@@ -119,7 +119,7 @@ public ServerConnectionEventHandler onNewConnection(final SocketAddress clientAd
         }
 
         @Override
-        public void paymentIncrease(BigInteger by, BigInteger to) {
+        public void paymentIncrease(Coin by, Coin to) {
             log.info("Client {} paid increased payment by {} for a total of " + to.toString(), clientAddress, by);
         }
 
@@ -170,12 +170,12 @@ while (client == null) {
 The `waitForSufficientBalance` method is simple and not specific to micropayments, but we include it here for completeness:
 
 {% highlight java %}
-private void waitForSufficientBalance(BigInteger amount) {
+private void waitForSufficientBalance(Coin amount) {
     // Not enough money in the wallet.
-    BigInteger amountPlusFee = amount.add(Wallet.SendRequest.DEFAULT_FEE_PER_KB);
-    ListenableFuture<BigInteger> balanceFuture = appKit.wallet().getBalanceFuture(amountPlusFee, Wallet.BalanceType.AVAILABLE);
+    Coin amountPlusFee = amount.add(Wallet.SendRequest.DEFAULT_FEE_PER_KB);
+    ListenableFuture<Coin> balanceFuture = appKit.wallet().getBalanceFuture(amountPlusFee, Wallet.BalanceType.AVAILABLE);
     if (!balanceFuture.isDone()) {
-        System.out.println("Please send " + Utils.bitcoinValueToFriendlyString(amountPlusFee) +
+        System.out.println("Please send " + amountPlusFee.toFriendlyString() +
                 " BTC to " + myKey.toAddress(params));
         Futures.getUnchecked(balanceFuture);  // Wait.
     }
