@@ -54,7 +54,5 @@ For a full list, see [the bug tracker](https://code.google.com/p/bitcoinj/issues
 
 ##API warts
 
-* `BigInteger` is used throughout the code to represent value amounts, though a long is large enough (using BigInteger is inefficient). Parts of the code refer to the smallest amount of Bitcoin possible as a "nanocoin" whereas the typical name is a "satoshi" or just "value units". The reason is that the earliest bitcoinj code pre-dates the adoption of the term satoshi for the smallest value unit. (_note: bitcoinj in git master/0.12 does not have this problem_)
-* The `ECKey` class has many different constructors that take a mix of byte arrays and `BigInteger`s, but beyond checking the javadocs there's no obvious way to know what each constructor does. They need to be replaced with uniform and consistent static constructor methods. (_note: bitcoinj in git master/0.12 does not have this problem_)
 * The `Wallet` class is huge and has a bunch of inner classes that could be refactored out. At some point we'll probably move this to a separate package.
 * Some core objects like `Block` and `Transaction` should be immutable but aren't. The `TransactionConfidence` objects are attached to `Transaction`, but should really be separated - this means that `Transaction` objects occasionally need to be canonicalised using an interning table and the right time to do this is often non-obvious.

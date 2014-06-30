@@ -76,7 +76,7 @@ In practice, the above process of creating keys manually, creating a CSR, upload
 
 ##The payment protocol API in bitcoinj
 
-In 0.11 the payment protocol support in bitcoinj is limited. It supports everything needed for basic support in wallet apps for consuming payment requests. However, it does not support creating signed payment requests as a merchant would or storing them in the wallet for future reference i.e. storing receipts in the wallet is not supported. Nor does bitcoinj take advantage of the opportunity to submit multiple independent transactions to a recipient for merge avoidance purposes.
+In 0.12 the payment protocol support in bitcoinj is limited. It supports everything needed for basic support in wallet apps for signing and consuming payment requests. However, it does not support storing them in the wallet for future reference. Nor does bitcoinj take advantage of the opportunity to submit multiple independent transactions to a recipient for merge avoidance purposes.
 
 Despite that, here's a demo of how we can use the new functionality.
 
@@ -94,7 +94,7 @@ if (url.startsWith("http")) {
 PaymentSession session = future.get();    // may throw PaymentRequestException.
 
 String memo = session.getMemo();
-BigInteger amountWanted = session.getValue();
+Coin amountWanted = session.getValue();
 
 if (session.isExpired()) {
     showUserErrorMessage();
@@ -151,12 +151,10 @@ If writing a wallet app, you should register to handle bitcoin URIs, and you sho
 
 By doing this, you ensure your app can handle payment requests attached to emails, sent via IM apps and so on.
 
-Ideally, you would also allow the user to create payment requests too. Currently bitcoinj has no support for signing these, but it's likely to get support in future. The `PaymentRequest` message can have a pki_type of "none" so it's valid to create such files. For a simple user experience, we suggest:
+Ideally, you would also allow the user to create payment requests too. The `PaymentRequest` message can have a pki_type of "none" so it's valid to create such files. For a simple user experience, we suggest:
 
 * On the desktop, allowing the user to drag/drop a payment request file (represent this as an icon). For example, a user could drag it onto an email compose window to attach the payment request to an email vs copy/pasting an address and amount manually. Gmail supports files being dropped onto the editor and other HTML5 apps can also accept drag/dropped data.
 * On mobile, allow the user to "share" the payment request file, this will allow the user to send it via chat apps, attach to emails, share via DropBox/Google Drive and so on.
-
-In future, once signing support becomes available, we'll make it easy for users to sign payment requests with any certificates they may have installed (and ideally, make it easy for users to sign up for them too).
 
 ##Testing
 
