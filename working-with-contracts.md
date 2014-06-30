@@ -41,7 +41,7 @@ List<ECKey> keys = ImmutableList.of(clientKey, serverKey);
 // Create a 2-of-2 multisig output script.
 Script script = ScriptBuilder.createMultiSigOutputScript(2, keys);
 // Now add an output for 0.50 bitcoins that uses that script.
-BigInteger amount = Utils.toNanoCoins(0, 50);
+Coin amount = Coin.valueOf(0, 50);
 contract.addOutput(amount, script);
 
 // We have said we want to make 0.5 coins controlled by us and them.
@@ -79,7 +79,7 @@ TransactionOutput multisigOutput = contract.getOutput(0);
 Script multisigScript = multisigOutput.getScriptPubKey();
 // Is the output what we expect?
 checkState(multisigScript.isSentToMultiSig());
-BigInteger value = multisigOutput.getValue();
+Coin value = multisigOutput.getValue();
 
 // OK, now build a transaction that spends the money back to the client.
 Transaction spendTx = new Transaction(params);

@@ -76,7 +76,7 @@ In practice, the above process of creating keys manually, creating a CSR, upload
 
 ##The payment protocol API in bitcoinj
 
-In 0.11 the payment protocol support in bitcoinj is limited. It supports everything needed for basic support in wallet apps for consuming payment requests. However, it does not support creating signed payment requests as a merchant would or storing them in the wallet for future reference i.e. storing receipts in the wallet is not supported. Nor does bitcoinj take advantage of the opportunity to submit multiple independent transactions to a recipient for merge avoidance purposes.
+In 0.12 the payment protocol support in bitcoinj is limited. It supports everything needed for basic support in wallet apps for consuming payment requests. However, it does not support creating signed payment requests as a merchant would or storing them in the wallet for future reference i.e. storing receipts in the wallet is not supported. Nor does bitcoinj take advantage of the opportunity to submit multiple independent transactions to a recipient for merge avoidance purposes.
 
 Despite that, here's a demo of how we can use the new functionality.
 
@@ -94,7 +94,7 @@ if (url.startsWith("http")) {
 PaymentSession session = future.get();    // may throw PaymentRequestException.
 
 String memo = session.getMemo();
-BigInteger amountWanted = session.getValue();
+Coin amountWanted = session.getValue();
 
 if (session.isExpired()) {
     showUserErrorMessage();
