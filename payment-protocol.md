@@ -151,11 +151,10 @@ If writing a wallet app, you should register to handle bitcoin URIs, and you sho
 
 By doing this, you ensure your app can handle payment requests attached to emails, sent via IM apps and so on.
 
-Ideally, you would also allow the user to create payment requests too. Currently bitcoinj has no support for signing these, but it's likely to get support in future. The `PaymentRequest` message can have a pki_type of "none" so it's valid to create such files. For a simple user experience, we suggest:
+Ideally, you would also allow the user to create payment requests too. The `PaymentRequest` message can have a pki_type of "none" so it's valid to create such files. For a simple user experience, we suggest:
 
 * On the desktop, allowing the user to drag/drop a payment request file (represent this as an icon). For example, a user could drag it onto an email compose window to attach the payment request to an email vs copy/pasting an address and amount manually. Gmail supports files being dropped onto the editor and other HTML5 apps can also accept drag/dropped data.
 * On mobile, allow the user to "share" the payment request file, this will allow the user to send it via chat apps, attach to emails, share via DropBox/Google Drive and so on.
-
 
 ##Testing
 
