@@ -63,5 +63,10 @@ _Bitcoin improvement proposals_ are the communities way of standardising new ext
 <td align="left">Payment protocol</td>
 <td align="left"><a href="http://plan99.net/~mike/bitcoinj/current/com/google/bitcoin/protocols/payments/PaymentSession.html">PaymentSession</a></td>
 </tr>
+<tr class="even">
+<td align="left">38</td>
+<td align="left">Encrypted private key serialization</td>
+<td align="left"><a href="http://plan99.net/~mike/bitcoinj/current/com/google/bitcoin/crypto/BIP38PrivateKey.html">BIP38PrivateKey</a></td>
+</tr>
 </tbody>
 </table>
