@@ -69,7 +69,7 @@ A confidence object has one of several states:
 
 The confidence type, available via `TransactionConfidence.getConfidenceType()`, is a general statement of the transactions state. You can get a more precise view using getters on the object. For example, in the `BUILDING` state, `getDepthInBlocks()` should tell you how deeply buried the transaction is, in terms of blocks. The deeper it is buried in the chain, the less chance you have of the transaction being reversed.
 
-Depth in blocks is easy to understand and roughly corresponds to how long the transaction has been confirmed for (1 block == 10 minutes on average). However, this is not a stable measure of how much effort it takes to reverse a transaction because the amount of _work done_ on a block varies over time, depending on how much mining is happening, which itself depends on the exchange rate (vs the dollar/euro/etc). You can get a better idea of how hard it is to reverse a transaction using `getWorkDone()` which will tell you the estimated number of hashes done on top of a transaction (the precise number of course cannot be known as it depends on chance).
+Depth in blocks is easy to understand and roughly corresponds to how long the transaction has been confirmed for (1 block == 10 minutes on average). However, this is not a stable measure of how much effort it takes to reverse a transaction because the amount of _work done_ on a block varies over time, depending on how much mining is happening, which itself depends on the exchange rate (vs the dollar/euro/etc).
 
 ###Understanding difficulty and confidence
 

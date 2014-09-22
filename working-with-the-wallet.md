@@ -28,16 +28,60 @@ This article assumes you've read Satoshi's white paper and the [WorkingWithTrans
 
 For optimal operation the wallet needs to be connected to a `BlockChain` and a `Peer` or `PeerGroup`. The block chain can be passed a Wallet in its constructor. It will send the wallet blocks as they are received so the wallet can find and extract _relevant transactions_, that is, transactions which send or receive coins to keys stored within it. The Peer/Group will send the wallet transactions which are broadcast across the network before they appear in a block.
 
-A Wallet starts out its life with no keys and no transactions. To use it, you need to add at least one key and then download the block chain, which will load the wallet up with transactions that can be analyzed and spent.
+A Wallet starts out its life with no transactions in it, and thus a balance of zero, regardless of what the block chain contains. To use it you need to download the block chain, which will load the wallet up with transactions that can be analyzed and spent.
 
 {% highlight java %}
 Wallet wallet = new Wallet(params);
-wallet.importKey(new ECKey());
 BlockChain chain = new BlockChain(params, wallet, ...);
 PeerGroup peerGroup = new PeerGroup(params, chain);
 peerGroup.addWallet(wallet);
 peerGroup.startAndWait();
 {% endhighlight %}
+
+##Getting addresses
+
+Of course, the snippet of code is fairly useless because there's no way to get money into it. You can obtain keys and addresses from the wallet with the following API calls:
+
+{% highlight java %}
+Address a = wallet.currentReceiveAddress();
+ECKey b = wallet.currentReceiveKey();
+Address c = wallet.freshReceiveAddress();
+
+assert b.toAddress(wallet.getParams()).equals(a);
+assert !c.equals(a);
+{% endhighlight %}
+
+These can then be handed out to receive payments on. The Wallet has a notion of a "current" address. This is intended for GUI wallets that wish to display an address at all times. Once the current address is seen being used, it changes to a new one. The freshReceiveKey/Address methods on the other hand always return a newly derived address.
+
+##Seeds and mnemonic codes
+
+The keys and addresses returned by these methods are derived deterministically from a seed, using the algorithms laid out in BIP 32 and BIP 39. The life of a key looks like this:
+
+1. A new Wallet object selects 128 bits of random entropy using `SecureRandom`.
+2. This randomness is transformed into a "mnemonic code"; a set of 12 words using a dictionary pre-defined by the BIP 39 standard.
+3. The string form of the 12 words is used as input to a key derivation algorithm (PBKDF2) and iterated numerous times to obtain the "seed". Note that the seed is *not* simply the original random entropy represented using words as you might expect, rather, the seed is a derivative of the UTF-8 byte sequence of the words themselves.
+4. The newly calculated seed is then split into a master private key and a "chain code". Together, these allow for iteration of a key tree using the algorithms specified in BIP 32. This algorithm exploits properties of elliptic curve mathematics to allow the public keys in a sequence to be iterated without having access to the equivalent private keys, which is very useful for vending addresses without needing the wallet to be decrypted if a password has been supplied. bitcoinj uses the default recommended tree structure from BIP 32.
+5. The wallet pre-calculates a set of *lookahead keys*. These are keys that were not issued by the Wallet yet via the current/freshReceiveKey APIs, but will be in future. Precalculation achieves several goals. One, it makes these APIs fast, which is useful for GUI apps that don't want to wait for potentially slow EC math to be done. Two, it allows the wallet to notice transactions being made to/from keys that were not issued yet - this can happen if the wallet seed has been cloned to multiple devices, and if the block chain is being replayed.
+
+The seed and keys that were (pre) calculated are saved to disk in order to avoid slow rederivation loops when the wallet is loaded.
+
+You can work with seeds like this:
+
+{% highlight java %}
+DeterministicSeed seed = wallet.getKeyChainSeed();
+println("Seed words are: " + Joiner.on(" ").join(seed.getMnemonicCode()));
+println("Seed birthday is: " + seed.getCreationTimeSeconds());
+
+String seedCode = "yard impulse luxury drive today throw farm pepper survey wreck glass federal";
+long creationtime = 1409478661L;
+DeterministicSeed seed = new DeterministicSeed(seedCode, null, "", creationtime);
+Wallet restoredWallet = Wallet.fromSeed(params, seed);
+// now sync the restored wallet as described below.
+{% endhighlight %}
+
+The lookahead zone plays an important role when keeping wallets synchronised together. The default zone is 100 keys in size. This means that if wallet A is cloned to wallet B, and wallet A issues 50 keys of which only the last one is actually used to receive payment, wallet B will still notice that payment and move its lookahead zone such that B is tracking 150 keys in total. If wallet A handed out 120 keys and only the 110th received payment, wallet B would not notice anything had happened. For this reason when trying to keep wallets in sync it's important that you have some idea of how many outstanding addresses there may be awaiting payment at any given time. The default of 100 is selected to be appropriate for consumer wallets, but in a merchant scenario you may need a larger zone.
+
+##Replaying the chain
 
 If you import non-fresh keys to a wallet that already has transactions in it, to get the transactions for the added keys you must clear the wallet (using the `clearTransactions` method) and re-download the chain. Currently, there is no way to replay the chain into a wallet that already has transactions in it and attempting to do so may corrupt the wallet. This is likely to change in future. Alternatively, you could download the raw transaction data from some other source, like a block explorer, and then insert the transactions directly into the wallet. However this is currently unsupported and untested. For most users, importing existing keys is a bad idea and reflects some deeper missing feature. Talk to us if you feel a burning need to import keys into wallets regularly.
 
@@ -48,7 +92,7 @@ The Wallet works with other classes in the system to speed up synchronisation wi
 After catching up with the chain, you may have some coins available for spending:
 
 {% highlight java %}
-System.out.println("You have " + Utils.bitcoinValueToFriendlyString(wallet.getBalance()) + " BTC");
+System.out.println("You have " + Coin.FRIENDLY_FORMAT.format(wallet.getBalance()));
 {% endhighlight %}
 
 Spending money consists of four steps:
@@ -63,8 +107,8 @@ For convenience there are helper methods that do these steps for you. In the sim
 {% highlight java %}
 // Get the address 1RbxbA1yP2Lebauuef3cBiBho853f7jxs in object form.
 Address targetAddress = new Address(params, "1RbxbA1yP2Lebauuef3cBiBho853f7jxs");
-// Do the send of the coins in the background. This could throw InsufficientMoneyException.
-Wallet.SendResult result = wallet.sendCoins(peerGroup, targetAddress, Utils.toNanoCoins(1, 23));
+// Do the send of 1 BTC in the background. This could throw InsufficientMoneyException.
+Wallet.SendResult result = wallet.sendCoins(peerGroup, targetAddress, Coin.COIN);
 // Save the wallet to disk, optional if using auto saving (see below).
 wallet.saveToFile(....);
 // Wait for the transaction to propagate across the P2P network, indicating acceptance.
@@ -136,7 +180,7 @@ Transactions can have fees attached to them when they are completed by the walle
 
 There are also some fee rules in place intended to avoid cheap flooding attacks. Most notably, any transaction that has an output of value less than 0.01 coins ($1) requires the min fee which is currently set to be 10,000 satoshis (0.0001 coins or at June 2013 exchange rates about $0.01). By default nodes will refuse to relay transactions that don't meet that rule, although mining them is of course allowed. You can disable it and thus create transactions that may be un-relayable by changing `SendRequest.ensureMinRequiredFee` to false.
 
-bitcoinj will by default ensure you always attach a small fee per kilobyte to each transaction regardless of whether one is technically necessary or not. The amount of fee used depends on the size of the transaction. There are several reasons for this:
+bitcoinj will by default ensure you always attach a small fee per kilobyte to each transaction regardless of whether one is technically necessary or not. The amount of fee used depends on the size of the transaction. You can find out what fee was attached by reading the fee field of `SendRequest` after completion. There are several reasons for why bitcoinj always sets a fee by default:
 
 * Most apps were already setting a fixed fee anyway.
 * There is only 27kb in each block for free "high priority" transactions. This is a quite small amount of space which will often be used up already.
@@ -189,6 +233,77 @@ At this time `SendRequest` does not allow you to request unusual forms of signin
 
 It's a good idea to encrypt your private keys if you only spend money from your wallet rarely. The `Wallet.encrypt("password")` method will derive an AES key from an Scrypt hash of the given password string and use it to encrypt the private keys in the wallet, you can then provide the password when signing transactions or to fully decrypt the wallet. You can also provide your own AES keys if you don't want to derive them from a password, and you can also customize the Scrypt hash parameters.
 
-[Scrypt](http://www.tarsnap.com/scrypt.html) is a hash function designed to be harder to brute force at high speed than alternative algorithms. By selecting difficult parameters, a password can be made to take multiple seconds to turn into a key.
+[Scrypt](http://www.tarsnap.com/scrypt.html) is a hash function designed to be harder to brute force at high speed than alternative algorithms. By selecting difficult parameters, a password can be made to take multiple seconds to turn into a key. In the WalletTemplate application you can find code that shows how to measure the speed of the host computer and then select scrypt parameters to give encryption/decryption time of a couple of seconds.
+
+Once encrypted, you will need to provide the AES key whenever you try and sign transactions. You do this via the `SendRequest` object:
+
+{% highlight java %}
+Address a = new Address(params, "1RbxbA1yP2Lebauuef3cBiBho853f7jxs");
+Wallet.SendRequest req = Wallet.SendRequest.to(a, Coin.parseCoin("0.12"));
+req.aesKey = wallet.getKeyCrypter().deriveKey("password");
+wallet.sendCoins(req);
+{% endhighlight %}
+
+The wallet can be decrypted by using the `wallet.decrypt` method which takes either a textual password or a `KeyParameter`.
+
+Note that because bitcoinj saves wallets by creating temp files and then renaming them, private key material may still exist on disk even after encryption. Especially with modern SSD based systems deleting data on disk is rarely completely possible. Encryption should be seen as a reasonable way to raise the bar against adversaries that are not extremely sophisticated. But if someone has already gained access to their wallet file, they could theoretically also just wait for the user to type in their password and obtain the private keys this way. Encryption is useful but should not be regarded as a silver bullet.
+
+##Watching wallets
+
+A wallet can cloned such that the clone is able to follow transactions from the P2P network but doesn't have the private keys needed for spending. This arrangement is very useful and makes a lot of sense for things like online web shops. The web server can observe all payments into the shops wallet, so knows when customers have paid, but cannot authorise withdrawals from that wallet itself thus significantly reducing the risk of hacking.
+
+To create a watching wallet from another HD BIP32/bitcoinj wallet:
+
+{% highlight java %}
+Wallet toWatch = ....;
+
+DeterministicKey watchingKey = toWatch.getWatchingKey();
+
+// Get the standardised base58 encoded serialization
+System.out.println("Watching key data: " + watchingKey.serializePubB58());
+System.out.println("Watching key birthday: " + watchingKey.getCreationTimeSeconds());
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+DeterministicKey key = DeterministicKey.deserializeB58(null, "key data goes here");
+long keyBirthday = 12345678L;
+Wallet watchingWallet = Wallet.fromWatchingKey(params, key, keyBirthday);
+// now attach watchingWallet and replay the chain as normal.
+{% endhighlight %}
+
+The "watching key" in this case is the public form of the BIP32 account zero key.
+
+You can also create a wallet that watches arbitrary addresses or scripts even if you don't have the HD watching key:
+
+{% highlight java %}
+wallet.addWatchedAddress(...);
+wallet.addWatchedScripts(List.of(script, script, script));
+{% endhighlight %}
+
+##Married/multi-signature wallets and pluggable signers
+
+Starting from bitcoinj 0.12 there is some support for wallets which require multiple signers to cooperate to sign transactions. This allows the usage of a remote "risk analysis service" which may only countersign transactions if some additional authorisation has been obtained or if the transaction seems to be low risk. A wallet that requires the cooperation of a third party in this way is called a *married wallet*, because it needs the permission of its spouse to spend money :-)
+
+To marry a wallet to another one, the spouse must also be an HD wallet using the default BIP 32 tree. You must obtain the watching key of that other wallet via some external protocol (it can be retrieved as outlined above) and then do:
+
+{% highlight java %}
+DeterministicKey spouseKey = ....;
+wallet.addFollowingAccountKeys(Lists.newArrayList(spouseKey), 2);   // threshold of 2 keys, i.e. both are needed to spend.
+
+Address a = wallet.freshReceiveAddress();
+assert a.isP2SHAddress();
+{% endhighlight %}
+
+Once a wallet has a "following key" it becomes married and the API changes. You can no longer call `freshReceiveKey` or `currentReceiveKey` because those are specified to return single keys and a married wallet can only have money sent to it using pay-to-script-hash (P2SH) addresses, which start with the number 3 when written down. Instead you should use `currentReceiveAddress` and `freshReceiveAddress` exclusively.
+
+The following key HD hierarchy must match the key hierarchy used by the wallet itself. That is, it's not possible for the remote server to have a single HD key hierarchy that is shared between all users: each user must have their own key tree.
+
+The way you spend money also changes. Whilst the high level API remains the same, the Wallet will throw an exception if you try to send coins without installing a pluggable transaction signer. The reason is, whilst it knows how to sign with its own private keys, it doesn't know how to talk to the remote service and get the relevant signatures to finish things off.
+
+A pluggable transaction signer is an object that implements the `TransactionSigner` interface. It must have a no-args constructor and can provide data that will be serialized to the wallet when saved, such as authentication credentials. During setup it should be created, configured with whatever info is required to let it talk to the remote service, authenticate and obtain signatures. Once configured the `isReady` method should start returning true, and it can now be added to the wallet using the `Wallet.addTransactionSigner` method. This only has to be done once as deserialization will recreate the object using reflection and then use the `TransactionSigner.deserialize(byte[])` method to reload it.
+
+The Wallet class runs transaction signers in sequence. First comes the `LocalTransactionSigner` which knows how to use the private keys in the wallet's `KeyBag`. Then comes yours. The `TransactionSigner.signInputs(ProposedTransaction, KeyBag)` method is called and the transaction inside the `ProposedTransaction` object should have signatures fetched from the remote service and inserted as appropriate. The HD key paths to use can be retrieved from the `ProposedTransaction` object.
+
+Married wallets support is relatively new and experimental. If you do something with it, or encounter problems, let us know!
 
 </div>

@@ -18,7 +18,7 @@ _Common patterns and things you should know._
 
 ##Introduction
 
-bitcoinj  uses a few of the following design patterns throughout the code. You can look at the example code in com/google/bitcoin/examples and tools to see how to use the library.
+bitcoinj uses a few of the following design patterns throughout the code. You can look at the example code in com/google/bitcoin/examples and tools to see how to use the library.
 
 ###Futures
 

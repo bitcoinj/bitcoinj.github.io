@@ -16,8 +16,6 @@ title: "Limitations and missing features."
 
 ##Introduction
 
-_This page reflects git master, not the current release_
-
 bitcoinj is a work in progress, and lacks some features you probably consider important. It also has strange quirks and other issues that should be fixed, but nobody has had time to do so (there were always higher priorities).
 
 A lot of these quirks persist because the primary goal of the project has always been to support SPV smartphone wallets, with other use cases being treated as secondary priorities. Hence making the Android wallet perform well has repeatedly evicted other features and refactorings.
@@ -35,14 +33,12 @@ For a full list, see [the bug tracker](https://code.google.com/p/bitcoinj/issues
 * Support for double spend detection is incomplete. Double spends are only handled in a few specific cases. General support requires upgrades to the global Bitcoin protocol.
 * BitcoinJ always bootstraps from DNS seeds. It does not store or use address broadcasts. That means if DNS seeds were all to go down, bitcoinj apps would stop working, and if they were compromised and started returning attacker-controlled nodes the apps would become subject to a Sybil attack (see the [SecurityModel](/security-model) page for more information on this).
 * Some features, like seeing pending transactions, rely on polling your randomly selected peers. This opens up users/wallets that are relying on unconfirmed transactions to sybil attacks. In future versions we may switch to using Tor by default to resolve this.
-* Bouncy Castle is used for ECDSA signing by default, and this library is both slow and almost certainly vulnerable to various timing attacks. A new version of Bouncy Castle which is much faster and more robust will soon become available, and we'll upgrade at that time.
 * The code has not been professionally audited by security specialists and may have other, unexpected security holes (unfortunately this is true for most bitcoin related software). The library has been written for mobile wallets that don't contain large amounts of value and that is still the primary focus.
 
 ##Privacy issues
 
-* Keys are always generated randomly, with no determinism. Thus most wallets and users default to reusing keys, which leaks private data. (_note: bitcoinj in git master/0.12 does not have this problem_)
-* Bloom filters are always set very tightly at the moment. The reason is that the API has no notion of bandwidth modes, and no code to measure bandwidth usage and adjust FP rates to keep it within bounds. Because bitcoinj is used on a wide variety of internet connections, this work needs to be done before we can start garbling filters.
-* The Bloom filtering code has various bugs and obscure attacks that would allow a malicious peer to learn more about your address list than should be possible.
+* Bloom filters are always set very tightly at the moment. The reason is that the API has no notion of bandwidth modes, and no code to measure bandwidth usage and adjust FP rates to keep it within bounds. Additionally building chains of filters that "lie coherently" is a challenging research problem.
+* Bitcoin P2P traffic is unencrypted (this is a limitation of Bitcoin rather than bitcoinj)
 
 ##Protocol compliance
 
@@ -54,5 +50,6 @@ For a full list, see [the bug tracker](https://code.google.com/p/bitcoinj/issues
 
 ##API warts
 
-* The `Wallet` class is huge and has a bunch of inner classes that could be refactored out. At some point we'll probably move this to a separate package.
+* The `Wallet` class is huge and has a lot of functionality that could be refactored out. At some point we'll probably move this to a separate package.
 * Some core objects like `Block` and `Transaction` should be immutable but aren't. The `TransactionConfidence` objects are attached to `Transaction`, but should really be separated - this means that `Transaction` objects occasionally need to be canonicalised using an interning table and the right time to do this is often non-obvious.
+* Most objects are thread safe but thread safety isn't always documented as precisely as it could be.
