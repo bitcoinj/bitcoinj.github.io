@@ -65,6 +65,8 @@ The keys and addresses returned by these methods are derived deterministically f
 
 The seed and keys that were (pre) calculated are saved to disk in order to avoid slow rederivation loops when the wallet is loaded.
 
+The "wallet words" are intended to be easier to work with and write down than a raw private key: users can easily work with them using a pen and paper with less chance of accidentally writing things down wrong. So you're encouraged to expose the words to users as a backup mechanism (make sure they write down the date too, to speed up restore).
+
 You can work with seeds like this:
 
 {% highlight java %}
