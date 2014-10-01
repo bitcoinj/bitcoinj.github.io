@@ -26,30 +26,46 @@ title: "Release notes"
 * Payment protocol code improvements:  Some X.509 utility code was refactored out of PaymentSession for general usage. StartCom was added to the default trust store which was promoted to override the system trust store on non-Android platforms. 
 * Thanks to Andreas Schildbach:
   * We are now BIP62 (canonical push encodings) compliant.
-  * A new Coin class replaces usage of BigInteger for marking values that are quantities of bitcoin. Formatting has moved into the new CoinFormat class.
+  * A new Coin class replaces usage of BigInteger for marking values that are quantities of bitcoin. Formatting has moved into the new MonetaryFormat class.
   * The wallet now saves the fee paid on transactions we calculated ourselves. This is useful for putting it into a wallet user interface.
+  * Transactions can have user memos and exchange rates attached, that will be saved by the wallet.
   * Support for decrypting BIP 38 protected private keys has been added.
+  * Checkpoints can now be stored textually as well as in the old binary format.
+* There is also a new BtcFormat API that provides an alternative to CoinFormat that plugs in to the java.text framework.
 * Added new DNS seed from Addy Yeow.
 * Wallets can now have string->byte[] mappings attached to them, for lighter weight extensions.
+* Thanks to Richard Green, there is now a Python version of the ForwardingService program from the getting started tutorial. This shows how to use bitcoinj from Python using the Jython interpreter.
 * bitcoinj now probes localhost for a Bitcoin node and automatically uses that instead of the P2P network, when present. This means any bitcoinj based app can be easily upgraded from SPV to full security just by running Core at the same time: no setup needed.
+* Thanks to Michael Bumann, there are now more example apps showing how to use parts of the API.
 * WalletTemplate/WalletAppKit improvements. WalletTemplate is a demo app that shows how to create a cross-platform GUI wallet with a modern style and 60fps animations. WalletAppKit is a very high level API for creating apps that have a Bitcoin wallet:
   * Now supports mnemonic code and restore from seed words. A date picker is provided to cut down on the amount of chain that needs to be rescanned. 
   * Support for encrypting wallets. Password is requested when needed. The difficulty of the scrypt function is selected to always take a fixed number of seconds even if hardware gets more powerful.
   * Some new animation and utility code backported from Lighthouse.
   * Tor support
-* Many bugfixes, minor tweaks and small new APIs.
+* Thanks to Martin Zachrinson, the micropayment channels implementation has received various improvements.
+* The Bloom filtering API has been extended so FilteredBlock objects can now be produced from Block objects given a BloomFilter. Previously there was support for client-side Bloom usage but no implementation of the generation part.
+* Many other bugfixes, cleanups, minor tweaks and small new APIs.
+
+Documentation and tutorials:
+
+* The "Working with the wallet" document has been significantly extended to cover encryption, watching wallets, HD wallets and multisig/married wallets.
+* A new document and accompanying screencast shows how to extend the WalletTemplate app to have a transactions list, and then make a native/bundled package for the Mac that doesn't need the user to install Java. By following this tutorial you will learn how to make a basic cross platform desktop wallet of your own.
+* All other docs were refreshed to the latest APIs.
 
 API changes:
 
+* The package name has changed to org.bitcoinj and the core Maven artifact name is now "bitcoinj-core". You can auto-port most of your code by running ` find . -name '*.java' | xargs sed -i .bak 's/import com.google.bitcoin./import org.bitcoinj./g;s/import static com.google.bitcoin./import static org.bitcoinj./g'`
 * Wallet.completeTx now throws more precise unchecked exceptions in edge cases, instead of IllegalArgumentException.
 * The use of BigInteger to represent quantities of Bitcoin has been replaced with the more efficient, type safe and useful class Coin. Coin is mostly source compatible with BigInteger so you can probably just do a search and replace to update your codebase. Utils.bitcoinValueToFriendlyString and friends moved to CoinFormat.
 * NetworkParameters.getProofOfWorkLimit was renamed to getMaxTarget for consistency with other Bitcoin codebases.
 * The library no longer uses the misleading term "nanocoins" to mean satoshis (the old term predated the use of the word satoshi to describe the smallest possible amount of bitcoin).
+* TransactionConfidence no longer tracks total work done.
 * Because outputs are now shuffled any code during that assumes the ordering is preserved will break. You can set the shuffleOutputs field of SendRequest to false to disable this behaviour if you need to.
 * The ECKey and HD API's have changed quite a bit: several constructors were replaced with clearer static factory methods that make it more obvious how their parameters are interpreted. The new methods don't change their behaviour depending on the pattern of nulls passed into them.
 * Some unit testing utilities have been moved to the new testing subpackage and cleaned up/rearranged. It should be easier to write unit tests for your app that need a simulated network now. DeterministicKey now derives from ECKey.
 * We now use Utils.HEX.encode() and Utils.HEX.decode() to do translation to and from base 16.
-* Transaction.hashTransactionForSignature was renamed to just hashForSignature
+* Transaction.hashTransactionForSignature was renamed to just hashForSignature.
+* The subVer string sent by bitcoinj now has a lower cased first component.
 
 ##Version 0.11.3
 
