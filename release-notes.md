@@ -23,7 +23,7 @@ title: "Release notes"
   * As part of this work, transaction signing is now pluggable. TransactionSigner implementations can be added to the wallet and will be serialized into and out of the users saved wallet file. Signers are given a transaction to sign in sequence. This is intended for risk analysis providers to provide a class that talks to their server to get a signature of the right form.
 * Reject messages are now deserialized and logged, though not yet exposed in the API.
 * Upgraded to Guava 16 and Bouncy Castle 1.51. Thanks to Peter Dettman and the rest of the Bouncy Castle team, bitcoinj now uses deterministic ECDSA for signing and we're now using an accelerated secp256k1 implementation that exploits the special properties of this curve, for dramatically faster calculations.
-* Payment protocol code improvements:  Some X.509 utility code was refactored out of PaymentSession for general usage. StartCom was added to the default trust store which was promoted to override the system trust store on non-Android platforms. 
+* Payment protocol code improvements:  Some X.509 utility code was refactored out of PaymentSession for general usage. StartCom was added to the default trust store which was promoted to override the system trust store on non-Android platforms. A command line tool to dump requests to stdout was added.
 * Thanks to Andreas Schildbach:
   * We are now BIP62 (canonical push encodings) compliant.
   * A new Coin class replaces usage of BigInteger for marking values that are quantities of bitcoin. Formatting has moved into the new MonetaryFormat class.
@@ -43,6 +43,7 @@ title: "Release notes"
   * Some new animation and utility code backported from Lighthouse.
   * Tor support
 * Thanks to Martin Zachrinson, the micropayment channels implementation has received various improvements.
+* Thanks to Eric Tierney (Circle), the Postgres store can now take a custom schema.
 * The Bloom filtering API has been extended so FilteredBlock objects can now be produced from Block objects given a BloomFilter. Previously there was support for client-side Bloom usage but no implementation of the generation part.
 * Many other bugfixes, cleanups, minor tweaks and small new APIs.
 
