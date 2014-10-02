@@ -12,9 +12,9 @@ If your project uses Maven for its build, you can depend on bitcoinj by adding t
 {% highlight xml %}
   <dependencies>
     <dependency>
-      <groupId>com.google</groupId>
-      <artifactId>bitcoinj</artifactId>
-      <version>0.11.3</version>
+      <groupId>org.bitcoinj</groupId>
+      <artifactId>bitcoinj-core</artifactId>
+      <version>0.12</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -30,4 +30,25 @@ git checkout 6ec53fc19bf5675088eb613d0659df2a358695cd
 mvn install
 ~~~
 
-This will give you v0.11.3. If PGP is your thing, you can run `git tag -v v0.11.3` to check Andreas Schildbach's signature of the release.
+This will give you v0.12. If PGP is your thing, you can run `git tag -v v0.12` to check Andreas Schildbach's signature of the release.
+
+#Maven security
+
+Maven Central is a very insecure piece of infrastructure. If you're just messing around then this is perhaps not a big deal, but prototypes have a way of turning into real apps and then build security becomes more important. Maven can be made more secure by following these tips.
+
+Firstly, *use Maven 3.2.3 or later*. Starting in September 2014 Maven Central supports SSL, but prior versions did not. That means any dependency download could be trivially backdoored by anyone on your local network, and there are proof-of-concept exploits that actually make this easy. Thus it is ESSENTIAL that you use a Maven that is using SSL by default. This means: download Maven from the Apache website.
+
+Secondly, *do not use Maven from your Linux distribution*. Linux distributors like to tamper with Maven in various ways which can potentially cause problems, so grab the clean upstream version instead of using apt-get.
+
+Thirdly, *use the dependency verifier*. Maven Central is convenient but it does not implement anything more robust than password authentication. This means a bogus JAR being uploaded if a developer account is hacked is quite possible. bitcoinj has a hard-coded list of dependency hashes in its POM, and you can use the same Maven plugin to fix the hashes of your own dependencies (including on bitcoinj):
+
+https://github.com/gary-rowe/BitcoinjEnforcerRules
+
+To check you have the right version of the enforcer plugin, run:
+
+~~~
+$ shasum ~/.m2/repository/uk/co/froot/maven/enforcer/digest-enforcer-rules/0.0.1/digest-enforcer-rules-0.0.1.jar
+16a9e04f3fe4bb143c42782d07d5faf65b32106f
+~~~
+
+and verify the output matches.
