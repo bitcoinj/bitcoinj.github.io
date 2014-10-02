@@ -26,7 +26,7 @@ To get the source you can also use git and check out your own copy:
 git clone https://github.com/bitcoinj/bitcoinj.git
 cd bitcoinj
 git fetch --all
-git checkout (TODO REPLACE ME WITH THE RIGHT HASH AT RELEASE TIME)
+git checkout 83a9a71f3fff3f223d0737ad758b519a39dbbd62
 mvn install
 ~~~
 
