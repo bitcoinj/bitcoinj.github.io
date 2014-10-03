@@ -1,7 +1,7 @@
---
+---
 layout: base
 title: "Building a simple GUI wallet tutorial"
---
+---
 
 <div markdown="1" id="toc" class="toc"><div markdown="1">
 
@@ -14,9 +14,11 @@ title: "Building a simple GUI wallet tutorial"
 
 # Tutorial: Building a simple GUI wallet
 
-bitcoinj ships with a basic GUI wallet app as part of its source code. It's intended to be copied and used as a basis for any application that wishes to send and receive money. For example if you wanted to make a card game that let you gamble with real bitcoins, this would be a good place to start. Although such apps don't have to be a generic consumer wallet in this tutorial we'll customise the template a little bit by adding a transactions list. You can watch a screencast of this tutorial if you prefer.
+bitcoinj ships with a basic GUI wallet app as part of its source code. It's intended to be copied and used as a basis for any application that wishes to send and receive money. For example if you wanted to make a card game that let you gamble with real bitcoins, this would be a good place to start. 
 
-<iframe width="853" height="480" src="//www.youtube-nocookie.com/embed/9AK11JsZWVo?rel=0" frameborder="0" allowfullscreen></iframe>
+Although such apps don't have to be a generic consumer wallet, in this tutorial we'll customise the template a little bit by adding a transactions list. A screencast of this tutorial is below: as it involves GUI design work the video may be easier to follow.
+
+<iframe width="680" height="422" src="//www.youtube-nocookie.com/embed/9AK11JsZWVo?rel=0" frameborder="0" allowfullscreen></iframe>
 
 ## Step 1. Copy the code, rename the package and explore.
 
@@ -66,10 +68,10 @@ The POM file contains configuration XML for the Maven Shade plugin, which instru
 
 We can now run the packager tool as follows:
 
-{{{
+{% highlight sh %}
 jh=$(/usr/libexec/java_home -v 1.8)
 $jh/bin/javapackager -deploy -native dmg -srcfiles target/simplewallet.jar -outdir packages -name SimpleWallet -title SimpleWallet -Bmac.CFBundleName=SimpleWallet -Bruntime="$jh/../../" -appclass simplewallet.Main -outfile SimpleWallet
-}}}
+{% endhighlight %}
 
 ... to generate a self contained code signed Mac package. A similar procedure can be followed on other platforms to build their own native packages too.
 

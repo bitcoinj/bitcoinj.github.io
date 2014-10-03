@@ -7,9 +7,11 @@ title: "bitcoinj"
 
 <div class="projectsbadge"><a href="https://www.hivewallet.com/"><img src="/img/clients/hive.png" alt="hive"></a><a href="https://multibit.org" alt="multibit"><img src="/img/clients/multibit.png"></a><a href="https://play.google.com/store/apps/details?id=de.schildbach.wallet"><img src="/img/clients/bitcoinwallet.png" alt="bitcoinwallet"></a><a href="https://www.biteasy.com"><img src="/img/clients/biteasy.png" alt="biteasy"></a><br><span>Some projects using bitcoinj</span></div>
 
-<p>bitcoinj is a library for working with the Bitcoin protocol. It can maintain a wallet, send/receive transactions without needing a local copy of Bitcoin Core and has many other advanced features. It's implemented in Java but can be used from any JVM compatible language: examples in Python and JavaScript are included. It comes with full documentation and many large, well known Bitcoin apps and services are built on it. <a href="https://github.com/bitcoinj/bitcoinj">Get the code on github!</a></p>
+<p>bitcoinj is a library for working with the Bitcoin protocol. It can maintain a wallet, send/receive transactions without needing a local copy of Bitcoin Core and has many other advanced features. It's implemented in Java but can be used from any JVM compatible language: examples in Python and JavaScript are included.</p>
 
-<h2>bitcoinj features</h2>
+<p>It comes with full documentation and many large, well known Bitcoin apps and services are built on it. <a href="https://github.com/bitcoinj/bitcoinj">Get the code on github!</a></p>
+
+<h2>Features</h2>
 
 <ul class="features">
   <li>Highly optimised <b>lightweight simplified payment verification</b> (SPV) mode. In this mode, only a small part of the block chain is downloaded, making bitcoinj suitable for usage on constrained devices like smartphones or cheap virtual private servers.</li>
@@ -18,19 +20,19 @@ title: "bitcoinj"
   <li>Support for <b>micropayment channels</b> that let you set up a multi-signature contract between client and server, and then negotiate on the channel, allowing fast micropayments that avoid miner fees.</li>
   <li>Provides both <b>async and thread-per-connection</b> for network IO, allowing you to choose between scalability and blocking-only features like SOCKS/Tor proxying.</li>
   <li>Easily implement apps that use Bitcoin's <b>contracts features</b>.</li>
-  <li>A simple GUI wallet demo that you can use as the basis for your own apps. Watch a tutorial video or read more.</li>
-  <li><b>Command line tool</b> for working with wallet and chain files.</li>
+  <li>A simple <b>GUI wallet app</b> that you can use as the basis for your own apps. <a href="/simple-gui-wallet">Watch or read a tutorial</a> on how to customise it and build a native installer that does not require Java.</li>
+  <li><b>Command line tools</b> for working with wallet and chain files, the payment protocol, the network and more.</li>
   <li>Strong <a href="/bitcoin-standards"><b>Bitcoin standards</b></a> support.</li>
   <li>A friendly and helpful <a href="/#community"><b>community</b></a>!</li>
 </ul>
 
 <h1 id="getting-started">Getting started</h1>
 
-<p>You can <a href="https://github.com/bitcoinj/bitcoinj/releases/tag/v0.12" class="downloadlink">download the library as a JAR</a>, or <a href="/using-maven">use Maven</a>, or <a href="https://github.com/bitcoinj/bitcoinj">get the code from github</a>. Then read:</p>
+<p>You can <a href="http://search.maven.org/remotecontent?filepath=org/bitcoinj/bitcoinj-core/0.12/bitcoinj-core-0.12-bundled.jar" class="downloadlink">download the library as a JAR</a>, or <a href="/using-maven">use Maven</a>, or <a href="https://github.com/bitcoinj/bitcoinj">get the code from github</a>. Then read:</p>
 
 <ul>
   <li><a href="https://bitcoin.org/bitcoin.pdf">Satoshi's white paper</a> - the bitcoinj documentation assumes basic familiarity with how Bitcoin works, the structure of transactions and the block chain.</li>
-  <li><a href="/getting-started">Getting started</a> - a step by step tutorial for Java, Python and JavaScript devs on how to write a simple app that just forwards any money it receives.</li>
+  <li><b><a href="/getting-started">Getting started</a></b> - a step by step tutorial for Java and JavaScript devs on how to use the library.</li>
   <li>The JavaDocs: <a href="/javadoc/0.12/">0.12 API documentation</a></li>
 </ul>
 
