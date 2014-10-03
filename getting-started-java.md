@@ -22,7 +22,7 @@ To get the code and install it, grab Maven from [the Maven website](http://maven
 
 Now get the latest version of the code. You can use the instructions on the [Using Maven](/using-maven) page - just run the commands there and you'll get the right version of the code (unless this website is itself compromised). This is intended to protect against compromised mirrors or source downloads - because git works using source tree hashes, if you get a source hash in the right manner, you are guaranteed to end up with the right code.
 
-You can [read the full program here](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/java/com/google/bitcoin/examples/ForwardingService.java).
+You can [read the full program here](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/java/org/bitcoinj/examples/ForwardingService.java).
 
 ##Basic structure
 

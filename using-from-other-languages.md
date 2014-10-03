@@ -50,7 +50,7 @@ The Hive team maintain a library called [BitcoinKit](https://github.com/hivewall
 
 Python has many fans and can be fun to prototype in. The original Python implementation cannot interop with Java code, but we can gain access via another way using [Jython](http://www.jython.org/index.html). Jython is an implementation of Python (2.x) that is compatible with the original language/class libraries and provides an interactive interpreter that works just like regular Python's for exploration and learning. As long as you don't rely on any custom CPython extensions, you can just run your regular Python application out of the box, including UNIX style executable scripts.
 
-Why would you do that? Primarily because you can import Java class libraries as you would Python class libraries (from com.google.bitcoin.core import Wallet). You also get a better garbage collector and real multi-threading support.
+Why would you do that? Primarily because you can import Java class libraries as you would Python class libraries (from org.bitcoinj.core import Wallet). You also get a better garbage collector and real multi-threading support.
 
 ###Ruby
 
