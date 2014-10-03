@@ -18,16 +18,12 @@ title: "An introduction to using the library"
 
 _This document describes how to use the code in 0.12, git master may be slightly different_
 
-bitcoinj is implemented in Java 6 and thus can be used from any language that can target the JVM. This tutorial is available for Java, Python and JavaScript, but people have also used bitcoinj from Scala (a functional language), Clojure (a lisp like language), Ruby, and many others.
+bitcoinj is implemented in Java 6 and thus can be used from any language that can target the JVM. This tutorial is available for Java and JavaScript, but people have also used bitcoinj from Python, Scala (a functional language), Clojure (a lisp like language), Kotlin, Ruby, and many others. Lots of the most popular languages have a JVM implementation.
 
-In this document we will go through the `ForwardingService` example app that comes with the distribution. When run, `ForwardingService` prints out an address and starts listening on the network. Sending coins to that address will result in them being sent onwards to an address given on the command line (minus a small fee).
-
-Note that this tutorial assumes familiarity with the basics of the Bitcoin protocol. If you aren't already familiar with the structure of the block chain and how transactions work, please read [Satoshi's white paper](https://bitcoin.org/bitcoin.pdf) before this tutorial.
+Note that these tutorials assume familiarity with the basics of the Bitcoin protocol. If you aren't already familiar with the structure of the block chain and how transactions work, please read [Satoshi's white paper](https://bitcoin.org/bitcoin.pdf) before this tutorial.
 
 
 ##Before we start
-
-###A health warning
 
 This library is not like other libraries. A Bitcoin API allows you to directly handle money, possibly large sums of other people's money. It is important to understand the following. **After completing this tutorial you are NOT qualified to write production applications**. You will have a flavor of how to write applications, but Bitcoin is a subtle and complex system.
 

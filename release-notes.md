@@ -49,13 +49,14 @@ title: "Release notes"
 
 Documentation and tutorials:
 
+* A JavaScript tutorial has been added, showing how to use bitcoinj from this language. More tutorials in other languages will come in future.
 * The "Working with the wallet" document has been significantly extended to cover encryption, watching wallets, HD wallets and multisig/married wallets.
-* A new document and accompanying screencast shows how to extend the WalletTemplate app to have a transactions list, and then make a native/bundled package for the Mac that doesn't need the user to install Java. By following this tutorial you will learn how to make a basic cross platform desktop wallet of your own.
+* A new document and accompanying screencast shows how to extend the WalletTemplate app to have a transactions list, and then make a native/bundled packages that don't need the user to install Java. By following this tutorial you will learn how to make a basic cross platform desktop wallet of your own.
 * All other docs were refreshed to the latest APIs.
 
 API changes:
 
-* The package name has changed to org.bitcoinj and the core Maven artifact name is now "bitcoinj-core". You can auto-port most of your code by running ` find . -name '*.java' | xargs sed -i .bak 's/import com.google.bitcoin./import org.bitcoinj./g;s/import static com.google.bitcoin./import static org.bitcoinj./g'`
+* The package name has changed to org.bitcoinj and the core Maven artifact name is now "bitcoinj-core". You can auto-port most of your code by running `find . -name '*.java' \| xargs sed -i .bak 's/com.google.bitcoin./import org.bitcoinj./g`
 * Wallet.completeTx now throws more precise unchecked exceptions in edge cases, instead of IllegalArgumentException.
 * The use of BigInteger to represent quantities of Bitcoin has been replaced with the more efficient, type safe and useful class Coin. Coin is mostly source compatible with BigInteger so you can probably just do a search and replace to update your codebase. Utils.bitcoinValueToFriendlyString and friends moved to CoinFormat.
 * NetworkParameters.getProofOfWorkLimit was renamed to getMaxTarget for consistency with other Bitcoin codebases.
