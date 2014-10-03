@@ -16,7 +16,7 @@ title: "Getting started in Javascript"
 
 Java 8 ships with a Javascript engine called Nashorn that has performance approaching that of V8 (it's not quite as good, but good enough). It's easy to use Java code using this engine, and Javascript programs can be run from the command line or using an interactive interpreter. There are also projects that provide a node.js compatible API, but this tutorial will not explore those.
 
-To get started, grab version 8 of the JDK and make sure you can run the "jjs" tool. Next, download the bundled bitcoinj JAR from Maven Central (FIXME: add link here after release) and put it into your working directory. That's all we need to start using bitcoinj from Javascript.
+To get started, grab version 8 of the JDK and make sure you can run the "jjs" tool. Next, download [the bundled bitcoinj JAR from Maven Central](http://search.maven.org/remotecontent?filepath=org/bitcoinj/bitcoinj-core/0.12/bitcoinj-core-0.12-bundled.jar) and put it into your working directory. That's all we need to start using bitcoinj from Javascript.
 
 Now let's take a look at [the demo.js file from the examples](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/javascript/demo.js) in the source tree. The demo program does a few basic things like creating a key and printing its address, and then brings up the network and prints some info about the peers it got connected to.
 
