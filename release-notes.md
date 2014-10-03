@@ -42,7 +42,7 @@ title: "Release notes"
   * Support for encrypting wallets. Password is requested when needed. The difficulty of the scrypt function is selected to always take a fixed number of seconds even if hardware gets more powerful.
   * Some new animation and utility code backported from Lighthouse.
   * Tor support
-* Thanks to Martin Zachrinson, the micropayment channels implementation has received various improvements.
+* Thanks to Martin Zachrison, the micropayment channels implementation has received various improvements.
 * Thanks to Eric Tierney (Circle), the Postgres store can now take a custom schema.
 * The Bloom filtering API has been extended so FilteredBlock objects can now be produced from Block objects given a BloomFilter. Previously there was support for client-side Bloom usage but no implementation of the generation part.
 * Many other bugfixes, cleanups, minor tweaks and small new APIs.
