@@ -1,7 +1,7 @@
---
+---
 layout: base
 title: "Working with monetary amounts"
---
+---
 
 <div markdown="1" id="toc" class="toc"><div markdown="1">
 
