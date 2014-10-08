@@ -14,6 +14,16 @@ title: "Release notes"
 
 #Release notes
 
+##Version 0.13
+
+_0.13 has not been released yet. These release notes reflect changes in git master._
+
+* Peer discovery now works differently: peers handed back by a `PeerDiscovery` implementation are used in order and discoverers will be polled until a configurable max is reached, rather than stopping as soon as any discoverer returns peers.
+
+API changes:
+* PeerEventListener has a new onPeersDiscovered event.
+
+
 ##Version 0.12
 
 * Privacy enhancements:
@@ -56,7 +66,7 @@ Documentation and tutorials:
 
 API changes:
 
-* The package name has changed to org.bitcoinj and the core Maven artifact name is now "bitcoinj-core". You can auto-port most of your code by running `find . -name '*.java' \| xargs sed -i .bak 's/com.google.bitcoin./import org.bitcoinj./g`
+* The package name has changed to org.bitcoinj and the core Maven artifact name is now "bitcoinj-core". You can auto-port most of your code by running `find . -name '*.java' | xargs sed -i .bak 's/com.google.bitcoin./import org.bitcoinj./g'`
 * Wallet.completeTx now throws more precise unchecked exceptions in edge cases, instead of IllegalArgumentException.
 * The use of BigInteger to represent quantities of Bitcoin has been replaced with the more efficient, type safe and useful class Coin. Coin is mostly source compatible with BigInteger so you can probably just do a search and replace to update your codebase. Utils.bitcoinValueToFriendlyString and friends moved to CoinFormat.
 * NetworkParameters.getProofOfWorkLimit was renamed to getMaxTarget for consistency with other Bitcoin codebases.

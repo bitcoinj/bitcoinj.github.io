@@ -20,6 +20,10 @@ Java is a fine choice for something that needs to be widely understood, secure a
 
 This page details how you can go about using bitcoinj from other languages.
 
+##Javascript
+
+Javascript can interop with Java using the Nashorn engine shipped in Java 8. We have a tutorial on this already! Check out the getting started guide to learn how to set this up and see some examples. Javascript programs that access Java libraries can be run from the command line using the "jjs" tool. There are projects that provide the Node.js API's as well.
+
 ###C++
 
 At the moment, the easiest way to use bitcoinj from C++ is to embed the JVM and use auto-generated JNI wrappers. Here's an example of what such a program looks like:
