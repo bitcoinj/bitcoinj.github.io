@@ -66,7 +66,7 @@ Documentation and tutorials:
 
 API changes:
 
-* The package name has changed to org.bitcoinj and the core Maven artifact name is now "bitcoinj-core". You can auto-port most of your code by running `find . -name '*.java' | xargs sed -i .bak 's/com.google.bitcoin./import org.bitcoinj./g'`
+* The package name has changed to org.bitcoinj and the core Maven artifact name is now "bitcoinj-core". You can auto-port most of your code by running `find . -name '*.java' | xargs sed -i .bak 's/com.google.bitcoin./org.bitcoinj./g'`
 * Wallet.completeTx now throws more precise unchecked exceptions in edge cases, instead of IllegalArgumentException.
 * The use of BigInteger to represent quantities of Bitcoin has been replaced with the more efficient, type safe and useful class Coin. Coin is mostly source compatible with BigInteger so you can probably just do a search and replace to update your codebase. Utils.bitcoinValueToFriendlyString and friends moved to CoinFormat.
 * NetworkParameters.getProofOfWorkLimit was renamed to getMaxTarget for consistency with other Bitcoin codebases.
