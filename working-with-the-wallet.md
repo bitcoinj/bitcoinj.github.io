@@ -206,6 +206,18 @@ By default the Wallet is just an in-memory object, it won't save by itself. You 
 
 It can be difficult to know exactly when to save the wallet, and if you do it too aggressively you can negatively affect the performance of your app. To help solve this, the wallet can auto-save itself to a named file. Use the `autoSaveToFile()` method to set this up. You can optionally provide a delay period, eg, of a few hundred milliseconds. This will create a background thread that saves the wallet every N milliseconds if it needs saving. Note that some important operations, like adding a key, always trigger an immediate auto-save. Delaying writes of the wallet can help improve performance in some cases, eg, if you're catching up a wallet that is very busy (has lots of transactions moving in and out). You can register an auto-save listener to learn when the wallet saved itself.
 
+##Wallet maintenance and key rotation
+
+The wallet has a notion of _maintenance_, which currently exists purely to support _key rotation_. Key rotation is useful when you believe some keys might be weak or compromised and want to stop using them. The wallet knows how to create a fresh HD key hierarchy and create spends that automatically move coins from rotating keys to the new keys. To start this process, you tell the wallet the time at which you believe the existing keys became weak, and then use the `doMaintenance(KeyParameter, boolean)` method to obtain transactions that move coins to the fresh keys. Note that you can't mark individual keys as weak, only groups based on their creation time.
+
+Examples of when this can be useful:
+* You learn that the random number generator used to create some keys was predictable
+* You have a backup somewhere that you can't reliably delete, and worry that its keys may be vulnerable to theft. For example wallets written to flash/solid state disks can be hard to reliably erase.
+
+The `doMaintenance` method takes the users password key if there is one, and a boolean controlling whether the needed maintenance transactions will actually be broadcast on the network. It returns a future that completes either immediately (if the bool argument was false), or when all maintenance transactions have broadcast, and the future vends a list of the transactions that were created. The method might potentially throw an exception if it needs the users password key, even if the bool argument is false, so you should be ready to catch that and ask the user to provide their password - probably with an explanation of why. If no exception is thrown and the argument is false, you can use `get()` on the returned future to obtain the list and then check if it's empty. If it's empty, no maintenance is required. If it's not, you need to tell the user what's going on and let it broadcast the transactions.
+
+The concept of maintenance is general. In future, the wallet might generate maintenance transactions for things like defragmenting the wallet or increasing user privacy. But currently, if you don't use key rotation, this method will do nothing.
+
 ##Creating multi-sends and other contracts
 
 The default `Wallet.SendRequest` static methods help you construct transactions of common forms, but what if you want something more advanced? You can customize or build your own transaction and put it into a `SendRequest` yourself.
