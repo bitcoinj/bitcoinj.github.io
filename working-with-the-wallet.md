@@ -211,6 +211,7 @@ It can be difficult to know exactly when to save the wallet, and if you do it to
 The wallet has a notion of _maintenance_, which currently exists purely to support _key rotation_. Key rotation is useful when you believe some keys might be weak or compromised and want to stop using them. The wallet knows how to create a fresh HD key hierarchy and create spends that automatically move coins from rotating keys to the new keys. To start this process, you tell the wallet the time at which you believe the existing keys became weak, and then use the `doMaintenance(KeyParameter, boolean)` method to obtain transactions that move coins to the fresh keys. Note that you can't mark individual keys as weak, only groups based on their creation time.
 
 Examples of when this can be useful:
+
 * You learn that the random number generator used to create some keys was predictable
 * You have a backup somewhere that you can't reliably delete, and worry that its keys may be vulnerable to theft. For example wallets written to flash/solid state disks can be hard to reliably erase.
 
