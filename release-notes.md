@@ -18,11 +18,24 @@ title: "Release notes"
 
 _0.13 has not been released yet. These release notes reflect changes in git master._
 
+* Checkpoints have now been integrated into the WalletAppKit class so you don't need to set them up manually any more when using the JAR. Dalvik/Android users still must do it themselves, as classes.dex files cannot contain embedded files.
 * Peer discovery now works differently: peers handed back by a `PeerDiscovery` implementation are used in order and discoverers will be polled until a configurable max is reached, rather than stopping as soon as any discoverer returns peers.
+* References to prodnet have all been replaced with the more standard "main net" terminology.
 
 API changes:
 * PeerEventListener has a new onPeersDiscovered event.
+* The PeerFilterProvider interface has replaced the getLock method with begin/end methods.
 
+##Version 0.12.1
+
+This is a bug fix / maintenance release:
+
+* Fixes to key rotation. HD upgrades now take place using keys past the rotation time regardless of whether the rotation feature is enabled. HD chains can be rotated to new HD chains based on non-rotating random keys.
+* Updates and new docs for the wallet maintenance API.
+* A small bugfix to micropayment channels.
+* Don't try IPv6 peers again if the first IPv6 attempt fails with "no route to host"
+* Narrow the wallet lock to allow faster/lower latency access to the key chain and methods that use it.
+* Misc other bug fixes.
 
 ##Version 0.12
 
