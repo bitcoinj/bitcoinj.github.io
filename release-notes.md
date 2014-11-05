@@ -30,6 +30,7 @@ API changes:
 
 This is a bug fix / maintenance release:
 
+* 10x fee drop by default.
 * Fixes to key rotation. HD upgrades now take place using keys past the rotation time regardless of whether the rotation feature is enabled. HD chains can be rotated to new HD chains based on non-rotating random keys.
 * Updates and new docs for the wallet maintenance API.
 * A small bugfix to micropayment channels.
