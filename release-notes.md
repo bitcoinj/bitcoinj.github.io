@@ -18,6 +18,7 @@ title: "Release notes"
 
 _0.13 has not been released yet. These release notes reflect changes in git master._
 
+* A MySQL block store has been added, it has the same feature as the PostgreSQL block store (can index the UTXO set and do balance queries for arbitrary addresses)
 * Checkpoints have now been integrated into the WalletAppKit class so you don't need to set them up manually any more when using the JAR. Dalvik/Android users still must do it themselves, as classes.dex files cannot contain embedded files.
 * Peer discovery now works differently: peers handed back by a `PeerDiscovery` implementation are used in order and discoverers will be polled until a configurable max is reached, rather than stopping as soon as any discoverer returns peers.
 * References to prodnet have all been replaced with the more standard "main net" terminology.
