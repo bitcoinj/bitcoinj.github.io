@@ -22,8 +22,10 @@ _0.13 has not been released yet. These release notes reflect changes in git mast
 * Checkpoints have now been integrated into the WalletAppKit class so you don't need to set them up manually any more when using the JAR. Dalvik/Android users still must do it themselves, as classes.dex files cannot contain embedded files.
 * Peer discovery now works differently: peers handed back by a `PeerDiscovery` implementation are used in order and discoverers will be polled until a configurable max is reached, rather than stopping as soon as any discoverer returns peers.
 * References to prodnet have all been replaced with the more standard "main net" terminology.
+* There is now support for HTTP seeds using the Cartographer protocol.
 
 API changes:
+
 * PeerEventListener has a new onPeersDiscovered event.
 * The PeerFilterProvider interface has replaced the getLock method with begin/end methods.
 
