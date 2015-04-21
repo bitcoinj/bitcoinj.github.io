@@ -18,16 +18,71 @@ title: "Release notes"
 
 _0.13 has not been released yet. These release notes reflect changes in git master._
 
-* A MySQL block store has been added, it has the same feature as the PostgreSQL block store (can index the UTXO set and do balance queries for arbitrary addresses)
+From most to least notable:
+
+* Major performance improvements with large wallets, especially on Android. Balance computation now scales better.
+* Thanks to Kalpesh Parmar:
+  * A MySQL block store has been added, it has the same feature as the PostgreSQL block store (can index the UTXO set and do balance queries for arbitrary addresses)
+  * The Wallet class can now be connected to a UTXO database such as those created by the MySQL or Postgres block stores (or a remote block explorer). Unspent transaction outputs will be fetched from the given `UTXOProvider` for the purposes of creating spends and calculating the balance. Combined with the HD wallet support this allows for server side wallets with much higher scalability than previously possible.
+* A LevelDB SPV block store has been added. It doesn't store the UTXO set or block contents, but lets you quickly look up any block header by hash, if you need that.
 * Checkpoints have now been integrated into the WalletAppKit class so you don't need to set them up manually any more when using the JAR. Dalvik/Android users still must do it themselves, as classes.dex files cannot contain embedded files.
-* Peer discovery now works differently: peers handed back by a `PeerDiscovery` implementation are used in order and discoverers will be polled until a configurable max is reached, rather than stopping as soon as any discoverer returns peers.
+* PeerGroup has various improvements to block chain sync. It also now implements a stalled peer detector: peers that are serving us the chain slower than a configurable bytes/second threshold will be disconnected and chain download will restart from another. The defaults are chosen conservatively so only peers that can't filter >20 blocks per second will trigger a stall.
+* There is now support for HTTP seeds using the Cartographer protocol, which gives signed and thus auditable results.
+* Support for the `getutxos` message defined in BIP 65 has been added.
+* Some improvements to the WalletTemplate app. You can now send any amount out, and password scrypt hashing strength adaptation was rewritten to avoid triggering absurd RAM usage and generally be more robust.
+* A new Context class has been introduced. Using Context is optional currently but will over time replace NetworkParameters in most cases as the general global object. A Context will be created and propagated between threads automatically for you in the 0.13 release as a backwards compatibility aid: however it is recommended that you create a Context yourself and pass it into core objects like Wallet and PeerGroup when possible to make the transition easier. In future, Context will hold various bits of configuration and global state that different parts of the library can use, to reduce repetitive re-configuration and wiring.
+* `MarriedKeyChain` can now be constructed with a watching key.
+* Thanks to Jarl Fransson, the payment channels library now has support for encrypted wallets.
+* TransactionBroadcast has been improved and now recognises network rejection via the reject message much more reliably.
+* Default number of peers has been bumped to 12 from 4 to avoid issues with flaky transaction broadcasts. Most wallet apps already have a similar change at the app level already.
+* Thanks to Mike Rosseel, peer discovery now works differently: peers handed back by a `PeerDiscovery` implementation are used in order and discoverers will be polled until a configurable max is reached, rather than stopping as soon as any discoverer returns peers.
+* The `LinuxSecureRandom` class that works around the Android random number generator faults has been integrated with bitcoinj and will be used automatically when appropriate. LinuxSecureRandom just reads entropy from /dev/urandom and bypasses the buggy userspace RNGs that all Android devices have shipped with. This change should help avoid issues with new Android developers that aren't branching existing wallets and haven't heard about the problems affecting the platform.
+* Thanks to Matt Corallo and Dave Collins, there are many improvements to the block tester.
+* Tor related changes:
+  * Track directory authority changes: turtles has been replaced by longclaw.
+  * A workaround for thread safety bugs in some Linux glibc's has been added, which resolves a segfault that could occur when trying to use Tor.
 * References to prodnet have all been replaced with the more standard "main net" terminology.
-* There is now support for HTTP seeds using the Cartographer protocol.
+* Many, many bug fixes, small tweaks and new APIs, more API sanity checks and so on.
 
 API changes:
 
-* PeerEventListener has a new onPeersDiscovered event.
-* The PeerFilterProvider interface has replaced the getLock method with begin/end methods.
+* The `wallet.getBalance()` call now returns the balance *including* watched addresses/outputs. To exclude watched outputs you should use `wallet.getBalance(BalanceType.AVAILABLE_SPENDABLE)` (or `ESTIMATED_SPENDABLE` to include 
+immature coinbases and unconfirmed transactions). If you were previously using `wallet.getWatchedBalance()` this is now a deprecated alias.
+* The Script constructor no longer sets the creation time to the current time. If you're adding scripts to the wallet via `wallet.addWatchedScript()` then you should take care to set the creation time to something sensible and appropriate for your app, as otherwise you may end up with a wallet that has a creation time of zero meaning it will never use the checkpointing optimisation (as it doesn't know when the script might appear in the chain). You will see a log warning if you forget to do this.
+* `PeerEventListener` has a new `onPeersDiscovered` event and the `onBlocksDownloaded` event now receives `FilteredBlock` objects when Bloom filtering is enabled. This allows apps to use the Merkle proofs calculated by remote peers for their own ends.
+* The `PeerFilterProvider` interface has replaced the `getLock` method with begin/end methods.
+* DeterministicKey now overrides `hasPrivKey` and `getSecretBytes` to work correctly with just-in-time private key rederivation.
+* Changes to the `TransactionConfidence` API:
+  * The `getBroadcastBy()` method now returns a set instead of an iterator.
+  * Thanks to a collaboration with devrandom, confidence objects are no longer owned by Transaction objects: two different Transaction objects that represent the same logical transaction (i.e. same hash) will return the same confidence object from their `getConfidence()` methods. This eliminates bugs that could occur in previous versions if you ended up with the same transaction deserialized twice. Additionally confidence objects now pin themselves to the root object set when a listener is added to them, thus avoiding a common class of bugs in which a transaction is received from a network event listener, another listener is added to the confidence object and then it never runs because the entire object hierarchy gets garbage collected. These changes should be transparent to your app; they are here to remove sharp corners from the API and enable future scalability improvements.
+* As part of the previous change the `MemoryPool` class has been renamed to `TxConfidenceTable` and has a significantly different internal implementation and API. It is unlikely you were directly using this class, but if you were you may need to adapt your code.
+* `PeerGroup.broadcastTransaction` now returns a `TransactionBroadcast` object instead of a future: you can fix your code by just adding a `.future()` call on the result.
+* `DownloadListener` has been renamed to `DownloadProgressTracker`
+* `PeerGroup.addPeerFilterProvider` and `ClientConnectionManager.openConnection` now return futures instead of nothing.
+* PeerGroup no longer implements the Guava service interface. It has its own start/startAsync and stop/stopAsync methods. You no longer need to call awaitRunning() or awaitTerminated().
+* The PeerGroup lock is no longer held whilst invoking Bloom filter providers: this helps you to avoid circular deadlock when calling back into bitcoinj from inside your provider.
+* Thanks to Jarl Fransson, when deserializing a wallet the lock order is now always wallet->extension.
+* `Coin.parseCoin()` now throws IllegalArgumentException instead of ArithmeticException if 
+
+##Version 0.12.3
+
+This is a bug fix / maintenance release:
+
+* New Wallet APIs:
+  * Wallet.reset() to prepare the wallet for a blockchain replay 
+  * Wallet.getIssuedReceiveKeys()/getIssuesReceiveAddresses() for knowing the derived keys/addresses. 
+* Syncing the blockchain on Android devices should be approximately twice as fast with large wallets. Also, loading wallets is considerably quicker.
+* Misc small bug fixes.
+
+##Version 0.12.2
+
+This is a bug fix / maintenance release:
+
+* Various fixes to wallet/keychain locking which frequently caused deadlocks. 
+* In some cases, advancing the current address wasn't persisted, resulting in re-use of addresses. This is now fixed.
+* Better support for OP_RETURN: Anti-dust rules do not apply, and we now can build these scripts using ScriptBuilder. 
+* Tor directory authorities: switch out turtles for longclaw to track upstream changes.
+* Misc small bug fixes.
 
 ##Version 0.12.1
 
