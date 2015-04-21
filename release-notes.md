@@ -30,7 +30,7 @@ From most to least notable:
 * There is now support for HTTP seeds using the Cartographer protocol, which gives signed and thus auditable results.
 * Support for the `getutxos` message defined in BIP 65 has been added.
 * Some improvements to the WalletTemplate app. You can now send any amount out, and password scrypt hashing strength adaptation was rewritten to avoid triggering absurd RAM usage and generally be more robust.
-* A new Context class has been introduced. Using Context is optional currently but will over time replace NetworkParameters in most cases as the general global object. A Context will be created and propagated between threads automatically for you in the 0.13 release as a backwards compatibility aid: however it is recommended that you create a Context yourself and pass it into core objects like Wallet and PeerGroup when possible to make the transition easier. In future, Context will hold various bits of configuration and global state that different parts of the library can use, to reduce repetitive re-configuration and wiring.
+* A new `Context` class has been introduced. Using Context is optional currently but will over time replace NetworkParameters in most cases as the general global object. A Context will be created and propagated between threads automatically for you in the 0.13 release as a backwards compatibility aid: however it is recommended that you create a Context yourself and pass it into core objects like Wallet and PeerGroup when possible to make the transition easier. In future, Context will hold various bits of configuration and global state that different parts of the library can use, to reduce repetitive re-configuration and wiring.
 * `MarriedKeyChain` can now be constructed with a watching key.
 * Thanks to Jarl Fransson, the payment channels library now has support for encrypted wallets.
 * TransactionBroadcast has been improved and now recognises network rejection via the reject message much more reliably.
@@ -59,10 +59,10 @@ immature coinbases and unconfirmed transactions). If you were previously using `
 * `PeerGroup.broadcastTransaction` now returns a `TransactionBroadcast` object instead of a future: you can fix your code by just adding a `.future()` call on the result.
 * `DownloadListener` has been renamed to `DownloadProgressTracker`
 * `PeerGroup.addPeerFilterProvider` and `ClientConnectionManager.openConnection` now return futures instead of nothing.
-* PeerGroup no longer implements the Guava service interface. It has its own start/startAsync and stop/stopAsync methods. You no longer need to call awaitRunning() or awaitTerminated().
+* PeerGroup no longer implements the Guava service interface. It has its own start/startAsync and stop/stopAsync methods. You no longer need to call `awaitRunning()` or `awaitTerminated()` which have been removed.
 * The PeerGroup lock is no longer held whilst invoking Bloom filter providers: this helps you to avoid circular deadlock when calling back into bitcoinj from inside your provider.
-* Thanks to Jarl Fransson, when deserializing a wallet the lock order is now always wallet->extension.
-* `Coin.parseCoin()` now throws IllegalArgumentException instead of ArithmeticException if 
+* Thanks to Jarl Fransson, when deserializing a wallet the lock order is now always `wallet->extension`.
+* `Coin.parseCoin()` now throws IllegalArgumentException instead of ArithmeticException if the given string would result in fractional satoshis.
 
 ##Version 0.12.3
 
