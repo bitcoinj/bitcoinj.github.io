@@ -20,16 +20,22 @@ _0.13 has not been released yet. These release notes reflect changes in git mast
 
 From most to least notable:
 
-* Major performance improvements with large wallets, especially on Android. Balance computation now scales better.
+* Major performance improvements:
+  * Chain sync is now faster
+  * Much faster handling of large wallets, especially on Android.
+  * Tor bootstrap is much faster, and is now just a couple of seconds on desktops once the local caches are warm. This takes us one step closer to Tor-by-default.
 * Thanks to Kalpesh Parmar:
   * A MySQL block store has been added, it has the same feature as the PostgreSQL block store (can index the UTXO set and do balance queries for arbitrary addresses)
   * The Wallet class can now be connected to a UTXO database such as those created by the MySQL or Postgres block stores (or a remote block explorer). Unspent transaction outputs will be fetched from the given `UTXOProvider` for the purposes of creating spends and calculating the balance. Combined with the HD wallet support this allows for server side wallets with much higher scalability than previously possible.
 * A LevelDB SPV block store has been added. It doesn't store the UTXO set or block contents, but lets you quickly look up any block header by hash, if you need that.
 * Checkpoints have now been integrated into the WalletAppKit class so you don't need to set them up manually any more when using the JAR. Dalvik/Android users still must do it themselves, as classes.dex files cannot contain embedded files.
-* PeerGroup has various improvements to block chain sync. It also now implements a stalled peer detector: peers that are serving us the chain slower than a configurable bytes/second threshold will be disconnected and chain download will restart from another. The defaults are chosen conservatively so only peers that can't filter >20 blocks per second will trigger a stall.
+* PeerGroup now implements a stalled peer detector: peers that are serving us the chain slower than a configurable bytes/second threshold will be disconnected and chain download will restart from another. The defaults are chosen conservatively so only peers that can't filter >20 blocks per second will trigger a stall.
 * There is now support for HTTP seeds using the Cartographer protocol, which gives signed and thus auditable results.
 * Support for the `getutxos` message defined in BIP 65 has been added.
 * Some improvements to the WalletTemplate app. You can now send any amount out, and password scrypt hashing strength adaptation was rewritten to avoid triggering absurd RAM usage and generally be more robust.
+* Tor tweaks:
+  * Track directory authority changes: turtles has been replaced by longclaw.
+  * A workaround for thread safety bugs in some Linux glibc's has been added, which resolves a segfault that could occur when trying to use Tor.
 * A new `Context` class has been introduced. Using Context is optional currently but will over time replace NetworkParameters in most cases as the general global object. A Context will be created and propagated between threads automatically for you in the 0.13 release as a backwards compatibility aid: however it is recommended that you create a Context yourself and pass it into core objects like Wallet and PeerGroup when possible to make the transition easier. In future, Context will hold various bits of configuration and global state that different parts of the library can use, to reduce repetitive re-configuration and wiring.
 * `MarriedKeyChain` can now be constructed with a watching key.
 * Thanks to Jarl Fransson, the payment channels library now has support for encrypted wallets.
@@ -38,9 +44,6 @@ From most to least notable:
 * Thanks to Mike Rosseel, peer discovery now works differently: peers handed back by a `PeerDiscovery` implementation are used in order and discoverers will be polled until a configurable max is reached, rather than stopping as soon as any discoverer returns peers.
 * The `LinuxSecureRandom` class that works around the Android random number generator faults has been integrated with bitcoinj and will be used automatically when appropriate. LinuxSecureRandom just reads entropy from /dev/urandom and bypasses the buggy userspace RNGs that all Android devices have shipped with. This change should help avoid issues with new Android developers that aren't branching existing wallets and haven't heard about the problems affecting the platform.
 * Thanks to Matt Corallo and Dave Collins, there are many improvements to the block tester.
-* Tor related changes:
-  * Track directory authority changes: turtles has been replaced by longclaw.
-  * A workaround for thread safety bugs in some Linux glibc's has been added, which resolves a segfault that could occur when trying to use Tor.
 * References to prodnet have all been replaced with the more standard "main net" terminology.
 * Many, many bug fixes, small tweaks and new APIs, more API sanity checks and so on.
 
