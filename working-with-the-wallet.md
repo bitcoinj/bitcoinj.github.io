@@ -157,7 +157,7 @@ You can also just not call `wallet.commitTx` and use `peerGroup.broadcastTransac
 
 The `Wallet.getBalance()` call has by default behaviour that may surprise you. If you broadcast a transaction that sends money and then immediately afterwards check the balance, it may be lower than what you expect (or even be zero).
 
-The reason is that bitcoinj has a somewhat complex notion of _balance_. You need to understand this in order to write robust applications. The `getBalance()` method has two alternative forms. In one, you pass in a `Wallet.BalanceType` enum. It has two values, `AVAILABLE` and `ESTIMATED`. Often these will be the same, but sometimes they will vary. The other overload of `getBalance()` takes a `CoinSelector` object.
+The reason is that bitcoinj has a somewhat complex notion of _balance_. You need to understand this in order to write robust applications. The `getBalance()` method has two alternative forms. In one, you pass in a `Wallet.BalanceType` enum. It has four possible values, `AVAILABLE`, `ESTIMATED`, `AVAILABLE_SPENDABLE` and `ESTIMATED_SPENDABLE`. Often these will be the same, but sometimes they will vary. The other overload of `getBalance()` takes a `CoinSelector` object.
 
 The `ESTIMATED` balance is perhaps what you may imagine as a "balance" - it's simply all outputs in the wallet which are not yet spent. However, that doesn't mean it's really safe to spend them. Because Bitcoin is a global consensus system, deciding when you can really trust you received money and the transaction won't be rolled back can be a subtle art. 
 
@@ -165,16 +165,18 @@ This concept of safety is therefore exposed via the `AVAILABLE` balance type, an
 
 The default coin selector bitcoinj provides (`Wallet.DefaultCoinSelector`) implements a relatively safe policy: it requires at least one confirmation for any transaction to be considered for selection, except for transactions created by the wallet itself which are considered spendable as long as it was seen propagating across the network. This is the balance you get back when you use `getBalance(BalanceType.AVAILABLE)` or the simplest form, `getBalance()` - it's the amount of money that the spend creation methods will consider for usage. The reason for this policy is as follows:
 
-1. You trust your own transactions implicitly, as you "know" you are yourself trustworthy. However, it's still possible for bugs and other things to cause you to create unconfirmable transactions - for instance if you don't include sufficient fees. Therefore we don't want to spend change outputs unless we saw that network nodes relayed the transaction, giving a high degree of confidence that it will be mined upon.
+1. You trust your own transactions implicitly, as you "know" you are trustworthy. However, it's still possible for bugs and other things to cause you to create unconfirmable transactions - for instance if you don't include sufficient fees. Therefore we don't want to spend change outputs unless we saw that network nodes relayed the transaction, giving a high degree of confidence that it will be mined upon.
 2. For other transactions, we wait until we saw at least one block because in SPV mode, you cannot check for yourself that a transaction is valid. If your internet connection was hacked, you might be talking to a fake Bitcoin network that feeds you a nonsense transaction which spends non-existent Bitcoins. Please read the [SecurityModel](/security-model) article to learn more about this. Waiting for the transaction to appear in a block gives you confidence the transaction is real. The original Bitcoin client waits for 6 confirmations, but this value was picked at a time when mining hash rate was much lower and it was thus much easier to forge a small fake chain. We've not yet heard reports of merchants being defrauded using invalid blocks, so waiting for one block is sufficient.
 
 The default coin selector also takes into account the age of the outputs, in order to maximise the probability of your transaction getting confirmed in the next block. 
 
-The default selector is somewhat customisable via subclassing. But normally the only customisation you're interested in is being able to spend unconfirmed transactions. If your application knows the money you're receiving is valid via some other mechanism (e.g. you are connected to a trusted node), or you just don't care about fraud because the value at stake is very low, then you can call `Wallet.allowSpendingUnconfirmedTransactions()` to make the wallet drop the 1-block policy.
+The default selector is somewhat customisable via subclassing. But normally the only customisation you're interested in is being able to spend unconfirmed transactions. If your application knows the money you're receiving is valid via some other mechanism (e.g. you are connected to a trusted node), or you just don't care about fraud because the value at stake is very low, then you can call `Wallet.allowSpendingUnconfirmedTransactions()` to make the wallet use a different selector that drops the 1-block policy.
 
 You can also choose the coin selector on a per-payment basis, using the `SendRequest.coinSelector` field.
 
 As a consequence of all of the above, if you query the `AVAILABLE` balance immediately after doing a `PeerGroup.broadcastTransaction`, you are likely to see a balance lower than what you anticipate, as you're racing the process of broadcasting the transacation and seeing it propagate across the network. If you instead call `getBalance()` after the returned `ListenableFuture<Transaction>` completes successfully, you will see the balance you expect.
+
+The difference between `AVAILABLE_SPENDABLE` and `AVAILABLE` variants is whether the wallet considers outputs for which it does not have the keys. In a "watching wallet", the wallet may be tracking the balance of another wallet elsewhere by watching for the public keys. By default, watched addresses/scripts/keys are considered to be a part of the balance even though attempting to spend those outputs would fail. The only time these two notions of balance differ is if you have a mix of private keys and public-only keys in your wallet: this can occur when writing advanced contracts based applications but otherwise should never crop up.
 
 ##Using fees
 
@@ -322,5 +324,26 @@ A pluggable transaction signer is an object that implements the `TransactionSign
 The Wallet class runs transaction signers in sequence. First comes the `LocalTransactionSigner` which knows how to use the private keys in the wallet's `KeyBag`. Then comes yours. The `TransactionSigner.signInputs(ProposedTransaction, KeyBag)` method is called and the transaction inside the `ProposedTransaction` object should have signatures fetched from the remote service and inserted as appropriate. The HD key paths to use can be retrieved from the `ProposedTransaction` object.
 
 Married wallets support is relatively new and experimental. If you do something with it, or encounter problems, let us know!
+
+##Connecting the wallet to a UTXO store
+
+By default the wallet expects to find unspent outputs by scanning the block chain using Bloom filters, in the normal SPV manner. In some use cases you may already have this data from some other source, for example from a database built by one of the <a href="/full-verification">full pruned block stores</a>. You can configure the Wallet class to use such a source instead of its own data and as such, avoid the need to directly use the block chain. This can be convenient when attempting to build something like a web wallet, where wallets need to be loaded and discarded very quickly.
+
+To configure the wallet in this manner, you need an implementation of the `UTXOProvider` interface. This interface is fairly simple and has two core methods, one to return the block height known by the provider and the other to return a list of `UTXO` objects given a list of `Address` objects:
+
+{% highlight java %}
+public interface UTXOProvider {
+    List<UTXO> getOpenTransactionOutputs(List<Address> addresses) throws UTXOProviderException;
+    ....
+ }
+{% endhighlight %}
+
+Note that this API will probably change in future to take a list of scripts instead of/as well as a list of addresses, as not every output type can be expressed with an address.
+
+Conveniently the database backed `FullPrunedBlockStore` implementations that bitcoinj ships with (Postgres, MySQL, H2) implement this interface, so if you use them you can connect the wallet to the databases directly.
+
+Once you have a provider, just use `Wallet.setUTXOProvider` to plug it in. The provider will then be queried for spendable outputs whenever the balance is calculated or a spend is completed.
+
+Note that the UTXO provider association is not serialized and must be reset every time the wallet is loaded. For typical web wallet scenarios however this isn't a big deal as most likely, the wallet will be re-constructed from the random seed each time it is needed rather than being explicitly serialized.
 
 </div>

@@ -16,15 +16,15 @@ title: "Limitations and missing features."
 
 ##Introduction
 
-bitcoinj is a work in progress, and lacks some features you probably consider important. It also has strange quirks and other issues that should be fixed, but nobody has had time to do so (there were always higher priorities).
+bitcoinj is a work in progress, and lacks some features you probably consider important. It also has strange quirks and other issues that should be fixed, but nobody has yet had time to do so (there were always higher priorities).
 
 A lot of these quirks persist because the primary goal of the project has always been to support SPV smartphone wallets, with other use cases being treated as secondary priorities. Hence making the Android wallet perform well has repeatedly evicted other features and refactorings.
 
-For a full list, see [the bug tracker](https://code.google.com/p/bitcoinj/issues/list). What is listed below is a small selection of the most important limitations. Patches are always welcome.
+For a full list, see [the bug tracker](https://github.com/bitcoinj/bitcoinj/issues). What is listed below is a small selection of the most important limitations. Patches are always welcome.
 
 ##Bugs and other problems
 
-* The Wallet code doesn't scale, at all. All transactions that were ever relevant to the wallet are loaded into memory, all the time, and re-written every time the wallet is saved. This results in a simple on-disk format accessible to many kinds of apps, but has poor performance for heavy users. In time we'll probably switch to a log structured wallet file format to solve this.
+* The Wallet code doesn't scale well. All transactions that were ever relevant to the wallet are loaded into memory, all the time, and re-written every time the wallet is saved. This results in a simple on-disk format accessible to many kinds of apps, but has poor performance for heavy users. In time we'll probably switch to a log structured wallet file format to solve this.
 
 ##Security issues
 
@@ -51,5 +51,8 @@ For a full list, see [the bug tracker](https://code.google.com/p/bitcoinj/issues
 ##API warts
 
 * The `Wallet` class is huge and has a lot of functionality that could be refactored out. At some point we'll probably move this to a separate package.
-* Some core objects like `Block` and `Transaction` should be immutable but aren't. The `TransactionConfidence` objects are attached to `Transaction`, but should really be separated - this means that `Transaction` objects occasionally need to be canonicalised using an interning table and the right time to do this is often non-obvious.
-* Most objects are thread safe but thread safety isn't always documented as precisely as it could be.
+* Some core objects like `Block` and `Transaction` should be immutable but aren't.
+* Most core objects are thread safe but thread safety isn't always documented as precisely as it could be.
+* Each event should have a single interface, but instead there are just a handful with many methods each (one for each peer). This makes the API awkward to use with lambdas, such as in Java 8 or Kotlin or really any language more modern than Java 6. At some point we will make these events more fine grained.
+* Some "events" are actually more like customisation points (they return data) and are only invoked if your event listener is registered for the SAME_THREAD executor. This is documented, but sometimes trips people up.
+* Some configuration state is duplicated throughout the library. The Context class introduced in 0.13 is a step towards fixing this.

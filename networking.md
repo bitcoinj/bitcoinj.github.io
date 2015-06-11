@@ -49,15 +49,19 @@ peerGroup = new PeerGroup(params, chain, new BlockingClientManager());
 
 When using Tor, most apps will connect to the network via a local SOCKS proxy. Whilst you could do that as well it has a number of disadvantages, most obviously that you need a local Tor client running already.
 
-With bitcoinj we have a better choice, which is using the [Orchid](http://www.subgraph.com/orchid.html) library - a pure Java implementation of the Tor protocol.
-
-Orchid is not currently available via Maven, so you need to include a JAR into your app yourself. As the support is not yet fully integrated into bitcoinj, you would need to follow the instructions in [this feature request](https://code.google.com/p/bitcoinj/issues/detail?id=499). Using Tor for Bitcoin connections can be as simple as constructing a `TorClient` object, calling it's start method, and then using:
+With bitcoinj we have a better choice, which is using the [Orchid](http://www.subgraph.com/orchid.html) library - a pure Java implementation of the Tor protocol. Orchid is included in bitcoinj automatically, so you do not have to do anything to benefit from it. However due to performance and reliability concerns Tor is not yet enabled by default, so to use it you must do something like this:
 
 {% highlight java %}
-peerGroup = new PeerGroup(params, chain, new BlockingClientManager(torClient.getSocketFactory());
+// If using WalletAppKit:
+kit.useTor();
+
+// If constructing a PeerGroup by hand:
+PeerGroup peerGroup = PeerGroup.newWithTor(params, chain, new TorClient());
 {% endhighlight %}
 
-However, it is important to note that currently this does NOT give full anonymity in use, because the DNS queries that are used to look up node addresses via `DnsDiscovery` will not be routed via Tor. Also, hidden service nodes will not be used.
+The `TorClient` object can be used to construct new sockets that are routed via Tor, for example, if you wish to use Tor for your own HTTPS requests this is the right way to do that. 
+
+There are some important things to note here. The first is that in 0.12, the Tor support finds peers by building many diverse circuits and querying DNS through all of them. This is very slow but reduces the impact a bad Tor exit can have on peer discovery. In 0.13 things changed such that peers are discovered by a simple, fast HTTP request to a [Cartographer](https://github.com/mikehearn/httpseed) seed. The HTTP response is digitally signed so bad exits cannot tamper with it. This boosts startup performance considerably, at a cost of (temporarily) reduced seed diversity. In future, we hope that more people will run Cartographer seeds and we will combine the strengths of both approaches.
 
 Tor support is likely to get more complete and integrated in future versions of the library.
 

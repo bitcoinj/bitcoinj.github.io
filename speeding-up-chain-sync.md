@@ -12,41 +12,27 @@ title: "How to optimise downloading the block chain."
 
 <div markdown="1" class="toccontent">
 
-#How to optimise downloading the block chain.
+#Information on block chain sync optimisations
 
-##Chain sync optimisations
+Bitcoin is a system that throws around large quantities of data. Often you don't really want all the data, just a subset of it. For instance any end user facing wallet app falls into this category - for performance reasons you don't want to handle the entire block chain. The wallet can work together with other classes in the library to implement various optimisations.
 
-Bitcoin is a system that throws around large quantities of data. Often you don't really want all the data, just a subset of it. For instance any end user facing wallet app falls into this category - for performance reasons you don't want to handle the entire block chain. The Wallet can work together with other classes in the library to implement various optimisations.
+This article details various performance techniques implemented by bitcoinj that speed things up. It is for informational purposes only: all these optimisations are on by default and require no work from the developer.
 
-###Fast catchup
+##Fast catchup
 
 Keys can have an associated creation time. If the wallet knows the creation times of all its keys, when you add it to a `PeerGroup` the _fast catchup time_ will be set for you. Block contents before the fast catchup time don't have to be downloaded, only the headers, so it's much faster to bootstrap the system in this way. If you're implementing a wallet app, this is a very useful optimization that will be taken advantage of automatically.
 
 The fast catchup time can be set explicitly using `PeerGroup.setFastCatchupTime`, although it will be recalculated for you any time you add a wallet or add keys to a wallet. The time is simply set to the min of the earliest key creation time of all wallets, obtained by calling `Wallet.getEarliestKeyCreationTime()`.
 
-###Checkpointing
+##Checkpointing
 
 Although fast catchup and Bloom filtering (see below) mean you can sync with the chain just by downloading headers and some transactions+Merkle branches, sometimes this is still too damn slow. A header is just 80 bytes, but there is one for every 10 minutes the system has been in operation. We can see through simple multiplication that headers alone takes around 4 megabytes of data for every year the system exists, so as of July 2013 a new user must still download and process over 16 megabytes of data to get started.
 
 To solve this problem, we have checkpoint files. These are generated using the `BuildCheckpoints` tool that can be found in the tools module of the bitcoinj source code. `BuildCheckpoints` downloads headers and writes out a subset of them to a file. That file can then be shipped with your application. When you create a new `BlockStore` object, you can use that file to initialise it to whichever checkpointed block comes just before your wallets _fast catchup time_ (i.e. the birthday of the oldest key in your wallet). Then you only need to download headers from that point onwards. 
 
-Unlike the other optimisations, checkpointing is not currently automatic or on by default. But using the feature is simple:
-
-{% highlight java %}
-boolean chainExistedAlready = chainFile.exists();
-blockStore = new SPVBlockStore(params, chainFile);
-if (!chainExistedAlready) {
-    File checkpointsFile = new File("checkpoints");    // Replace path to the file here.
-    FileInputStream stream = new FileInputStream(checkpointsFile);
-    CheckpointManager.checkpoint(params, stream, blockStore, wallet.getEarliestKeyCreationTime());
-}
-{% endhighlight %}
-
-Obviously, you have to do this before starting the `PeerGroup` or anything else that would try to use the `BlockStore`. And you should only do it when a new chain file is created - so it only speeds things up for the first run of your app. Checkpointing may become on by default in later versions of bitcoinj.
-
 Checkpoints are called checkpoints because, like the upstream Satoshi client, once you've initialised the block store with one bitcoinj will refuse to re-organise (process chain splits) past that point. In fact, it won't even recognise that a re-org has taken place because the earlier blocks don't exist in the block store, thus the alternative fork of the chain will be seen merely as a set of orphan blocks. For this reason the `BuildCheckpoints` tool won't add any checkpoints fresher than one month from when it's run - it only takes a few seconds to download the last months worth of chain headers, and no fork is likely to ever be longer than one month.
 
-###Bloom filtering
+##Bloom filtering
 
 By default the `PeerGroup` and `Wallet` will work together to calculate and upload _Bloom filters_ to each connected peer. A _Bloom filter_ is a compact, privacy preserving representation of the keys/addresses in a wallet. When one is passed to a remote peer, it changes its behaviour. Instead of relaying all broadcast transactions and the full contents of blocks, it matches each transaction it sees against the filter. If the filter matches, that transaction is sent to your app, otherwise it's ignored. When a transaction is being sent to you because it's in a block, it comes with a _Merkle branch_ that mathematically proves the transaction was included in that block. BitcoinJ checks the Merkle branch for each transaction, and rejects any attempts to defraud you.
 

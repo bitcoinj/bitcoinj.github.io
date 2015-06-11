@@ -14,13 +14,15 @@ title: "How to test applications"
 
 #How to test applications
 
-Testing is obviously an important step for any software that uses money. This article explains some common techniques used to test BItcoin apps.
+Testing is obviously an important step for any software that uses money. This article explains some common techniques used to test Bitcoin apps.
 
 ##The testnet
 
 The Bitcoin community runs a separate, parallel instance of the Bitcoin network that features a slightly different and more relaxed ruleset, called the _testnet_. Most usefully, coins on the testnet have no value and can be obtained for free from testnet faucet sites like [http://faucet.xeno-genesis.com/](http://faucet.xeno-genesis.com/) or [http://tpfaucet.appspot.com/](http://tpfaucet.appspot.com/).
 
 You can make your app use the testnet by instantiating your objects with `TestNetParams.get()` instead of `MainNetParams.get()`. The wallet-tool app accepts a flag `--net=TEST` as well.
+
+It's worth noting that whilst the testnet can be convenient, sometimes people mess it up by mining on it with ASICs. Such problems do not occur on the main network, so if you see large spurts of blocks found a few seconds apart, blocks that fail validation and so on, it's worth switching to a local regression test network instead: the environment is much more controlled and predictable.
 
 ##Regression test mode
 

@@ -54,10 +54,23 @@ title: "bitcoinj"
   <li><a href="/testing">How to test your software</a></li>
 </ul> 
 
-<h2>Core classes in depth</h2>
+<h2>Core APIs in depth</h2>
 <ul>
   <li><a href="/working-with-transactions">Working with transactions</a></li>
-  <li><a href="/working-with-the-wallet">Working with the wallet</a></li>
+  <li>
+    <a href="/working-with-the-wallet">Working with the wallet</a>, which covers:
+    <ul>
+      <li>Setting one up</li>
+      <li>Receiving and sending money</li>
+      <li>Crafting custom transactions and contracts</li>
+      <li>Balances, coin selection and how to customise</li>
+      <li>Wallet maintenance</li>
+      <li>Encryption and passwords</li>
+      <li>Watching/following wallets</li>
+      <li>Multisig/married wallets and pluggable transaction signing</li>
+      <li>Connecting the wallet to an external unspent outputs store e.g. for web wallets</li>
+    </ul>
+  </li>
   <li><a href="/working-with-monetary-amounts">Working with monetary amounts</a></li>
   <li><a href="/networking">How to use the network API and info about Tor support</a></li>
 </ul>
@@ -70,12 +83,13 @@ title: "bitcoinj"
 
 <h2>Advanced features</h2>  
 <ul>
+  <li><a href="/contexts">API contexts</a></li>
   <li><a href="/full-verification">How to use the experimental fully verifying mode</a></li>
   <li><a href="/working-with-contracts">Working with contracts</a></li>
-  <li><a href="/speeding-up-chain-sync">Speeding up synchronising with the block chain</a></li>
   <li><a href="/payment-protocol">Working with the BIP70 payment protocol</a></li>
   <li><a href="/working-with-micropayments">Working with micropayment channels</a></li>
-  <li><a href="/using-from-other-languages">Using bitcoinj from other languages like C++, Ruby, Python, etc</a></li>
+  <li><a href="/speeding-up-chain-sync">Information on block chain synchronisation optimisations</a></li>
+  <li><a href="/using-from-other-languages">Using bitcoinj from other languages like C++, JavaScript, Ruby, Python, etc</a></li>
   <li><a href="/coding-conventions">Coding conventions in the library itself</a></li>
 </ul>
 
@@ -86,7 +100,7 @@ title: "bitcoinj"
 <ul>
   <li>View <a href="https://github.com/bitcoinj/bitcoinj">bitcoinj on Github</a> - make sure to <q>star</q> us!</li>
   <li>Ask questions and discuss improvements on the <a href="https://groups.google.com/forum/#!forum/bitcoinj">mailing list</a></li>
-  <li>Search and report issues on the <a href="https://code.google.com/p/bitcoinj/issues/list">Issues Data Base</a> (to ask for help please use the mailing list, not the Issues DB)</li>
+  <li>Search and report issues on the <a href="https://github.com/bitcoinj/bitcoinj/issues">Issues Data Base</a> (to ask for help please use the mailing list, not the Issues DB)</li>
   <li>Follow bitcoinj on <a href="https://plus.google.com/b/102614914114364947458/102614914114364947458/posts">Google+</a>!</li>
   <li>Join our IRC channel, #bitcoinj on <a href="http://webchat.freenode.net/?channels=bitcoinj&uio=d4">freenode</a>.</li>
 </ul>

@@ -24,6 +24,24 @@ This page details how you can go about using bitcoinj from other languages.
 
 Javascript can interop with Java using the Nashorn engine shipped in Java 8. We have a tutorial on this already! Check out the getting started guide to learn how to set this up and see some examples. Javascript programs that access Java libraries can be run from the command line using the "jjs" tool. There are projects that provide the Node.js API's as well.
 
+##Kotlin/Scala
+
+These languages offer good Java interop and there are various people using them in combination with bitcoinj.
+
+##Python
+
+Python has many fans and can be fun to prototype in. The original Python implementation cannot interop with Java code, but we can gain access via another way using [Jython](http://www.jython.org/index.html). Jython is an implementation of Python (2.x) that is compatible with the original language/class libraries and provides an interactive interpreter that works just like regular Python's for exploration and learning. As long as you don't rely on any custom CPython extensions, you can just run your regular Python application out of the box, including UNIX style executable scripts.
+
+Why would you do that? Primarily because you can import Java class libraries as you would Python class libraries (from org.bitcoinj.core import Wallet). You also get a better garbage collector and real multi-threading support.
+
+##Ruby
+
+In a similar vein to Jython, there is also [JRuby](http://jruby.org/).  Like Jython it runs Ruby on the JVM, with the same advantages - an excellent garbage collector, interop with Java code, real multi-threading support and so on. Like Jython the only thing it has issues with is modules that rely on C extension functions, but anything pure Ruby works.
+
+##C# and .NET
+
+bitcoinj can be used via IKVM
+
 ##C++
 
 At the moment, the easiest way to use bitcoinj from C++ is to embed the JVM and use auto-generated JNI wrappers. Here's an example of what such a program looks like:
@@ -50,15 +68,9 @@ We are also exploring complete automated conversion of the bitcoinj sources into
 
 The Hive team maintain a library called [BitcoinKit](https://github.com/hivewallet/BitcoinKit), which is designed for building wallet apps on MacOS X. It does not expose the raw bitcoinj API, rather providing its own Objective-C API on top and using JNI under the covers.
 
-##Python
+RoboVM can be used to compile Java down to ARM binary code that runs on iPhones, and it has bindings for all iOS frameworks. If you want to write an iPhone app with bitcoinj, this would be a good way to do it.
 
-Python has many fans and can be fun to prototype in. The original Python implementation cannot interop with Java code, but we can gain access via another way using [Jython](http://www.jython.org/index.html). Jython is an implementation of Python (2.x) that is compatible with the original language/class libraries and provides an interactive interpreter that works just like regular Python's for exploration and learning. As long as you don't rely on any custom CPython extensions, you can just run your regular Python application out of the box, including UNIX style executable scripts.
-
-Why would you do that? Primarily because you can import Java class libraries as you would Python class libraries (from org.bitcoinj.core import Wallet). You also get a better garbage collector and real multi-threading support.
-
-##Ruby
-
-In a similar vein to Jython, there is also [JRuby](http://jruby.org/).  Like Jython it runs Ruby on the JVM, with the same advantages - an excellent garbage collector, interop with Java code, real multi-threading support and so on. Like Jython the only thing it has issues with is modules that rely on C extension functions, but anything pure Ruby works.
+Alternatively, [BreadWallet]() is an iOS SPV wallet that isn't based on bitcoinj. The code is not written to be a library but you could potentially extract the core code and use it for other purposes.
 
 ##Lisp
 
