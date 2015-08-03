@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>{{page.title}}</title>
 <link rel="icon" type="image/png" href="/favicon16.png" sizes="16x16">
 <link rel="icon" type="image/png" href="/favicon32.png" sizes="32x32">
@@ -12,12 +13,15 @@
 
 <div class="headercontainer"><div class="header">
 <a href="/" class="logo"><img src="/img/bitcoinjlogo.svg"></a>
-<ul class="menu" id="menu">
-  <li><a href="/#introduction">Introduction</a></li>
-  <li><a href="/#getting-started">Getting started</a></li>
-  <li><a href="/#documentation">Documentation</a></li>
-  <li><a href="/#community">Community</a></li>
-</ul>
+<div class="menumobile" ontouchstart="menuShow(event)" onclick="menuShow(event)"></div>
+<div class="menucontainer" id="menucontainer" ontouchstart="menuScroll(event)">
+  <ul class="menu" id="menu">
+    <li><a href="/#introduction">Introduction</a></li>
+    <li><a href="/#getting-started">Getting started</a></li>
+    <li><a href="/#documentation">Documentation</a></li>
+    <li><a href="/#community">Community</a></li>
+  </ul>
+</div>
 </div></div>
 
 <div class="content">
