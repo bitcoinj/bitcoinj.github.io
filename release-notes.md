@@ -14,6 +14,22 @@ title: "Release notes"
 
 #Release notes
 
+##Version 0.14
+
+_This version is not yet released and corresponds to changes in git master_
+
+* Thanks to Ross Nicoll, BIP 34 (height in coinbase) is now supported and enforced in fully verifying mode.
+* Thanks to Andreas Schildbach:
+  * You can now set required service bits on the PeerGroup object.
+  * There is a new HTTP seed available for the main network.
+* The Wallet code has been optimised again.
+* Many misc cleanups and bug fixes.
+
+API changes:
+* Event listener APIs are now finer grained and more easily used from languages that support lambda functions. The old functions are still there but deprecated. This change to separate interfaces for each event means code won't break anymore when adding new events.
+* The Coin API has new method aliases to activate operator overloading support in Kotlin.
+* ProtobufParser, StreamParser and friends have been renamed to ProtobufConnection, StreamConnection etc to better reflect what they actually do.
+
 ##Version 0.13
 
 From most to least notable:
