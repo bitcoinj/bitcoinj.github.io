@@ -10,6 +10,38 @@ function removeEvent(a,b,c){
 return (a.removeEventListener)?a.removeEventListener(b,c,false):(a.detachEvent)?a.detachEvent('on'+b,c):false;
 }
 
+function getEvent(e,a){
+// Return requested event property.
+// Ex. var target = getEvent(event, 'target');
+e=(e)?e:window.event;
+switch(a){
+case 'type':
+	return e.type;
+case 'target':
+	return (e.target&&e.target.nodeType==3)?e.target.parentNode:(e.target)?e.target:e.srcElement;
+}
+}
+
+function addClass(node,data){
+// Add class to node.
+var cl=node.className.split(' ');
+for(var i=0,n=cl.length;i<n;i++){
+	if(cl[i]==data)return;
+}
+cl.push(data);
+node.className=cl.join(' ');
+}
+
+function removeClass(node,data){
+// Remove class from node.
+var ocl=node.className.split(' ');
+var ncl=[];
+for (var i=0,n=ocl.length;i<n;i++){
+	if (ocl[i]!=data)ncl.push(ocl[i]);
+}
+node.className=ncl.join(' ');
+}
+
 function getStyle(a,b){
 //Return the value of the computed style on a DOM node.
 //Ex. getStyle(node,'padding-bottom');
@@ -81,6 +113,151 @@ function getWindowX(){
 return (window.innerWidth)?window.innerWidth:document.documentElement.clientWidth;
 }
 
+function onTouchClick(e,callback,callbackClick){
+// Detect and handle clicks using click and touch events while preventing accidental or ghost clicks.
+var timeout=1000,
+    srcEvent=e,
+    touchEndListener=function(e){
+    	// Call callback if touch events match the patterns of a click.
+    	removeEvent(t,'touchend',touchEndListener);
+    	setClickTimeout();
+    	if(Math.abs(e.changedTouches[0].pageX-x)>20||Math.abs(e.changedTouches[0].pageY-y)>20)return;
+    	callback(srcEvent);
+    },
+    wrongClickListener=function(e){
+    	// Cancel click events on different targets within timeframe.
+    	// This avoids accidental clicks when the page is scrolled or updated due to the 300ms click event delay on mobiles.
+    	removeEvent(document.body,'click',wrongClickListener);
+    	if(!clickReady()&&getEvent(e,'target')!=t)cancelEvent(e);
+    },
+    setClickTimeout= function(){
+    	// Update timeout during which click events will be blocked.
+    	document.body.setAttribute('data-touchtimeout',new Date().getTime()+timeout);
+    },
+    clickReady=function(){
+    	// Check if timeout during click events are blocked has expired.
+    	var ti=document.body.getAttribute('data-touchtimeout');
+    	return (ti===null||ti===''||parseInt(ti,10)<new Date().getTime());
+    };
+if(callbackClick===undefined)callbackClick=function(){};
+//Apply appropriate actions according to each event type.
+switch(getEvent(e,'type')){
+case 'touchstart':
+	// Save initial touchstart coordinates and listen for touchend events and accidental click events.
+	var x=e.changedTouches[0].pageX,
+	    y=e.changedTouches[0].pageY,
+	    t=e.changedTouches[0].target;
+	setClickTimeout();
+	addEvent(t,'touchend',touchEndListener);
+	addEvent(document.body,'click',wrongClickListener);
+	setTimeout(function(){
+		removeEvent(document.body,'click',wrongClickListener);
+	},timeout);
+break;
+case 'click':
+	// Call callback on click in the absence of a recent touchstart event to prevent ghost clicks.
+	// Always call callbackClick to let it cancel click events on links.
+	callbackClick(srcEvent);
+	if(!clickReady())return;
+	callback(srcEvent);
+break;
+}
+}
+
+function menuShow(e){
+// Show or hide mobile menu on tap.
+function init(){
+	var nd=document.getElementById('menucontainer'),
+	    toc=document.getElementById('toc');
+	(nd.className.indexOf('menuvisible')===-1)?addClass(nd,'menuvisible'):removeClass(nd,'menuvisible');
+	addEvent(nd,'click',menuAutoHide);
+	if(toc&&toc.parentNode!=nd)nd.appendChild(toc);
+}
+onTouchClick(e,init);
+}
+
+function menuAutoHide(e){
+// Hide mobile menu when a link is clicked.
+var t=getEvent(e,'target');
+if(t.nodeName!='A')return;
+removeClass(document.getElementById('menucontainer'),'menuvisible');
+}
+
+function menuScroll(e){
+// Emulate scroll within an element with touch events.
+function eventListener(e){
+	// Trigger actions based on touch events.
+	switch(e.type){
+	case 'touchend':
+		setSpeedCheckPoint(e);
+		endScrollAnimation(nd,getSpeed(e));
+		shutdown();
+		break;
+	case 'touchmove':
+		setSpeedCheckPoint(e);
+		updateScrollTop(e);
+		e.preventDefault();
+		break;
+	}
+}
+function setSpeedCheckPoint(e){
+	// Save last touch event position and time.
+	var t=new Date().getTime();
+	if(speedCheckPoint[0][0]-t<500)return;
+	speedCheckPoint.pop();
+	speedCheckPoint.unshift([t, e.changedTouches[0].pageY]);
+}
+function getSpeed(e){
+	// Calculate scroll speed from the last recent touch events.
+	var timeDiff=new Date().getTime()-speedCheckPoint[1][0],
+	    pageYDiff=0-(e.changedTouches[0].pageY-speedCheckPoint[1][1]);
+	return pageYDiff/timeDiff;
+}
+function updateScrollTop(e){
+	// Update element scrollTop according to the touchmove event.
+	var newPageY=e.changedTouches[0].pageY;
+	nd.scrollTop=Math.max(0,nd.scrollTop+lastPageY-newPageY);
+	lastPageY=newPageY;
+}
+function endScrollAnimation(nd,speed){
+	// Decelerate scrolling to a halt when user releases touch.
+	// speed argument is in px/ms and can be a negative number.
+	function animate(){
+		var p=(new Date().getTime()-startTime)/animationTime;
+		var pp=p*(2-p);
+		var scrollTop=Math.round(startScrollTop+(animationDistance*pp));
+		if(p>=1||scrollTop===0||scrollTop>=nd.scrollHeight){
+			nd.scrollTop=startScrollTop+animationDistance;
+			clearAnimation();
+			return;
+		}
+		nd.scrollTop=scrollTop;
+	}
+	var startTime=new Date().getTime(),
+	    startScrollTop=nd.scrollTop,
+	    animationTime=Math.sqrt(Math.abs(speed))*800,
+	    animationDistance=speed*animationTime;
+	clearInterval(nd.getAttribute('data-scrollStatus'));
+	nd.setAttribute('data-scrollStatus',setInterval(animate,10));
+}
+function clearAnimation(){
+	// Stop any scroll ongoing scroll animation.
+	clearInterval(nd.getAttribute('data-scrollStatus'));
+}
+function shutdown(){
+	// Remove event listener to destroy instance.
+	nd.removeEventListener('touchmove',eventListener);
+	nd.removeEventListener('touchend',eventListener);
+}
+var nd=document.getElementById('menucontainer'),
+    lastPageY=e.changedTouches[0].pageY,
+    time=new Date().getTime(),
+    speedCheckPoint=[[time,lastPageY],[time,lastPageY]];
+nd.addEventListener('touchmove',eventListener);
+nd.addEventListener('touchend',eventListener);
+clearAnimation();
+}
+
 function updateToc(){
 //Update table of content style on scroll.
 var updateToc=function(id,tags){
@@ -97,6 +274,7 @@ var updateToc=function(id,tags){
 	for(var i=0,n=tags.length;i<n;i++){
 		for(var ii=0,t=document.getElementsByTagName(tags[i]),nn=t.length;ii<nn;ii++)nodes.push(t[ii]);
 	}
+	if(nodes.length===0)return;
 	var first=last=closer=[nodes[0],getTop(nodes[0])];
 	//Find first and last title on the page, and closer title to the current position.
 	for(var i=0,n=nodes.length;i<n;i++){
@@ -126,7 +304,7 @@ var updateToc=function(id,tags){
 	}
 }
 var update=function(){
-	if(document.getElementById('toc'))updateToc('toc',['H2','H3','H4']);
+	if(document.getElementById('toc'))updateToc('toc',['H1','H2','H3','H4']);
 	if(document.getElementById('menu'))updateToc('menu',['H1']);
 }
 var timeout=function(){

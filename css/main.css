@@ -8,6 +8,7 @@ body{
 	margin:0;
 	padding:0;
 	color:#646464;
+	line-height:1.5em;
 }
 h1{
 	font-weight:400;
@@ -15,7 +16,8 @@ h1{
 	font-size:160%;
 	text-align:left;
 	font-weight:300;
-	margin:40px 0 20px 0;
+	margin:30px 0 15px 0;
+	line-height:1.5em;
 }
 h2{
 	font-weight:400;
@@ -23,12 +25,14 @@ h2{
 	font-size:130%;
 	text-align:left;
 	font-weight:300;
+	line-height:1.5em;
 }
 h3{
 	color:#383838;
 	font-size:110%;
 	text-align:left;
 	font-weight:300;
+	line-height:1.5em;
 }
 h1:before,
 h2:before,
@@ -96,7 +100,7 @@ ul ul{
 	list-style-type:disc;
 }
 li{
-	padding:5px 0;
+	margin:10px 0;
 }
 li p{
 	margin:0;
@@ -166,13 +170,13 @@ table tr.even td{
 	list-style:none;
 	display:inline-block;
 	position:relative;
-	padding:0 10px 0 10px;
+	padding:0 10px;
 	margin:0 5px;
 }
 .menu li a{
 	font-size:120%;
 	display:block;
-	padding:28px 0 28px 0;
+	padding:25px 0;
 	text-decoration:none;
 	color:#2c6fad;
 	white-space:nowrap;
@@ -185,6 +189,10 @@ table tr.even td{
 	color:#2c6fad;
 	border-bottom:2px solid #2c6fad;
 }
+
+.menumobile{
+	display:none;
+}
 	
 .content{
 	position:relative;
@@ -194,9 +202,6 @@ table tr.even td{
 	max-width:900px;
 	margin:100px auto 200px auto;
 }
-.content p,.content li{
-	line-height:1.5em;
-}
 
 .toc{
 	position:absolute;
@@ -204,7 +209,7 @@ table tr.even td{
 	margin-left:-20px;
 }
 .toc div{
-	top:100px;
+	top:105px;
 	position:fixed;
 	overflow-y:auto;
 	overflow-x:hidden;
@@ -219,43 +224,28 @@ table tr.even td{
 	width:200px;
 	border-right:2px solid #ebebeb;
 	padding:0 20px 0 0;
+	margin-top:-10px;
 }
 .toc ul li ul{
-	position:relative;
-	top:0;
 	padding:10px 0 0 0;
 	border:0;
 }
-.toc ul li{
-	padding:0 0 10px 0;
-}
-.toc ul li ul li{
-	padding:0 0 4px 0;
-}
-.toc ul li ul li ul li{
-	padding:0 0 4px 10px;
-}
 .toc ul li a{
-	padding-left:20px;
+	display:block;
+	padding:5px 0 5px 20px;
 	font-weight:bold;
 }
-.toc ul li ul li a{
-	font-weight:normal;
-}
-.toc ul li a:hover:before,
 .toc ul li a.active:before{
 	content:">";
 	position:absolute;
 	font-weight:bold;
 	left:0px;
 }
-.toc a,
-.toc a:link,
-.toc a:active,
-.toc a:visited{
-	display:block;
-	text-decoration:none;
-	line-height:1.5em;
+.toc ul li ul li a{
+	font-weight:normal;
+}
+.toc ul li ul li ul li{
+	padding-left:10px;
 }
 .toccontent{
 	width:680px;
@@ -273,15 +263,14 @@ table tr.even td{
 
 .features{
 	padding-left:0;
-	margin:-5px 0 -5px -15px;
+	margin:-10px 0 -10px -15px;
 	text-align:left;
 }
 .features li{
 	display:inline-block;
 	vertical-align:top;
 	width:47%;
-	margin:5px 0px 5px 15px;
-	line-height:1.5em;
+	margin:10px 0px 10px 15px;
 }
 
 .projectsbadge{
@@ -368,11 +357,145 @@ table tr.even td{
 
 /*Styles specific to mobiles*/
 
-@media handheld, only screen and (max-device-height: 37em), only screen and (max-device-width: 50em){
+@media handheld, only screen and ( max-width: 60em ), only screen and ( max-device-width: 60em ){
+	h1,
+	h2,
+	h3,
+	h4,
+	h5{
+		text-align:center;
+	}
+	h1:before,
+	h2:before,
+	h3:before,
+	h4:before,
+	h5:before{
+		height:80px;
+		margin:-80px 0 0;
+	}
+	pre{
+		overflow:visible;
+		padding:10px;
+		display:table;/* This workaround creates a block formatting context so the content can overflow outside of the container */
+		width:100%;
+		box-sizing:border-box;
+	}
+	img{
+		max-width:100%;
+	}
+	.logo{
+		top:10px;
+		left:10px;
+	}
+	.header{
+		position:static;
+	}
+        .menucontainer{
+		display:none;
+		background-color:#fff;
+		border-top:2px solid #ebebeb;
+		overflow-y:auto;
+		position:fixed;
+		top:60px;
+		left:0;
+		right:0;
+		bottom:0;
+        }
+	.menucontainer.menuvisible{
+		display:block;
+	}
+	.headercontainer{
+		padding-top:60px;
+	}
+	.menumobile{
+		display:block;
+		position:absolute;
+		background:url('/img/menumobile.svg') no-repeat;
+		width:40px;
+		height:40px;
+		top:10px;
+		right:10px;
+		cursor:pointer;
+	}
+	.menu{
+		display:none;
+		position:static;
+		padding:10px 0;
+		border-bottom:2px solid #ebebeb;
+	}
+	.menucontainer.menuvisible .menu{
+		display:block;
+	}
+	.menu li{
+		display:block;
+	}
+	.menu li a{
+		padding:15px 0;
+		text-align:center;
+	}
+	.menu li:hover a,
+	.menu li.active a{
+		font-weight:bold;
+		border-color:transparent;
+	}
 	.toc{
 		display:none;
+		position:static;
+		text-align:center;
+		margin:0;
+	}
+	.menucontainer.menuvisible .toc{
+		display:block;
+		padding:10px;
+	}
+	.toc div{
+		position:static;
+	}
+	.toc ul{
+		width:auto;
+		margin:auto;
+		border:0;
+		padding:0;
+	}
+	.toc ul li a {
+		font-weight:bold;
+		font-size:110%;
+		padding:10px 0;
+	}
+	.toc ul li a.active:before{
+		content:"";
+	}
+	.toc ul li a:hover,
+	.toc ul li a.active{
+		font-weight:bold;
+		color:#2c6fad;
+	}
+	.toc ul li ul{
+		padding:0;
+	}
+	.toc ul li ul li a{
+		font-weight:normal;
+	}
+	.toc ul li ul li ul li{
+		padding:0;
+	}
+	.toc ul li ul li ul li a{
+		font-size:95%;
 	}
 	.toccontent{
+		width:auto;
+	}
+	.content{
+		text-align:left;
+		margin-top:90px;
+	}
+	.projectsbadge{
+		float:none;
+		margin:20px 0;
+	}
+}
+@media handheld, only screen and ( max-width: 40em ), only screen and ( max-device-width: 40em ){
+	.features li{
 		width:auto;
 	}
 }
