@@ -14,7 +14,7 @@ If your project uses Maven for its build, you can depend on bitcoinj by adding t
     <dependency>
       <groupId>org.bitcoinj</groupId>
       <artifactId>bitcoinj-core</artifactId>
-      <version>0.13.2</version>
+      <version>0.13.3</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -26,11 +26,11 @@ To get the source you can also use git and check out your own copy:
 git clone https://github.com/bitcoinj/bitcoinj.git
 cd bitcoinj
 git fetch --all
-git checkout v0.13.2
+git checkout v0.13.3
 mvn install
 ~~~
 
-This will give you v0.13.2. If PGP is your thing, you can run `git tag -v v0.13.2` to check Andreas Schildbach's signature of the release.
+This will give you v0.13.3. If PGP is your thing, you can run `git tag -v v0.13.3` to check Andreas Schildbach's signature of the release.
 
 #Maven security
 

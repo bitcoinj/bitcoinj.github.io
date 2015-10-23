@@ -16,7 +16,7 @@ title: "Getting started in Javascript"
 
 Java 8 ships with a Javascript engine called Nashorn that has performance approaching that of V8 (it's not quite as good, but good enough). It's easy to use Java code using this engine, and Javascript programs can be run from the command line or using an interactive interpreter. There are also projects that provide a node.js compatible API, but this tutorial will not explore those.
 
-To get started, grab version 8 of the JDK and make sure you can run the "jjs" tool. Next, download [the bundled bitcoinj JAR from Maven Central](http://search.maven.org/remotecontent?filepath=org/bitcoinj/bitcoinj-core/0.13.2/bitcoinj-core-0.13.2-bundled.jar) and put it into your working directory. That's all we need to start using bitcoinj from Javascript.
+To get started, grab version 8 of the JDK and make sure you can run the "jjs" tool. Next, download [the bundled bitcoinj JAR from Maven Central](http://search.maven.org/remotecontent?filepath=org/bitcoinj/bitcoinj-core/0.13.3/bitcoinj-core-0.13.3-bundled.jar) and put it into your working directory. That's all we need to start using bitcoinj from Javascript.
 
 Now let's take a look at [the demo.js file from the examples](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/javascript/demo.js) in the source tree. The demo program does a few basic things like creating a key and printing its address, and then brings up the network and prints some info about the peers it got connected to.
 
@@ -25,7 +25,7 @@ Now let's take a look at [the demo.js file from the examples](https://github.com
 To run a program that uses bitcoinj in Javascript one can simply execute:
 
 ```
-jjs -cp bitcoinj-0.13.2-bundled.jar demo.js
+jjs -cp bitcoinj-0.13.3-bundled.jar demo.js
 ```
 
 This runs the program in Nashorn. Note that Nashorn supports some extra stuff that isn't present in web-style Javascript, like the ability to import code from Java libraries. The "cp" command line argument sets the class path: it's a list of JARs (java libraries). In this case we're just telling it to load the bundled version of bitcoinj, which includes the library and all its dependencies together.
