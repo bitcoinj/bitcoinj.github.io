@@ -30,6 +30,32 @@ API changes:
 * The Coin API has new method aliases to activate operator overloading support in Kotlin.
 * ProtobufParser, StreamParser and friends have been renamed to ProtobufConnection, StreamConnection etc to better reflect what they actually do.
 
+##Version 0.13.4
+
+This is a bug fix / maintenance release:
+
+* Adjusts the minimum network fee to the one imposed by Bitcoin Core.
+* Peer dicovery timeout is now configurable via a new method PeerGroup.setPeerDiscoveryTimeoutMillis().
+* Those using an SQL block store need to migrate their schema to use lower case column names only.
+
+##Version 0.13.3
+
+This is a bug fix / maintenance release:
+
+* Handle the "high/low S signature component" malleability.
+
+##Version 0.13.2
+
+This is a bug fix / maintenance release:
+
+* Some bugs/regressions were fixed.
+
+##Version 0.13.1
+
+This is a bug fix / maintenance release:
+
+* There are no code changes. The quick followup release in order to get all binaries deployed to Maven Central.
+
 ##Version 0.13
 
 From most to least notable:
