@@ -76,7 +76,7 @@ It may be that the same "tx" message is sent to us multiple times. Normally this
 
 A subclass of `AbstractBlockChain` is responsible for receiving blocks, fitting them together, and doing validation on them. The `BlockChain` class does SPV level validation, the `FullPrunedBlockChain` does full validation as the name implies.
 
-You pass the block chain to a `Peer` or `PeerGroup` and the block data flows via that connection from the network, through the block chain object and towards an implementation of the `BlockStore` interface. There are multiple kinds of block store, but all of them take block data and save at least the headers, and possibly (for a full store) the transaction data as well. For SPV clients a `BoundedOverheadBlockStore` is the usual choice and for full mode clients an implementation of `FullPrunedBlockStore` is needed, for example, `H2FullPrunedBlockStore`.
+You pass the block chain to a `Peer` or `PeerGroup` and the block data flows via that connection from the network, through the block chain object and towards an implementation of the `BlockStore` interface. There are multiple kinds of block store, but all of them take block data and save at least the headers, and possibly (for a full store) the transaction data as well. For SPV clients a `SPVBlockStore` is the usual choice and for full mode clients an implementation of `FullPrunedBlockStore` is needed, for example, `H2FullPrunedBlockStore`.
 
 The stores talk directly to a database or disk file. There are no other objects beneath them.
 
