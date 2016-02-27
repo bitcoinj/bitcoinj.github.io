@@ -30,6 +30,17 @@ API changes:
 * The Coin API has new method aliases to activate operator overloading support in Kotlin.
 * ProtobufParser, StreamParser and friends have been renamed to ProtobufConnection, StreamConnection etc to better reflect what they actually do.
 
+##Version 0.13.5
+
+This is a bug fix / maintenance release:
+
+* Evaluate incoming RBF transactions as risky.
+* The "max coins" checks have changed a bit: Previously a wallet
+could be rendered inconsistent by receiving a few transactions that add
+up to a balance higher than max coins. Now, this state is allowed while
+the obviously fake transactions will go dead at some time. Note a single
+transaction with a value higher than max coins is still invalid.
+
 ##Version 0.13.4
 
 This is a bug fix / maintenance release:
