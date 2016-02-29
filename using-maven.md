@@ -32,6 +32,8 @@ mvn install
 
 This will give you v0.13.3. If PGP is your thing, you can run `git tag -v v0.13.3` to check Andreas Schildbach's signature of the release.
 
+Note: If you are using OpenJDK, you may have to install the supporting OpenJFX package for your operating system distribution. For example, if you are running Ubuntu 15.10, and using `openjdk-8-jdk`, you will need to also install the `openjfx` package. This can be accomplished with a command such as `sudo apt-get install openjfx`.
+
 #Maven security
 
 Maven Central is a very insecure piece of infrastructure. If you're just messing around then this is perhaps not a big deal, but prototypes have a way of turning into real apps and then build security becomes more important. Maven can be made more secure by following these tips.
