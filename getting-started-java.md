@@ -122,7 +122,8 @@ if (params == RegTestParams.get()) {
 }
 
 // Download the block chain and wait until it's done.
-kit.startAndWait();
+kit.startAsync();
+kit.awaitRunning();
 {% endhighlight %}
 
 The kit takes three arguments - the `NetworkParameters` (almost all APIs in the library require this), a directory in which to store files, and an optional string that is prefixed to any created files. This is useful if you have multiple different bitcoinj apps in the same directory that you wish to keep separated. In this case the file prefix is "forwarding-service" plus the network name, if not the main net (see the code above).
@@ -133,7 +134,7 @@ Here, we simply check that the wallet has at least one key, and if not we add a 
 
 Next up, we check if we're using regtest mode. If we are, then we tell the kit to connect only to localhost where a bitcoind in regtest mode is expected to be running.
 
-Finally, we call `kit.startAndWait()`. `WalletAppKit` is a [Guava Service](https://code.google.com/p/guava-libraries/wiki/ServiceExplained). Guava is a widely used utility library from Google that augments the standard Java library with some useful additional features. A service is an object that can be started and stopped (but only once), and you can receive callbacks when it finishes starting up or shutting down. You can also just block the calling thread until it's started, which is what we do here.
+Finally, we call `kit.startAsync()`. `WalletAppKit` is a [Guava Service](https://code.google.com/p/guava-libraries/wiki/ServiceExplained). Guava is a widely used utility library from Google that augments the standard Java library with some useful additional features. A service is an object that can be started and stopped (but only once), and you can receive callbacks when it finishes starting up or shutting down. You can also just block the calling thread until it's started with `awaitRunning()`, which is what we do here.
 
 The `WalletAppKit` will consider itself started when the block chain has been fully synced, which can sometimes take a while. You can [learn about how to make this faster](/speeding-up-chain-sync), but for a toy demo app it's not needed to implement any extra optimisations.
 
