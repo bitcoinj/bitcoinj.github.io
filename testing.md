@@ -12,11 +12,11 @@ title: "How to test applications"
 
 <div markdown="1" class="toccontent">
 
-#How to test applications
+# How to test applications
 
 Testing is obviously an important step for any software that uses money. This article explains some common techniques used to test Bitcoin apps.
 
-##The testnet
+## The testnet
 
 The Bitcoin community runs a separate, parallel instance of the Bitcoin network that features a slightly different and more relaxed ruleset, called the _testnet_. Most usefully, coins on the testnet have no value and can be obtained for free from testnet faucet sites like [http://faucet.xeno-genesis.com/](http://faucet.xeno-genesis.com/) or [http://tpfaucet.appspot.com/](http://tpfaucet.appspot.com/).
 
@@ -24,7 +24,7 @@ You can make your app use the testnet by instantiating your objects with `TestNe
 
 It's worth noting that whilst the testnet can be convenient, sometimes people mess it up by mining on it with ASICs. Such problems do not occur on the main network, so if you see large spurts of blocks found a few seconds apart, blocks that fail validation and so on, it's worth switching to a local regression test network instead: the environment is much more controlled and predictable.
 
-##Regression test mode
+## Regression test mode
 
 The testnet is good as far as it goes, but it still has the issue that blocks are mined every ten minutes. Often you don't want to wait for a new block, and you don't want to have to use faucet sites to get test coins.
 
@@ -55,7 +55,7 @@ You can make wallet-tool use this mode using `--net=REGTEST --peers=localhost`.
 
 Currently bitcoinj doesn't have a class that wraps the Bitcoin Core RPC interface and drives regtest mode, but it'd be a nice feature to have in future.
 
-##Unit tests
+## Unit tests
 
 Bitcoinj provides a `TestUtils` class that can do things like manufacture fake `Transaction` objects and so on. Take a look at the test suite for bitcoinj itself to see how to use the utilities. Unit tests are a great way to build robustness in your software, although due to the many subtle complexities of the Bitcoin protocol they're not always sufficient to ensure things work correctly.
 

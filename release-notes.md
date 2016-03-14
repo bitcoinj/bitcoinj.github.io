@@ -12,9 +12,9 @@ title: "Release notes"
 
 <div markdown="1" class="toccontent">
 
-#Release notes
+# Release notes
 
-##Version 0.14
+## Version 0.14
 
 _This version is not yet released and corresponds to changes in git master_
 
@@ -31,7 +31,7 @@ API changes:
 * The Coin API has new method aliases to activate operator overloading support in Kotlin.
 * ProtobufParser, StreamParser and friends have been renamed to ProtobufConnection, StreamConnection etc to better reflect what they actually do.
 
-##Version 0.13.6
+## Version 0.13.6
 
 This is a bug fix / maintenance release:
 
@@ -39,7 +39,7 @@ This is a bug fix / maintenance release:
 * Wallet: Fix bug in cleanup() that sometimes would put foreign outputs in myUnspents
 when disconnecting. This wrongly increases the balance.
 
-##Version 0.13.5
+## Version 0.13.5
 
 This is a bug fix / maintenance release:
 
@@ -50,7 +50,7 @@ up to a balance higher than max coins. Now, this state is allowed while
 the obviously fake transactions will go dead at some time. Note a single
 transaction with a value higher than max coins is still invalid.
 
-##Version 0.13.4
+## Version 0.13.4
 
 This is a bug fix / maintenance release:
 
@@ -58,25 +58,25 @@ This is a bug fix / maintenance release:
 * Peer dicovery timeout is now configurable via a new method PeerGroup.setPeerDiscoveryTimeoutMillis().
 * Those using an SQL block store need to migrate their schema to use lower case column names only.
 
-##Version 0.13.3
+## Version 0.13.3
 
 This is a bug fix / maintenance release:
 
 * Handle the "high/low S signature component" malleability.
 
-##Version 0.13.2
+## Version 0.13.2
 
 This is a bug fix / maintenance release:
 
 * Some bugs/regressions were fixed.
 
-##Version 0.13.1
+## Version 0.13.1
 
 This is a bug fix / maintenance release:
 
 * There are no code changes. The quick followup release in order to get all binaries deployed to Maven Central.
 
-##Version 0.13
+## Version 0.13
 
 From most to least notable:
 
@@ -127,7 +127,7 @@ immature coinbases and unconfirmed transactions). If you were previously using `
 * Thanks to Jarl Fransson, when deserializing a wallet the lock order is now always `wallet->extension`.
 * `Coin.parseCoin()` now throws IllegalArgumentException instead of ArithmeticException if the given string would result in fractional satoshis.
 
-##Version 0.12.3
+## Version 0.12.3
 
 This is a bug fix / maintenance release:
 
@@ -137,7 +137,7 @@ This is a bug fix / maintenance release:
 * Syncing the blockchain on Android devices should be approximately twice as fast with large wallets. Also, loading wallets is considerably quicker.
 * Misc small bug fixes.
 
-##Version 0.12.2
+## Version 0.12.2
 
 This is a bug fix / maintenance release:
 
@@ -147,7 +147,7 @@ This is a bug fix / maintenance release:
 * Tor directory authorities: switch out turtles for longclaw to track upstream changes.
 * Misc small bug fixes.
 
-##Version 0.12.1
+## Version 0.12.1
 
 This is a bug fix / maintenance release:
 
@@ -159,7 +159,7 @@ This is a bug fix / maintenance release:
 * Narrow the wallet lock to allow faster/lower latency access to the key chain and methods that use it.
 * Misc other bug fixes.
 
-##Version 0.12
+## Version 0.12
 
 * Privacy enhancements:
   * Wallets are now hierarchical and deterministic (HD) by default, using the BIP32 specification. Support for mnemonic codes (BIP 39) is also included. Change and receive addresses are no longer being reused. Old wallets are upgraded in place using the private key of the oldest non-rotating key as the seed bytes, so old backups remain valid.
@@ -214,7 +214,7 @@ API changes:
 * Transaction.hashTransactionForSignature was renamed to just hashForSignature.
 * The subVer string sent by bitcoinj now has a lower cased first component.
 
-##Version 0.11.3
+## Version 0.11.3
 
 This is a bugfix release.
 
@@ -226,7 +226,7 @@ This is a bugfix release.
 * Now throws a transaction if a BIP70 payment request doesn't match the expected network params.
 * A few other small misc changes.
 
-##Version 0.11.2
+## Version 0.11.2
 
 This is a bugfix release.
 
@@ -239,14 +239,14 @@ This is a bugfix release.
 * A bundled/unified JAR is now always built.
 * Misc other crash and bug fixes.
 
-##Version 0.11.1
+## Version 0.11.1
 
 * Wallet default risk analysis now drops dust transactions by default. A new cleanup() method is added to drop risky (i.e. not going to confirm) transactions that were allowed into the wallet by previous versions.
 * PkiVerificationData.rootAuthorityName now exposes a user friendly name of the CA that verified the certificate of a payment request.
 * A bloom filter bug was fixed that stopped filters from updating when a key was added. 
 * Wallet.toString() was re-arranged so that its mostly sorted from new to old.
 
-##Version 0.11
+## Version 0.11
 
 Notable changes and new features:
 
@@ -300,21 +300,21 @@ New documentation:
 
 Please note that as I am no longer employed by Google, after 0.11 signing the Google contributor license agreement will no longer be necessary. I look forward to welcoming contributions from Andreas Schildbach now this requirement has gone away. Also, in future I plan to re-namespace the library from com.google.bitcoin to org.bitcoinj - auto-migration scripts will be provided when this is done.
 
-##Version 0.10.3
+## Version 0.10.3
 
 * A regression in broadcast handling was fixed.
 
-##Version 0.10.2
+## Version 0.10.2
 
 * Some bugs related to re-org handling were fixed. All users should upgrade to get these fixes.
 * A crash related to signing non-ASCII messages with ECKey was fixed.
 * Misc other bugfixes
 
-##Version 0.10.1
+## Version 0.10.1
 
 * Emptying the wallet now only empties selectable outputs.
 
-##Version 0.10
+## Version 0.10
 
 * An implementation of micropayment channels was added. There have been many bugfixes and improvements since the first announcement. This feature allows you to set up a 1:1 payment relationship with a remote server and after a short setup process send very tiny payments, very rapidly. It's suitable for metered billing applications. An article, "Working with micropayments" explains how to use it. This work was a joint effort between Matt and myself.
 * A simple sublibrary has been added that provides async IO based client/server classes that transmit length prefixed protocol buffers.
@@ -342,7 +342,7 @@ API Changes:
 * The `Wallet.toString(..)` method has additional parameters now so you can control what is included in the dump.
 
 
-##Version 0.9
+## Version 0.9
 
 * Thanks to Matt Corallo, we now have a basic fee solver that will attach the correct (minimum) fee per kilobyte to a created transaction using the 0.8.2+ fee rules. Note that there's no attempt to minimize the size of a calculated transaction and thus fee, but some other optimisations are applied. By default bitcoinj will always attach a fee, to learn how to customise this refer to the article _Working with the wallet_.
 * The wallet's re-org handling code was rewritten and simplified.
@@ -361,7 +361,7 @@ API changes:
 * Wallet extensions have been tweaked, please refer to the javadocs for details.
 * Many other minor additions and changes that are mostly backwards compatible.
 
-##Version 0.8
+## Version 0.8
 
 * Thanks to Jim Burton, encryption of private keys in the wallet is now supported. Keys are encrypted using an AES key derived using scrypt.
 * A new `SPVBlockStore` provides dramatically better performance and bounded disk usage by storing block headers in an mmapped ring buffer. This makes syncing headers for new chains/wallets network bounded instead of disk io bounded.
@@ -391,13 +391,13 @@ Known issues:
 * There are some bugs that can cause the wallet to get into an inconsistent state in various rare situations. The wallets can be fixed by replaying them. These bugs will be addressed as the next highest priority.
 
 
-##Version 0.7.1
+## Version 0.7.1
 
 * A variety of minor bugs were fixed in this release
 * Some Java7-isms were removed.
 * Handle a crash in Bouncy Castle that can be caused by deliberately invalid sigs. Thanks to Sergio Damian Lerner for this fix.
 
-##Version 0.7
+## Version 0.7
 
 * Thanks to Matt Corallo, we now support a fully verifying mode in addition to simplified verification. This is a tremendous amount of work that wouldn't have happened without Matt! Right now, we strongly discourage anyone from using it for mining (which is not supported out of the box anyway). Use it in a production environment only if you know what you're doing and are willing to risk losing money. If you do use it, let us know so we can contact you when problems are discovered. Read the documentation carefully before you begin.
 * Also thanks to Matt, Bloom filtering is now implemented and activated by default. When bitcoinj connects to a peer that supports Bloom filtering, only transactions relevant to the wallet will be downloaded which makes bandwidth usage scale with the size of your wallet, not global system activity. A configurable false positive ratio allows you to trade off bandwidth vs privacy. App developers don't need to do anything to take advantage of this, it is enabled automatically.
@@ -420,7 +420,7 @@ API changes:
  * `ECKey.publicKeyFromPrivate` now takes an additional compressed parameter.
  * `PeerGroup.start()/PeerGroup.shutDown()` now run asynchronously and return futures you can use to wait for them. You cannot restart a `PeerGroup` once it has been shut down any more.
 
-##Version 0.6
+## Version 0.6
 
 * Thanks to Jim Burton, the wallet now stores the depth and work done for all transactions, and coinbase transactions are now processed correctly. The ability to handle pubkey-only outputs was added, so these are now spendable. Migration from 0.5 wallets that don't store this is supported, but only for depth, by using `WalletProtobufSerializer.setChainHeight()`.
 * Made some more APIs documented and public.
@@ -440,7 +440,7 @@ API changes:
 * `Wallet.sendCoins()` now returns a `SendResult` that contains both the transaction, and the future returned by `PeerGroup.broadcastTransaction()`, so it will no longer block. As a result `sendCoinsAsync()` has been removed.
 * Various send methods on Wallet now take a `SendRequest` object that lets you customize the created transactions. The methods that let you explicitly set the change address are removed, you should set the `changeAddress`  member of the `SendRequest` instead.
 
-##Version 0.5
+## Version 0.5
 
 * Address.getParameters() and Address#getParametersFromAddress() let you figure out for what network the address is for (test, production, etc). BitcoinURI no longer requires a NetworkParameters for the same reason.
 * Updated to latest bouncy castle version, remove the need for the Android artifact by using the SpongyCastle build
@@ -454,13 +454,13 @@ API changes:
 
 This release included the first preview of the native API, allowing you to access bitcoinj from C++/Objective-C++ using a straightforward, intuitive mapping from the Java API. Much easier than JNI and no JVM is required, just the libgcj support library. Examples of a native Cocoa app for OS X and a command line hello world app are included. Because it's not fully finished/documented yet, this work is available on a branch.
 
-##Version 0.4.1
+## Version 0.4.1
 
 Minor bugfixes:
 
 * A fix for Android users only to do with alert processing
 
-##Version 0.4
+## Version 0.4
 
 New in this release:
 
@@ -481,7 +481,7 @@ New in this release:
 * New articles explaining how to use the library.
 * The usual assortment of bugfixes, new APIs, robustness and test suite improvements.
 
-##Version 0.3
+## Version 0.3
 
 New in this release:
 

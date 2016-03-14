@@ -12,7 +12,7 @@ title: "Getting started in Javascript"
 
 <div markdown="1" class="toccontent">
 
-##Initial setup
+## Initial setup
 
 Java 8 ships with a Javascript engine called Nashorn that has performance approaching that of V8 (it's not quite as good, but good enough). It's easy to use Java code using this engine, and Javascript programs can be run from the command line or using an interactive interpreter. There are also projects that provide a node.js compatible API, but this tutorial will not explore those.
 
@@ -20,7 +20,7 @@ To get started, grab version 8 of the JDK and make sure you can run the "jjs" to
 
 Now let's take a look at [the demo.js file from the examples](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/javascript/demo.js) in the source tree. The demo program does a few basic things like creating a key and printing its address, and then brings up the network and prints some info about the peers it got connected to.
 
-##Running the demo
+## Running the demo
 
 To run a program that uses bitcoinj in Javascript one can simply execute:
 
@@ -32,7 +32,7 @@ This runs the program in Nashorn. Note that Nashorn supports some extra stuff th
 
 You'll get a warning from SLF4J about not having any logging backend. That's OK. We can look at how to set up logging later. For now let's just examine the code.
 
-##demo.js
+## demo.js
 
 {% highlight js %}
 // Import some stuff.
@@ -73,7 +73,7 @@ print("Connected to: " + pg.connectedPeers);
 
 This piece of code shows how to get connected to the P2P network. A `PeerGroup` manages multiple peer connections. We have to configure it with a DNS discovery instance and then make it start. It will find and set up connections in the background. The last line waits for it to find at least three connected peers and then prints out their IP addresses and ports. The `connectedPeers` property gives a list of `Peer` objects.
 
-##A note on asynchronicity
+## A note on asynchronicity
 
 Javascript was developed for web browsers, which are a single threaded environment, and as such Javascript has no ability to create threads, nor is V8 (the most popular JS runtime) thread safe. Instead most JS environments give you only a style of threading that dates from the Visual Basic era - you can run parallel javascript engines that can communicate via message passing only. This in turn implies that you cannot ever block, leading to a heavily callback oriented style of programming.
 
@@ -81,7 +81,7 @@ In contrast, Nashorn compiles Javascript to bytecode that runs on the JVM. As a 
 
 Here, we are taking the simple route: we're just blocking the main thread when we need to wait for something to happen. Below, we'll see how to do things asynchronously. The `waitForPeers(3)` method returns a *future* that will complete once we have at least three peers. Futures are sometimes called promises in the Javascript world. Calling their `get` method blocks until the future's result is ready.
 
-##Iterating over collections and arrays
+## Iterating over collections and arrays
 
 The `pg.connectedPeers` property is a Java collection. This is treated like a Javascript array by Nashorn. But because Javascript has historically not had a convenient way to iterate over a collection, Nashorn extends the language with a Java-like foreach statement. We can use it here:
 
@@ -142,7 +142,7 @@ Here we start a ping for each peer and add the returned future to the array. The
 
 The last forEach loop simply keeps the program running until all the pings have responses.
 
-##Where to go from here?
+## Where to go from here?
 
 There are many other features in bitcoinj that this tutorial does not cover. You can read the other articles to learn more about full verification, wallet encryption and so on, and of course the JavaDocs detail the full API. 
 

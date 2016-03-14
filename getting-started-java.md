@@ -12,7 +12,7 @@ title: "Getting started in Java"
 
 <div markdown="1" class="toccontent">
 
-##Initial setup
+## Initial setup
 
 bitcoinj has logging and assertions built in. Assertions are always checked by default regardless of whether the -ea flag is specified. Logging is handled by the [SLF4J](http://www.slf4j.org) library. It lets you choose which logging system you'd prefer to use, eg, JDK logging, Android logging, etc. By default we use the simple logger which prints most stuff of interest to stderr. You can pick a new logger by switching out the jar file in the lib directory.
 
@@ -24,7 +24,7 @@ Now get the latest version of the code. You can use the instructions on the [Usi
 
 You can [read the full program here](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/java/org/bitcoinj/examples/ForwardingService.java).
 
-##Basic structure
+## Basic structure
 
 A bitcoinj application uses the following objects:
 
@@ -39,7 +39,7 @@ To simplify setting them up, there is also a `WalletAppKit` object that creates 
 
 Let's go through the code and see how it works.
 
-#Setup
+# Setup
 
 We use a utility function to configure log4j to have more compact, less verbose log formatting. Then we check the command line arguments.
 
@@ -81,7 +81,7 @@ It's strongly recommended that you develop your software on the testnet or using
 
 In regtest mode there's no public infrastructure, but you can get a new block whenever you want without having to wait for one by running `"bitcoind -regtest setgenerate true"` on the same machine as the regtest mode bitcoind is running.
 
-##Keys and addresses
+## Keys and addresses
 
 Bitcoin transactions typically send money to a public elliptic curve key. The sender creates a transaction containing the address of the recipient, where the address is an encoded form of a hash of their public key. The recipient then signs a transaction claiming the coins with their own private key. A key is represented with the `ECKey` class. `ECKey` can contain private keys, or just public keys that are missing the private part. Note that in elliptic curve cryptography public keys are derived from private keys, so knowing a private key inherently means knowing the public key as well. This is different to some other crypto systems you may be familiar with, like RSA.
 
@@ -94,7 +94,7 @@ forwardingAddress = new Address(params, args[0]);
 
 Because an address encodes the network for which the key is intended to be used, we need to pass in the network parameters here. The second parameter is just the user provided string. The constructor will throw if it's unparseable or for the wrong network.
 
-##Wallet app kit
+## Wallet app kit
 
 bitcoinj consists of various layers, each of which operates at a lower level than the last. A typical application that wants to send and receive money needs at least a `BlockChain`, a `BlockStore`, a `PeerGroup` and a `Wallet`. All those objects need to be connected to each other so data flows correctly. Read ["How things fit together"](/how-things-fit-together) for more information on how data flows through a bitcoinj based application.
 
@@ -142,7 +142,7 @@ The kit has accessors on it that give access to the underlying objects it config
 
 After the app has started up, you'll notice there are two files in the directory where the app runs: a .wallet file, and a .spvchain file. They go together and must not be separated.
 
-##Handling events
+## Handling events
 
 We want to know when we receive money so we can forward it. This is an _event_ and like most Java APIs in bitcoinj you learn about events by registering _event listeners_, which are just objects that implement an interface. There are a handful of event listener interfaces in the library:
 
@@ -166,7 +166,7 @@ kit.wallet().addEventListener(new AbstractWalletEventListener() {
 
 Events in bitcoinj are run in a dedicated background thread that's just used for running event listeners, called the _user thread_. That means it may run in parallel to other code in your application, and if you're writing a GUI app, it means you aren't allowed to directly modify the GUI because you aren't in the GUI or "main" thread. However, your event listeners do not themselves need to be thread safe as events will queue up and execute in order. Nor do you have to worry about many other issues that commonly arise when using multi-threaded libraries (for instance, it's safe to re-enter the library and it's safe to do blocking operations).
 
-##A note about writing GUI apps
+## A note about writing GUI apps
 
 Most widget toolkits like Swing, JavaFX or Android have what is called _thread affinity_, meaning you can only use them from a single thread. To get back from a background thread to the main thread, you normally pass a closure to some utility function that schedules the closure to be run when the GUI thread is idle.
 
@@ -196,7 +196,7 @@ Threading.USER_THREAD = runInUIThread;
 
 In some cases bitcoinj can generate a large number of events very fast, this is typical when syncing the block chain with a wallet that has a lot of transactions in it as each one can generate a transaction confidence changed event (as they get buried deeper and deeper). It's very likely that in future the way wallet events work will change to avoid this problem, but for now that's how the API works. If the user thread falls behind then memory bloat can occur as event listener invocations queue up on the heap. To avoid this, you can register event handlers with `Threading.SAME_THREAD` as the executor, in which case they will run immediately on bitcoinj controlled background threads. However you must be exceptionally careful when using this mode - any exceptions that occur in your code may unwind bitcoinj stacks and cause peer disconnection, also, re-entering the library may cause lock inversions or other issues. Generally you should avoid doing it unless you really need the extra performance and know exactly what you're doing.
 
-##Receiving money
+## Receiving money
 
 {% highlight java %}
 kit.wallet().addEventListener(new AbstractWalletEventListener() {
@@ -250,7 +250,7 @@ There's an important thing to note here. It's possible for a depth future to run
 
 Handling of re-orgs and double spends is a complex topic that is not covered in this tutorial. You can learn more by reading the other articles.
 
-##Sending coins
+## Sending coins
 
 The final part of the ForwardingService is sending the coins we just received onwards.
 
@@ -281,7 +281,7 @@ To send coins, we use the wallets `sendCoins` method. It takes three arguments: 
 
 `sendCoins` returns a `SendResult` object containing both the transaction that was created, and a `ListenableFuture` that can be used to find out when the network has accepted the payment. If the wallet doesn't contain enough money, the `sendCoins` method will throw an exception containing some info about how much money was missing.
 
-##Customizing the sending process and setting fees
+## Customizing the sending process and setting fees
 
 Transactions in Bitcoin can have fees attached. This is useful as an anti-denial-of-service mechanism, but it's primarily intended to incentivise mining in later years of the system when inflation has dropped off. You can control the fee attached to a transaction by customizing a send request:
 
@@ -294,7 +294,7 @@ Transaction createdTx = result.tx;
 
 Note that here, we actually set a fee per kilobyte of created transaction. This is how Bitcoin works - priority of a transaction is determined by fee divided by size, thus larger transactions require higher fees to be considered "the same" as smaller transactions.
 
-##Where to go from here?
+## Where to go from here?
 
 There are many other features in bitcoinj that this tutorial does not cover. You can read the other articles to learn more about full verification, wallet encryption and so on, and of course the JavaDocs detail the full API.
 

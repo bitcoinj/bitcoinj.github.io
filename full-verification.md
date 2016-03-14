@@ -12,9 +12,9 @@ title: "Using the experimental full verification mode"
 
 <div markdown="1" class="toccontent">
 
-#Using the experimental full verification mode
+# Using the experimental full verification mode
 
-##Introduction
+## Introduction
 
 Starting with version 0.7, bitcoinj can be run fully verifying. This means it behaves the same way as the standard Bitcoin node does: all transaction scripts are run, signatures verified and double spends are checked for, amongst other things.
 
@@ -26,7 +26,7 @@ You may wish to experiment with this mode if you are building an application tha
 
 To review the tradeoffs involved with full vs SPV mode, read the [SecurityModel](/security-model) page.
 
-##Understanding the risks
+## Understanding the risks
 
 Before you begin, it is vitally important that you read and understand this warning.
 
@@ -38,13 +38,13 @@ It is difficult to overemphasize this risk. To be safe, bitcoinj must match the 
 
 The most reliable configuration in which to use bitcoinj is in SPV mode, connected to a regular C++ Bitcoin node that you control. In this way, you are sure that the data feed your app gets has been validated by your node and many obscure avenues for attack can be filtered out.
 
-##Using the H2 block store
+## Using the H2 block store
 
 H2 is an embedded Java database that requires no external installation or setup. However, the H2 store does not provide fully indexed access to the block chain: it just calculates and stores the unspent output set, the same as Bitcoin Core.
 
 If you decide you want to use this, setting it up is straightforward. Instead of using `BlockChain` and `BoundedOverheadBlockStore` create a `FullPrunedBlockChain` and an `H2FullPrunedBlockStore`. Then plug them in to the rest of the system as normal (see [HowThingsFitTogether](/how-things-fit-together) to learn more). The system will perform pruning validation, thus at the end you will have access to the set of unspent outputs.
 
-##Using the PostgreSQL block store
+## Using the PostgreSQL block store
 
 Starting from bitcoinj 0.11, there is a  block store backed by PostgreSQL. This is fast, uses an external database and indexes the UTXO set so you can quickly look up the balance of any address. To use this:
 
@@ -55,7 +55,7 @@ Starting from bitcoinj 0.11, there is a  block store backed by PostgreSQL. This 
 
 Currently, this store does not provide a method to actually let you generate spends for any address, even if you have the corresponding private key. Such functionality is often desired in generic "hosted" or "web" wallets. However, the database has all the information needed to do this, so once someone writes the small amount of code needed, it should be easy to drop in.
 
-##Using the MySQL block store
+## Using the MySQL block store
 
 Starting from bitcoinj 0.13, there is a block store backed by MySQL. Using it is similar to using the Postgres store.
 

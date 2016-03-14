@@ -12,11 +12,11 @@ title: "Working with the wallet"
 
 <div markdown="1" class="toccontent">
 
-#Working with the wallet
+# Working with the wallet
 
 _Learn how to use the wallet class and craft custom transactions with it._
 
-##Introduction
+## Introduction
 
 The Wallet class is one of the most important classes in bitcoinj. It stores keys and the transactions that assign value to/from those keys. It lets you create new transactions which spend the previously stored transactions outputs, and it notifies you when the contents of the wallet have changed.
 
@@ -24,7 +24,7 @@ You'll need to learn how to use the Wallet to build many kinds of apps.
 
 This article assumes you've read Satoshi's white paper and the [WorkingWithTransactions](working-with-transactions) article.
 
-##Setup
+## Setup
 
 For optimal operation the wallet needs to be connected to a `BlockChain` and a `Peer` or `PeerGroup`. The block chain can be passed a Wallet in its constructor. It will send the wallet blocks as they are received so the wallet can find and extract _relevant transactions_, that is, transactions which send or receive coins to keys stored within it. The Peer/Group will send the wallet transactions which are broadcast across the network before they appear in a block.
 
@@ -38,7 +38,7 @@ peerGroup.addWallet(wallet);
 peerGroup.startAndWait();
 {% endhighlight %}
 
-##Getting addresses
+## Getting addresses
 
 Of course, the snippet of code is fairly useless because there's no way to get money into it. You can obtain keys and addresses from the wallet with the following API calls:
 
@@ -53,7 +53,7 @@ assert !c.equals(a);
 
 These can then be handed out to receive payments on. The Wallet has a notion of a "current" address. This is intended for GUI wallets that wish to display an address at all times. Once the current address is seen being used, it changes to a new one. The freshReceiveKey/Address methods on the other hand always return a newly derived address.
 
-##Seeds and mnemonic codes
+## Seeds and mnemonic codes
 
 The keys and addresses returned by these methods are derived deterministically from a seed, using the algorithms laid out in BIP 32 and BIP 39. The life of a key looks like this:
 
@@ -83,13 +83,13 @@ Wallet restoredWallet = Wallet.fromSeed(params, seed);
 
 The lookahead zone plays an important role when keeping wallets synchronised together. The default zone is 100 keys in size. This means that if wallet A is cloned to wallet B, and wallet A issues 50 keys of which only the last one is actually used to receive payment, wallet B will still notice that payment and move its lookahead zone such that B is tracking 150 keys in total. If wallet A handed out 120 keys and only the 110th received payment, wallet B would not notice anything had happened. For this reason when trying to keep wallets in sync it's important that you have some idea of how many outstanding addresses there may be awaiting payment at any given time. The default of 100 is selected to be appropriate for consumer wallets, but in a merchant scenario you may need a larger zone.
 
-##Replaying the chain
+## Replaying the chain
 
 If you import non-fresh keys to a wallet that already has transactions in it, to get the transactions for the added keys you must remove transactions by resetting the wallet (using the `reset` method) and re-download the chain. Currently, there is no way to replay the chain into a wallet that already has transactions in it and attempting to do so may corrupt the wallet. This is likely to change in future. Alternatively, you could download the raw transaction data from some other source, like a block explorer, and then insert the transactions directly into the wallet. However this is currently unsupported and untested. For most users, importing existing keys is a bad idea and reflects some deeper missing feature. Talk to us if you feel a burning need to import keys into wallets regularly.
 
 The Wallet works with other classes in the system to speed up synchronisation with the block chain, but only some optimisations are on by default. To understand what is done and how to configure a Wallet/PeerGroup for optimal performance, please read [SpeedingUpChainSync](/speeding-up-chain-sync).
 
-##Creating spends
+## Creating spends
 
 After catching up with the chain, you may have some coins available for spending:
 
@@ -145,7 +145,7 @@ Then we complete the request - that means the transaction in the send request ha
 
 Note that between `completeTx` and `commitTx` no lock is being held. So it's possible for this code to race and fail if the wallet changes out from underneath you - for example, if the keys in the wallet have been exported and used elsewhere, and a transaction that spends the selected outputs comes in between the two calls. When you use the simpler construction the wallet is locked whilst both operations are run, ensuring that you don't end up trying to commit a double spend.
 
-##When to commit a transaction
+## When to commit a transaction
 
 To _commit_ a transaction means to update the spent flags of the wallets transactions so they won't be re-used. It's important to commit a transaction at the right time and there are different strategies for doing so. 
 
@@ -153,7 +153,7 @@ The default sendCoins() behaviour is to commit and then broadcast, which is a go
 
 You can also just not call `wallet.commitTx` and use `peerGroup.broadcastTransaction` instead. Once a transaction has been seen by a bunch of peers it will be given to the wallet which will then commit it for you. The main reason you may want to commit after successful broadcast is if you're experimenting with new code and are creating transactions that won't necessarily be accepted. It's annoying to have to constantly roll back your wallet in this case. Once you know the network will always accept your transactions you can create the send request, complete it and commit the resulting transaction all under a single lock so multiple threads won't create double spends by mistake.
 
-##Understanding balances and coin selection
+## Understanding balances and coin selection
 
 The `Wallet.getBalance()` call has by default behaviour that may surprise you. If you broadcast a transaction that sends money and then immediately afterwards check the balance, it may be lower than what you expect (or even be zero).
 
@@ -178,7 +178,7 @@ As a consequence of all of the above, if you query the `AVAILABLE` balance immed
 
 The difference between `AVAILABLE_SPENDABLE` and `AVAILABLE` variants is whether the wallet considers outputs for which it does not have the keys. In a "watching wallet", the wallet may be tracking the balance of another wallet elsewhere by watching for the public keys. By default, watched addresses/scripts/keys are considered to be a part of the balance even though attempting to spend those outputs would fail. The only time these two notions of balance differ is if you have a mix of private keys and public-only keys in your wallet: this can occur when writing advanced contracts based applications but otherwise should never crop up.
 
-##Using fees
+## Using fees
 
 Transactions can have fees attached to them when they are completed by the wallet. To control this, the `SendRequest` object has several fields that can be used. The simplest is `SendRequest.fee` which is an absolute override. If set, that is the fee that will be attached. A more useful field is `SendRequest.feePerKb` which allows you to scale the final fee with the size of the completed transaction. When block space is limited, miners decide ranking by fee-per-1000-bytes so typically you do want to pay more for larger transactions, otherwise you may fall below miners fee thresholds. 
 
@@ -194,7 +194,7 @@ bitcoinj will by default ensure you always attach a small fee per kilobyte to ea
 
 Over time, it'd be nice to get back to a state where most transactions are free. However it will require some changes on the C++ and mining side along with careful co-ordinated rollouts.
 
-##Learning about changes
+## Learning about changes
 
 The wallet provides the `WalletEventListener` interface for learning about changes to its contents. You can derive from `AbstractWalletEventListener` to get a default implementation of these methods. You get callbacks on:
 
@@ -202,13 +202,13 @@ The wallet provides the `WalletEventListener` interface for learning about chang
 * Money being sent from the wallet (regardless of whether the tx was created by it or not).
 * Changes in transaction confidence. See [WorkingWithTransactions](working-with-transactions) for information about this.
 
-##Saving the wallet at the right times
+## Saving the wallet at the right times
 
 By default the Wallet is just an in-memory object, it won't save by itself. You can use `saveToFile()` or `saveToOutputStream()` when you want to persist the wallet. It's best to use `saveToFile()` if possible because this will write to a temporary file and then atomically rename it, giving you assurance that the wallet won't be half-written or corrupted if something goes wrong half way through the saving process.
 
 It can be difficult to know exactly when to save the wallet, and if you do it too aggressively you can negatively affect the performance of your app. To help solve this, the wallet can auto-save itself to a named file. Use the `autoSaveToFile()` method to set this up. You can optionally provide a delay period, eg, of a few hundred milliseconds. This will create a background thread that saves the wallet every N milliseconds if it needs saving. Note that some important operations, like adding a key, always trigger an immediate auto-save. Delaying writes of the wallet can help improve performance in some cases, eg, if you're catching up a wallet that is very busy (has lots of transactions moving in and out). You can register an auto-save listener to learn when the wallet saved itself.
 
-##Wallet maintenance and key rotation
+## Wallet maintenance and key rotation
 
 The wallet has a notion of _maintenance_, which currently exists purely to support _key rotation_. Key rotation is useful when you believe some keys might be weak or compromised and want to stop using them. The wallet knows how to create a fresh HD key hierarchy and create spends that automatically move coins from rotating keys to the new keys. To start this process, you tell the wallet the time at which you believe the existing keys became weak, and then use the `doMaintenance(KeyParameter, boolean)` method to obtain transactions that move coins to the fresh keys. Note that you can't mark individual keys as weak, only groups based on their creation time.
 
@@ -221,7 +221,7 @@ The `doMaintenance` method takes the users password key if there is one, and a b
 
 The concept of maintenance is general. In future, the wallet might generate maintenance transactions for things like defragmenting the wallet or increasing user privacy. But currently, if you don't use key rotation, this method will do nothing.
 
-##Creating multi-sends and other contracts
+## Creating multi-sends and other contracts
 
 The default `Wallet.SendRequest` static methods help you construct transactions of common forms, but what if you want something more advanced? You can customize or build your own transaction and put it into a `SendRequest` yourself.
 
@@ -246,7 +246,7 @@ You can add arbitrary `TransactionOutput` objects and in this way, build transac
 
 At this time `SendRequest` does not allow you to request unusual forms of signing like `SIGHASH_ANYONECANPAY`. If you want to do that, you must use the lower level APIs. Fortunately it isn't hard - you can see examples of how to do that in the article [WorkingWithContracts](working-with-contracts).
 
-##Encrypting the private keys
+## Encrypting the private keys
 
 It's a good idea to encrypt your private keys if you only spend money from your wallet rarely. The `Wallet.encrypt("password")` method will derive an AES key from an Scrypt hash of the given password string and use it to encrypt the private keys in the wallet, you can then provide the password when signing transactions or to fully decrypt the wallet. You can also provide your own AES keys if you don't want to derive them from a password, and you can also customize the Scrypt hash parameters.
 
@@ -265,7 +265,7 @@ The wallet can be decrypted by using the `wallet.decrypt` method which takes eit
 
 Note that because bitcoinj saves wallets by creating temp files and then renaming them, private key material may still exist on disk even after encryption. Especially with modern SSD based systems deleting data on disk is rarely completely possible. Encryption should be seen as a reasonable way to raise the bar against adversaries that are not extremely sophisticated. But if someone has already gained access to their wallet file, they could theoretically also just wait for the user to type in their password and obtain the private keys this way. Encryption is useful but should not be regarded as a silver bullet.
 
-##Watching wallets
+## Watching wallets
 
 A wallet can cloned such that the clone is able to follow transactions from the P2P network but doesn't have the private keys needed for spending. This arrangement is very useful and makes a lot of sense for things like online web shops. The web server can observe all payments into the shops wallet, so knows when customers have paid, but cannot authorise withdrawals from that wallet itself thus significantly reducing the risk of hacking.
 
@@ -299,7 +299,7 @@ wallet.addWatchedScripts(List.of(script, script, script));
 
 Obviously in this case you don't get auto synchronisation of new keys/addresses/scripts.
 
-##Married/multi-signature wallets and pluggable signers
+## Married/multi-signature wallets and pluggable signers
 
 Starting from bitcoinj 0.12 there is some support for wallets which require multiple signers to cooperate to sign transactions. This allows the usage of a remote "risk analysis service" which may only countersign transactions if some additional authorisation has been obtained or if the transaction seems to be low risk. A wallet that requires the cooperation of a third party in this way is called a *married wallet*, because it needs the permission of its spouse to spend money :-)
 
@@ -325,7 +325,7 @@ The Wallet class runs transaction signers in sequence. First comes the `LocalTra
 
 Married wallets support is relatively new and experimental. If you do something with it, or encounter problems, let us know!
 
-##Connecting the wallet to a UTXO store
+## Connecting the wallet to a UTXO store
 
 By default the wallet expects to find unspent outputs by scanning the block chain using Bloom filters, in the normal SPV manner. In some use cases you may already have this data from some other source, for example from a database built by one of the <a href="/full-verification">full pruned block stores</a>. You can configure the Wallet class to use such a source instead of its own data and as such, avoid the need to directly use the block chain. This can be convenient when attempting to build something like a web wallet, where wallets need to be loaded and discarded very quickly.
 

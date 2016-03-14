@@ -12,7 +12,7 @@ title: "Working with monetary amounts"
 
 <div markdown="1" class="toccontent">
 
-##The Coin class
+## The Coin class
 
 Bitcoin amounts in the bitcoinj API are represented using the `Coin` class. `Coin` is superficially similar to `BigInteger` except that it wraps a long internally and thus cannot represent arbitrarily large quantities of bitcoin. As there is a global limit on how many bitcoins can exist this is unlikely to pose an issue for the forseeable future. The raw number of satoshis represented by a `Coin` instance is accessible via the public final field `value`, and the rest of the class is about making it easier and more type safe to work with these amounts.
 
@@ -28,7 +28,7 @@ There are also static instances representing ZERO, COIN, CENT, MILLICOIN, MICROC
 
 `Coin` implements `Comparable`, `Serializable` and also the bitcoinj provided `Monetary` interface. The `Monetary` interface represents any monetary amount in any currency, represented as a long with a "smallest unit exponent". For Bitcoin this is 8 but for most national/state currencies it will be either two or zero.
 
-##Formatting
+## Formatting
 
 bitcoinj provides two APIs for formatting `Coin` amounts to and from strings:
 

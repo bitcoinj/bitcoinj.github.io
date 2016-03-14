@@ -12,9 +12,9 @@ title: "Limitations and missing features."
 
 <div markdown="1" class="toccontent">
 
-#Limitations and missing features.
+# Limitations and missing features.
 
-##Introduction
+## Introduction
 
 bitcoinj is a work in progress, and lacks some features you probably consider important. It also has strange quirks and other issues that should be fixed, but nobody has yet had time to do so (there were always higher priorities).
 
@@ -22,11 +22,11 @@ A lot of these quirks persist because the primary goal of the project has always
 
 For a full list, see [the bug tracker](https://github.com/bitcoinj/bitcoinj/issues). What is listed below is a small selection of the most important limitations. Patches are always welcome.
 
-##Bugs and other problems
+## Bugs and other problems
 
 * The Wallet code doesn't scale well. All transactions that were ever relevant to the wallet are loaded into memory, all the time, and re-written every time the wallet is saved. This results in a simple on-disk format accessible to many kinds of apps, but has poor performance for heavy users. In time we'll probably switch to a log structured wallet file format to solve this.
 
-##Security issues
+## Security issues
 
 * The default coin selector is not very smart, which means you can do a denial-of-service attack against anyone for whom you have an address by sending lots of tiny coins. bitcoinj will try and use them to fulfil spends and hit the size/fee limits mentioned in the previous points. Also, the wallet can only create one transaction for one spend request (like all other Bitcoin implementations). If a transaction goes over-size, you simply cannot create spends anymore unless you manually break the values required down yourself.
 * SPV mode vs full verification is an important topic to understand, read the [SecurityModel](/security-model) page for more information on this.
@@ -35,20 +35,20 @@ For a full list, see [the bug tracker](https://github.com/bitcoinj/bitcoinj/issu
 * Some features, like seeing pending transactions, rely on polling your randomly selected peers. This opens up users/wallets that are relying on unconfirmed transactions to sybil attacks. In future versions we may switch to using Tor by default to resolve this.
 * The code has not been professionally audited by security specialists and may have other, unexpected security holes (unfortunately this is true for most bitcoin related software). The library has been written for mobile wallets that don't contain large amounts of value and that is still the primary focus.
 
-##Privacy issues
+## Privacy issues
 
 * Bloom filters are always set very tightly at the moment. The reason is that the API has no notion of bandwidth modes, and no code to measure bandwidth usage and adjust FP rates to keep it within bounds. Additionally building chains of filters that "lie coherently" is a challenging research problem.
 * Bitcoin P2P traffic is unencrypted (this is a limitation of Bitcoin rather than bitcoinj)
 
-##Protocol compliance
+## Protocol compliance
 
 * Full verification mode does not support the v2 block format (where the height is embedded in the coinbase transactions). It also may still contain chain splitting bugs. It's experimental and should be treated as such.
 
-##Micropayment channels 
+## Micropayment channels 
 
 * Security issue: the Bitcoin network allows transaction malleability. With the code in 0.10, a malicious server could modify the contract tx before broadcasting it, rendering the refund useless and allowing extortion of the user.
 
-##API warts
+## API warts
 
 * The `Wallet` class is huge and has a lot of functionality that could be refactored out. At some point we'll probably move this to a separate package.
 * Some core objects like `Block` and `Transaction` should be immutable but aren't.

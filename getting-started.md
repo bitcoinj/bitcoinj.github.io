@@ -12,9 +12,9 @@ title: "An introduction to using the library"
 
 <div markdown="1" class="toccontent">
 
-#An introduction to using the library
+# An introduction to using the library
 
-##Introduction
+## Introduction
 
 _This document describes how to use the code in 0.13.6, git master may be slightly different_
 
@@ -23,7 +23,7 @@ bitcoinj is implemented in Java 6 and thus can be used from any language that ca
 Note that these tutorials assume familiarity with the basics of the Bitcoin protocol. If you aren't already familiar with the structure of the block chain and how transactions work, please read [Satoshi's white paper](https://bitcoin.org/bitcoin.pdf) before this tutorial.
 
 
-##Before we start
+## Before we start
 
 This library is not like other libraries. A Bitcoin API allows you to directly handle money, possibly large sums of other people's money. It is important to understand the following. **After completing this tutorial you are NOT qualified to write production applications**. You will have a flavor of how to write applications, but Bitcoin is a subtle and complex system.
 
@@ -31,7 +31,7 @@ This library is not like other libraries. A Bitcoin API allows you to directly h
 
 These documents will help you learn how to use bitcoinj, but they are not yet completely comprehensive. If you are ever in any doubt at all, or just want some code review, please ask on our mailing list or on our forum for advice and a second opinion. Also, make sure you keep up with the latest versions of the software. Bug fixes happen all the time and any one of them could be required for the safety of your wallet. It's important that you frequently rebase onto new versions of the library, even though bitcoinj does not have a stable API.
 
-##Pick your language
+## Pick your language
 
 * <a href="/getting-started-java">Java</a>
 * <a href="/getting-started-js">Javascript</a>

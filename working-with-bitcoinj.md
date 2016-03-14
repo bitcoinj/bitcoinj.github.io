@@ -12,21 +12,21 @@ title: "Working with bitcoinj"
 
 <div markdown="1" class="toccontent">
 
-#Working with bitcoinj
+# Working with bitcoinj
 
 _Common patterns and things you should know._
 
-##Introduction
+## Introduction
 
 bitcoinj uses a few of the following design patterns throughout the code. You can look at the example code in org/bitcoinj/examples and tools to see how to use the library.
 
-###Futures
+### Futures
 
 We use the Google Guava library and specifically, the [ListenableFuture](http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/util/concurrent/ListenableFuture.html) class. `ListenableFuture` is a subclass of the standard JDK Future class and represents some work that is happening in the background which yields a result. When you find yourself with a `ListenableFuture`, you can stop and wait for it to complete, or you can check if it's ready yet, or you can wait with a timeout, or you can register a callback that will be invoked (on some background thread) when the work is done. You may also see regular JDK futures in a few places, these will switch to being `ListenableFutures` over time. 
 
 `ListenableFutures` have a number of benefits due to the addition of completion listeners, for instance it's easy to do fan-in and fan-out waits, you can also chain futures together so work is done one after the other. See the Guava manual for more information.
 
-###Events
+### Events
 
 Event listeners are usually invoked asynchronously on a dedicated background thread created by the library, called the user thread. This is done for a couple of reasons, one is that it means event listeners run with no locks held and thus there are no re-entrancy restrictions. Another reason is it means you don't have to write thread safe event handlers. 
 
@@ -47,7 +47,7 @@ Threading.USER_THREAD = new Executor() {
 
 The above code snippet run at the start of your app will ensure that bitcoinj callbacks end up running on the GUI thread, meaning they can update widgets and change the GUI in any way they like - simple!
 
-###Serialization
+### Serialization
 
 There are three different binary serialization formats used in bitcoinj.
 

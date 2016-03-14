@@ -12,15 +12,15 @@ title: "How the different components of your app fit together"
 
 <div markdown="1" class="toccontent">
 
-#How the different components of your app fit together
+# How the different components of your app fit together
 
-##Introduction
+## Introduction
 
 This article shows you how the different objects and interfaces in a typical bitcoinj based application interact. We will see how data arrives from the network, is converted into Java objects, and then how those objects travel around until they are eventually used to perform various actions or saved to disk.
 
 For the purposes of this article we will assume the application is a wallet.
 
-##The network
+## The network
 
 The life of a piece of Bitcoin data starts in two ways - when it is sent to us by another node in the peer-to-peer network, or when a transaction is created by ourselves.
 
@@ -33,7 +33,7 @@ Note that for many types of apps, notably wallets or merchant apps, you don't ne
 
 In theory, `NioClientManager` could easily support both async IO and multiple threads together, however the current implementation does not.
 
-##De/serialization
+## De/serialization
 
 As noted above, the client manager classes require an implementation of the `StreamParser` interface. This interface provides methods for notification that a connection is opened or closed, receiving raw byte buffers and being given an implementation of the `MessageWriteTarget` interface. `StreamParser`s are given data packets read from the network _without any kind of framing or parsing done_. For instance it's valid for half a message to show up on a `StreamParser`'s front door. The parser buffers data, handles framing and consumes the data in some way.
 
@@ -45,7 +45,7 @@ Once a `Message` is fully constructed and finished deserializing itself, it's pa
 
 The serialization of messages is a custom binary format designed by Satoshi. It has minimal overhead and consequently minimal flexibility.
 
-##Peer logic
+## Peer logic
 
 However, most likely your app does not want to handle a stream of raw Bitcoin protocol messages, but rather operate at a higher level. For this purpose, the `Peer` class subclasses `PeerSocketHandler`, tracks state related to the connection and processes incoming messages. It provides high level operations like downloading blocks, the entire chain, transactions, performing pings and so on.
 
@@ -64,7 +64,7 @@ On receiving a message, each `PeerEventListener` has a chance to read and interc
 * If a remote peer asks for our transaction data using "getdata", wallets and listeners are polled to see if any can provide that data, and if one does it is sent in response.
 * Misc messages like pings or alerts are handled as appropriate.
 
-##The memory pool
+## The memory pool
 
 It can be convenient to know how many peers (and which ones) have announced a particular transaction. See the article on the bitcoinj [SecurityModel](/security-model) for information on why this may be interesting. To implement this, the `MemoryPool` class keeps track of transactions and transaction hashes that have been seen.
 
@@ -72,7 +72,7 @@ For example, if a peer sends us an "inv" stating it has the transaction with has
 
 It may be that the same "tx" message is sent to us multiple times. Normally this shouldn't happen. But if it does the `MemoryPool` deduplicates them to ensure only one Java object is floating around, even if it was deserialized multiple times. 
 
-##Chains and stores
+## Chains and stores
 
 A subclass of `AbstractBlockChain` is responsible for receiving blocks, fitting them together, and doing validation on them. The `BlockChain` class does SPV level validation, the `FullPrunedBlockChain` does full validation as the name implies.
 
@@ -94,7 +94,7 @@ In order, a new full block on the best chain triggers `isTransactionRelevant` fo
 
 For an SPV mode app, the block store is given all non-orphan blocks regardless of where they connect, and is informed when the new best chain head changes so it can be written to disk. It is only expected to store headers.
 
-###Data pruning
+### Data pruning
 
 For a fully validating node, the store is expected to do a lot more and must implement the `FullPrunedBlockStore` interface. Together the chain and store implement the _ultraprune_ algorithm, the same as Bitcoin 0.8+ does. However unlike Bitcoin 0.8 the store will actually permanently delete unneeded data after a while, so it cannot serve the chain to other nodes, but the utilized disk space is a lot lower.
 
@@ -102,7 +102,7 @@ A pruning node does not attempt to store the entire block chain. Instead it stor
 
 The `FullPrunedBlockStore` interface provides methods for adding, removing and testing the UTXO set. It also has methods for inserting blocks and undo blocks and beginning/ending database transactions (note: as distinct from Bitcoin transactions).
 
-##The wallet
+## The wallet
 
 The `Wallet` class acts as a block chain listener and receives data and events from the chain object. It saves the data it receives within itself and keeps track of all transactions that might be interesting for the wallet user, such as ones that send money to its keys. The wallet can be saved to a protocol buffer using `WalletProtobufSerializer`, and functionality is provided to automatically do so from time to time when the wallet has changed.
 

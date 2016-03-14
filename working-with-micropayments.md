@@ -12,11 +12,11 @@ title: "Working with micropayment channels"
 
 <div markdown="1" class="toccontent">
 
-#Working with micropayment channels
+# Working with micropayment channels
 
 _Learn how to efficiently send repeated micropayments to a chosen recipient._
 
-##Introduction
+## Introduction
 
 Bitcoin has great potential as a platform for enabling _micropayments_, payments much smaller than what the traditional financial system can handle. Indeed, you can send a very tiny amount of value in a Bitcoin transaction without doing anything special and it will work, even if what you're sending is only a fraction of a (dollar) cent. But doing so is subject to a few significant caveats.
 
@@ -28,7 +28,7 @@ Sometimes these restrictions don't matter - you only wish to make a single, very
 
 Starting from bitcoinj 0.10, you can use payment channels to implement various kinds of metered billing application. We provide a sub-library that implements a client/server protocol for this, along with an example client/server app showing how easy it is to use. Because payment channel technology is still new and experimental, if you wish to use it please get in touch with us first and let us know what you're doing, so we ensure you keep up as the code evolves.
 
-##Protocol overview
+## Protocol overview
 
 The [micropayment protocol](https://en.bitcoin.it/wiki/Contracts#Example_7:_Rapidly-adjusted_.28micro.29payments_to_a_pre-determined_party) allows one party (the client) to make repeated micropayments to another party (the server). It works in two stages. Firstly, some value is locked up with a multi-signature transaction that places it under the control of both parties. The parties collaborate to create a signed refund transaction that spends all the value back to the client, but is time locked using the nLockTime feature of the Bitcoin protocol. This ensures that the refund won't become valid until some period of time has passed (currently, one day).
 
@@ -42,7 +42,7 @@ Eventually the client will decide that it is done. At this point it sends a mess
 
 As you can see, because the refund transaction lets the client take back all its money if the channel is still in use as it approaches the expiry time, the server must close the channel and a new one must be built from scratch.
 
-##API design
+## API design
 
 Bitcoinj provides a series of objects that implement the client and server parts of the above arrangement. The wire protocol uses TCP to send uint-length-prefixed protocol buffers, but the system is designed to be embeddable so you can easily bind micropayments into other protocols, like HTTP or XMPP.
 
@@ -53,9 +53,9 @@ Bitcoinj provides a series of objects that implement the client and server parts
 
 Although this may seem like a lot of objects, the abstractions have a purpose. Imagine building a protocol that lets you pay for not seeing display ads on the web by making private micropayments to ad networks at the time the ad is going to be served. A separate TCP connection is probably not the right tool to be used here. Instead it would make more sense to extend HTTP with some special headers and link the browser to your wallet app, so the micropayments protocol flows over those inline HTTP headers. In that case you'd want to use the state machine and possibly protobuf serialization, but the network code itself might not be that useful. Going even further, if you're embedding the protocol into something that already has its own serialization mechanism you might want to reuse the core state machines but avoid protocol buffers entirely. All these use cases are possible.
 
-##Tutorial
+## Tutorial
 
-###Server
+### Server
 
 Let's take a walk through the toy server included in the examples package.
 
@@ -136,7 +136,7 @@ The interface is simple - we're informed when a channel is successfully opened, 
 After the channelOpen callback, we're told when we received a new payment, and, finally we're told when the channel is closed, and why.
 
 
-###Client
+### Client
 
 On the client side, the first part looks much the same, except in the wallet we add a `StoredPaymentChannelClientStates` - note **Client** instead of **Server**.
 
@@ -219,7 +219,7 @@ client.close();
 So we send 1 bitcent every half a second, and then when we're done we close the channel.
 
 
-##Choosing channel parameters
+## Choosing channel parameters
 
 To build a payment channel you have to choose a few parameters, notably, how much money you should lock up. Note that on the client side you specify a maximum, and then the server requests the actual amount it is willing to accept in a single channel, so there's no guarantee the total amount the client side specifies will end up in a multi-signature contract. There's no hard and fast rule around what to pick here, it depends on what your app's users are willing to tolerate.
 

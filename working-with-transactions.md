@@ -12,9 +12,9 @@ title: "Working with transactions"
 
 <div markdown="1" class="toccontent">
 
-#Working with transactions
+# Working with transactions
 
-##Introduction
+## Introduction
 
 Transactions are the fundamental atoms of the Bitcoin protocol. They encapsulate a claim upon some value, and the conditions needed for that value to itself later be claimed.
 
@@ -25,7 +25,7 @@ This article will discuss:
  * Transaction confidences
  * Different ways in which transactions can be used
 
-##What is a transaction?
+## What is a transaction?
 
 Transactions are, at heart, a collection of _inputs_ and _outputs_. They also have a lock time, which is not used in the current Bitcoin network, and a few bits of metadata only represented in bitcoinj like when the transaction was last seen and a confidence measurement. All this is represented using the `Transaction` class.
 
@@ -41,7 +41,7 @@ Note that an input does not contain a value field. To find the value of an input
 
 Transactions can be serialized and either broadcast across the P2P network, in which case miners may start trying to include it in a block, or passed around outside the network using other protocols.
 
-##The Transaction class
+## The Transaction class
 
 The `Transaction` class lets you deserialize, serialize, build and inspect transactions. It also helps you track interesting metadata about a transaction such as which blocks (if any) it has been included in, and how much confidence you can have that the transaction won't be reversed/double spent.
 
@@ -54,7 +54,7 @@ Inputs are represented with the `TransactionInput` class, and outputs are of cou
 3. Find which blocks the transaction appears in using `getAppearsInHashes()`. Because the transaction only stores the hashes of the block headers, you may need to use a populated `BlockStore` to get the block data itself.
 4. Learn about the state of the transaction in the chain using `getConfidence`. This returns a `TransactionConfidence` object representing various bits of data about when and where the transaction was included into the block chain.
 
-##Confidence levels
+## Confidence levels
 
 A transaction has an associated _confidence_. This is data you can use to calculate the probability of the transaction being reversed (double spent). This is always a risk in Bitcoin although at high network speeds, the probability becomes extremely low, certainly relative to traditional payment systems.
 
@@ -71,7 +71,7 @@ The confidence type, available via `TransactionConfidence.getConfidenceType()`, 
 
 Depth in blocks is easy to understand and roughly corresponds to how long the transaction has been confirmed for (1 block == 10 minutes on average). However, this is not a stable measure of how much effort it takes to reverse a transaction because the amount of _work done_ on a block varies over time, depending on how much mining is happening, which itself depends on the exchange rate (vs the dollar/euro/etc).
 
-###Understanding difficulty and confidence
+### Understanding difficulty and confidence
 
 The most common reason you are interested in confidence is you wish to measure the risk of losing money that was sent to you, for example, to delay dispatching of goods or provision of services. The Bitcoin community uses a rule of thumb of zero confirmations for things that aren't of much value like MP3s or ebooks, one or two blocks for things (10-20 minutes) for things that stand a risk of a double spend attack, or 6 blocks (an hour) for where rock solid certainty is required, like with currency exchanges.
 
@@ -79,7 +79,7 @@ In practice, reports of merchants suffering double-spend fraud are rare so this 
 
 You'll notice that the rules of thumb quoted above are expressed as blocks, not work done. So if the exchange rate and thus mining falls, 2 blocks provides less assurance than before, meaning you may wish to wait longer. Conversely if the exchange rate rises, mining activity will increase, meaning you can wait less time before a transaction is valid, resulting in happier customers. This is why we also provide a way to measure confidence as work done.
 
-##How transactions can be used
+## How transactions can be used
 
 The most common and obvious way to use transactions is to:
 
@@ -88,11 +88,11 @@ The most common and obvious way to use transactions is to:
 
 However there are many other possibilities.
 
-###Direct transfer
+### Direct transfer
 
 It's possible to send someone money by directly giving them a transaction, which they can then broadcast at their leisure, or further modify. These use cases aren't well supported today, but in future may become a common way to use Bitcoin.
 
-###Participation in contracts
+### Participation in contracts
 
 [Contracts](https://en.bitcoin.it/wiki/Contracts) allow for a variety of low trust trades to take place, mediated by the Bitcoin network. By carefully constructing transactions with particular scripts, signatures and structures you can have low-trust dispute mediation, coins locked to arbitrary conditions (eg, futures contracts), assurance contracts, [smart property](https://en.bitcoin.it/wiki/Smart_Property) and many other possibilities.
 

@@ -3,7 +3,7 @@ layout: base
 title: "How to depend on bitcoinj with Maven using projects"
 ---
 
-#How to depend on bitcoinj with Maven using projects
+# How to depend on bitcoinj with Maven using projects
 
 [Maven](http://maven.apache.org/) is a plugin based build system from Apache. It supports various other features, like automatically creating a website for your project and resolving dependencies.
 
@@ -34,7 +34,7 @@ This will give you v0.13.6. If PGP is your thing, you can run `git tag -v v0.13.
 
 Note: If you are using OpenJDK, you may have to install the supporting OpenJFX package for your operating system distribution. For example, if you are running Ubuntu 15.10, and using `openjdk-8-jdk`, you will need to also install the `openjfx` package. This can be accomplished with a command such as `sudo apt-get install openjfx`.
 
-#Maven security
+# Maven security
 
 Maven Central is a very insecure piece of infrastructure. If you're just messing around then this is perhaps not a big deal, but prototypes have a way of turning into real apps and then build security becomes more important. Maven can be made more secure by following these tips.
 

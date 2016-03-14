@@ -12,9 +12,9 @@ title: "Working with the BIP70 payment protocol API"
 
 <div markdown="1" class="toccontent">
 
-#Working with the BIP70 payment protocol API
+# Working with the BIP70 payment protocol API
 
-##Introduction
+## Introduction
 
 The _payment protocol_ is the term used to refer to the protocol specified in [BIP 70](https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki), 71, 72 and 73. The payment protocol is designed add additional features to Bitcoin by replacing the ubiquitous Bitcoin address with small files that can encode more complex parameters. It specifies a format for _payment requests_, _payments_ and _payment acks_ that flow directly between the sender and receiver of funds.
 
@@ -38,7 +38,7 @@ Protocol buffers are a binary data serialisation format that can be easily exten
 
 You can read a [FAQ on the payment protocol which details the rationale behind its design](https://bitcointalk.org/index.php?topic=300809.0).
 
-##Protocol overview
+## Protocol overview
 
 In a normal Bitcoin payment, the process starts with the user either clicking a bitcoin URI or copy and pasting a textual address into their wallet app and manually specifying the amount.
 
@@ -53,7 +53,7 @@ The payment request is made up of an outer "skin" message that contains (optiona
 
 Once a satisfying set of Bitcoin transactions are created by the wallet, a `Payment` message is formatted and uploaded to the destination URL specified by `PaymentDetails`, and then a `PaymentACK` message is received by the wallet once the payment is accepted satisfactorily.
 
-##Signing and certificates
+## Signing and certificates
 
 The purpose of signed payment requests is to replace a message like this in the users wallet app:
 
@@ -74,7 +74,7 @@ Technically speaking a certificate is just a statement about a public key, thus 
 
 In practice, the above process of creating keys manually, creating a CSR, uploading it etc is typically automated away for end user email-address certificates: instead any modern web browser that supports HTML5 can be used to step through the process automatically. After visiting a CA that issues free certificates such as [Comodo](http://www.comodo.com/home/email-security/free-email-certificate.php), the user enters the requested email address and clicks button. Their browser then generates a fresh private key and records it. When the user clicks the verification link delivered to their email address, the signing process completes and the certificate is installed in the local key store where it could be used or exported to another device. The whole process is not much different to signing up for a web site.
 
-##The payment protocol API in bitcoinj
+## The payment protocol API in bitcoinj
 
 In 0.12 the payment protocol support in bitcoinj is limited. It supports everything needed for basic support in wallet apps for signing and consuming payment requests. However, it does not support storing them in the wallet for future reference. Nor does bitcoinj take advantage of the opportunity to submit multiple independent transactions to a recipient for merge avoidance purposes.
 
@@ -131,7 +131,7 @@ Futures.addCallback(ack, new FutureCallback() {
 });
 {% endhighlight %}
 
-##User interface considerations
+## User interface considerations
 
 It's very important that you present payment protocol confirmations in a certain way.
 
@@ -139,13 +139,13 @@ Firstly, if signed PKI data is available, you should indicate that to the user i
 
 Secondly, if signed PKI data is provided but fails to verify, then the payment should be presented in exactly the same way as if the signature data was missing entirely. The experience of opening an incorrectly signed request should never be worse than opening a request that isn't signed at all. This gives us flexibility to introduce new certificate authorities or signing systems in future.
 
-##QR codes
+## QR codes
 
 If your app has integrated support for scanning QR codes, you should pay attention to BIP 73. It says that if a wallet app scans a QR code and finds an HTTP URL instead of a Bitcoin URI, it should do an HTTP[S] GET to that URL with a special HTTP header that asks the server for a payment request.
 
 The purpose of this mechanism is so merchants and payment processors can present a QR code that will work on any kind of QR scanner, and if the user doesn't have a wallet with an integrated scanner, a nice HTML invoice page with instructions and a clickable bitcoin link can be presented instead.
 
-##Operating system integration
+## Operating system integration
 
 If writing a wallet app, you should register to handle bitcoin URIs, and you should also register to handle files of type application/bitcoin-paymentrequest with extension .bitcoinpaymentrequest
 
@@ -156,7 +156,7 @@ Ideally, you would also allow the user to create payment requests too. The `Paym
 * On the desktop, allowing the user to drag/drop a payment request file (represent this as an icon). For example, a user could drag it onto an email compose window to attach the payment request to an email vs copy/pasting an address and amount manually. Gmail supports files being dropped onto the editor and other HTML5 apps can also accept drag/dropped data.
 * On mobile, allow the user to "share" the payment request file, this will allow the user to send it via chat apps, attach to emails, share via DropBox/Google Drive and so on.
 
-##Testing
+## Testing
 
 Gavin runs a simple payment request generator app here:
 

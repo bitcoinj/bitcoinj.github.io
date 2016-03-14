@@ -12,11 +12,11 @@ title: "Understanding the bitcoinj security model"
 
 <div markdown="1" class="toccontent">
 
-#Understanding the bitcoinj security model
+# Understanding the bitcoinj security model
 
 _Learn about the difference between full vs simplified modes, and how a bitcoinj app can be attacked._
 
-##Introduction
+## Introduction
 
 bitcoinj supports two different modes for your application: full verification and simplified verification. The mode you choose controls the resource usage of your application and how much trust you need in other participants in the Bitcoin system. As a developer, it's important you understand the differences and in which situations your app can or cannot be trusted.
 
@@ -26,7 +26,7 @@ The act of checking, storing and updating the database for every single transact
 
 bitcoinj implements both full mode and _simplified payment verification_. In this mode, only transactions that are relevant to the wallet are stored. Every other transaction is thrown away or simply never downloaded to start with. The block chain is still used and broadcast transactions are still received, but those transactions are not and cannot be checked to ensure they are valid. This mode of operation is fast and lightweight enough to be run on a smartphone, but can be defeated in various ways.
 
-##Pending transactions
+## Pending transactions
 
 When a transaction is broadcast over the network we say it is _pending_ inclusion in a block. Mining nodes will see the transaction, check it for themselves and if it's valid, include it in the current block they're trying to solve. Nodes do not relay invalid transactions.
 
@@ -40,7 +40,7 @@ There are three potential attacks on this method of gaining confidence.
 2. Exploiting race conditions by broadcasting two invalid transactions simultaneously. This technique was explored in [a paper by researchers at ETH Zurich](http://eprint.iacr.org/2012/248.pdf). For the technique to work best the attacker must be able to connect to the victim. bitcoinj apps do not accept incoming connections (there is no reason for them to do so), so this is difficult to pull off. In future the Bitcoin network will likely relay double spend alerts, but it's not implemented today.
 3. Mining a block that contains a double spend, then buying a service, then broadcasting the block. This is known as a _Finney attack_ and is discussed below.
 
-##Finney attacks
+## Finney attacks
 
 In a Finney attack the attacker mines a block including a spend of some of his coins to another address controlled by him. Once he finds a block, he does not broadcast it immediately. Instead he goes to a merchant who is accepting unconfirmed transactions and spends the coins. Once he obtained the goods he wanted from the merchant, he broadcasts his block containing the double spend, and takes back the coins. The Finney attack relies on careful timing and a lot of patience by the attacker: he must wait until he has found a block, which can take a long time. He must be able to buy something from a merchant quickly - every second he spends waiting for the goods to be delivered is a second another miner may discover and broadcast a valid block, making his work worthless.
 
@@ -58,7 +58,7 @@ Here are some examples of merchants that are, or are not, susceptible to the att
 
 If somebody executes a Finney attack against your app, the `TransactionConfidence` confidence type for that transaction will change to `DEAD` and any event listeners you registered will be called. `DEAD` transactions should be treated as if the payment has been reversed, and will not be counted towards your balance.
 
-##Confidence of confirmed transactions
+## Confidence of confirmed transactions
 
 Many types of application don't deliver a service immediately, and there it's OK to wait for confirmation of transactions via inclusion in the block chain. When a transaction is included into the chain, the `TransactionConfidence` type changes to BUILDING and you can then access the transactions _depth_ (how many blocks have been built on top of this transaction), and _work done_, which is another view of the same thing. For example, immediately after a transaction has appeared in a block its depth is 1 and the work done depends on current [network speeds](http://bitcoin.sipa.be/). After an hour, on average there should be 6 blocks though the actual amount many vary considerably. The transaction confidence listeners run every time a new block is received, so you can register a listener and use that to trigger the act of delivering your goods or services when a confidence level is reached.
 
@@ -68,7 +68,7 @@ Just because a transaction appears in a block does not mean it is valid. Again, 
 
 If you are delivering something of high value, how much confidence should you require? The traditional "rule of thumb" is six blocks, or an hour. An alternative way to look at this is to figure out how long you can realistically wait, then look at how much work is done on average in that timespan, and then require that much work done. This insulates you from varying interest in mining over time and ensures the cost of doing a double spend attack is the same.
 
-##Proving inclusion in a block without the full block body
+## Proving inclusion in a block without the full block body
 
 To find transactions relevant to your wallet, we have two options. We can download the full block contents and scan all transactions. This is inefficient - much data is downloaded only to be thrown away. Or, we can request transactions that match a pattern from remote nodes. We do this using Bloom filters when the remote node supports them (v0.8 and up). This leads to the question of how you can know the received transaction really did appear in the block chain, if you don't have a full copy of the block.
 

@@ -12,11 +12,11 @@ title: "Coding conventions in bitcoinj"
 
 <div markdown="1" class="toccontent">
 
-#Coding conventions in bitcoinj
+# Coding conventions in bitcoinj
 
 This article discusses various conventions and style rules that bitcoinj uses. If you want to contribute to the project, please read and understand this document first.
 
-##Coding style
+## Coding style
 
 We use the standard coding style from Sun, but pay attention to the following rules:
 
@@ -26,7 +26,7 @@ We try to avoid lines going beyond 120 columns. However this is not a hard and f
 
 Each file has a copyright notice at the top. You should put your own name there, unless you work for Google, in which case please put Google's name there instead. We do not mark classes with @author annotations, we have an AUTHORS file in the top level instead.
 
-##Comments
+## Comments
 
 We like them as long as they add detail that is missing from the code. Comments that simply repeat the story already told by the code are best deleted. Comments should:
 
@@ -63,7 +63,7 @@ Good JavaDocs look like this:
    public int getBloomFilterSize() { ... }
 {% endhighlight %}
 
-##Threading
+## Threading
 
 All bitcoinj code is thread safe by default, exceptions are marked. Objects that have event listeners should allow users to specify an executor and then use it. If no executor is specified then `Threading.USER_THREAD` should be used, this is an executor that marshals runnables onto a background thread. Sometimes library internal event handlers can use `Threading.SAME_THREAD` however they must be written carefully to avoid lock inversions.
 
@@ -71,13 +71,13 @@ Event listeners are stored using CopyOnWriteArrayLists so they can be modified c
 
 We make use of volatile variables for references and booleans. For integers we use AtomicInteger. Variables that can be accessed by multiple threads should be marked as volatile and named with a v prefix, ie "thingiesPerSecond" becomes "vThingiesPerSecond". This is so when you read the bodies of methods that are thread safe, you can quickly spot class member variables that are not volatile.
 
-##Static analysis
+## Static analysis
 
 We like IntelliJ Inspector. It can find similar bugs to FindBugs but with the advantage that it runs constantly in the background and seems to support a wider range of issues. We use annotations like `@GuardedBy` to help detect cases where variables aren't being properly locked, although the inspection for that isn't perfect by any means. We also use `@Override` and `@VisibleForTesting`.
 
 We use nullity annotations. Field members and method parameters are assumed to not contain null by default, and cases where they can are marked with `@Nullable`. This allows static analysis engines like the Inspector to flag cases where we're possibly dereferencing a null pointer.
 
-##Assertions
+## Assertions
 
 We don't use the Java assert keyword, we use the Guava Preconditions class instead. The reason is that enabling assertions on Dalvik is a bit annoying and they are typically disabled in the field. However, we want assertions to always be enabled, even in production, because they are sometimes checking security sensitive matters.
 
@@ -91,7 +91,7 @@ Bar bar = checkNotNull(foo.bar);
 
 You will see checkNotNull not only verifying arguments but used in other places too. This is typically done in order to prove to IntelliJ Inspector that a variable cannot be null at that point in time due to complex logic it can't figure out by itself (it knows how to read if statements in the same method and similar). This allows us to clear static analysis warnings that would otherwise flag a possible nullity violation.
 
-##Java
+## Java
 
 We target Java 6. This is because that's the version supported by Android phones. Due to our desire to make Bitcoin universally usable, we want to support developing countries where even new phones ship with Gingerbread for cost reasons. Therefore it will be a long time until we can use any JDK7 features that require runtime support, as Java 7 started being supported only with Android KitKat. Fortunately smart IDE's can take away most of the painful parts of working with Java 6.
 

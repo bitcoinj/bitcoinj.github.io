@@ -3,9 +3,9 @@ layout: base
 title: "Which BIPs are supported by bitcoinj"
 ---
 
-#Which BIPs are supported by bitcoinj
+# Which BIPs are supported by bitcoinj
 
-##Introduction
+## Introduction
 
 _Bitcoin improvement proposals_ are the communities way of standardising new extensions and protocols that build on top of Bitcoin. Bitcoinj either implements or provides API's to help you implement many of these standards; below you can see which BIP's are supported:
 
