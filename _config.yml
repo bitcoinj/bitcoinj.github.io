@@ -1,34 +1,37 @@
-safe:        false
-auto:        false
-server:      false
-server_port: 4000
+safe: false
+port: 4000
 base-url:    /
 
 source:      .
 destination: ./_site
-plugins:     ./_plugins
+plugins_dir: ./_plugins
 
 future:      true
 lsi:         false
 highlighter: rouge
-pygments:    true
 markdown:    kramdown
 permalink:   date
 
-rdiscount:
-  extensions: []
-
 kramdown:
+  input: GFM
   auto_ids: true,
+  smart_quotes:   lsquo,rsquo,ldquo,rdquo
   footnote_nr: 1
   entity_output: as_char
   toc_levels: 1..6
-  use_coderay: false
+  syntax_highlighter: rouge
 
-  coderay:
-    coderay_wrap: div
-    coderay_line_numbers: inline
-    coderay_line_numbers_start: 1
-    coderay_tab_width: 4
-    coderay_bold_every: 10
-    coderay_css: style
+
+    
+  syntax_highlighter_opts:
+    block: 
+      disable: true
+    span:
+      wrap: i
+      line_numbers: false
+    wrap: div
+    line_numbers: inline
+    line_numbers_start: 1
+    tab_width: 4
+    bold_every: 10
+    css: style
