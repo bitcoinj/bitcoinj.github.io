@@ -16,7 +16,7 @@ title: "An introduction to using the library"
 
 ##Introduction
 
-_This document describes how to use the code in 0.13.5, git master may be slightly different_
+_This document describes how to use the code in 0.13.6, git master may be slightly different_
 
 bitcoinj is implemented in Java 6 and thus can be used from any language that can target the JVM. This tutorial is available for Java and JavaScript, but people have also used bitcoinj from Python, Scala (a functional language), Clojure (a lisp like language), Kotlin, Ruby, and many others. Lots of the most popular languages have a JVM implementation.
 

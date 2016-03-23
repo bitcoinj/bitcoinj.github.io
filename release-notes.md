@@ -31,6 +31,14 @@ API changes:
 * The Coin API has new method aliases to activate operator overloading support in Kotlin.
 * ProtobufParser, StreamParser and friends have been renamed to ProtobufConnection, StreamConnection etc to better reflect what they actually do.
 
+##Version 0.13.6
+
+This is a bug fix / maintenance release:
+
+* Fix protobuf serialization of large sequence numbers.
+* Wallet: Fix bug in cleanup() that sometimes would put foreign outputs in myUnspents
+when disconnecting. This wrongly increases the balance.
+
 ##Version 0.13.5
 
 This is a bug fix / maintenance release:
