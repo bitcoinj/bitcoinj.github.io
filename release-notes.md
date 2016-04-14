@@ -19,17 +19,80 @@ title: "Release notes"
 _This version is not yet released and corresponds to changes in git master_
 
 * Thanks to Ross Nicoll, BIP 34 (height in coinbase) is now supported and enforced in fully verifying mode.
-* Thanks to Andreas Schildbach:
-  * You can now set required service bits on the PeerGroup object.
-  * There is a new HTTP seed available for the main network.
 * The Wallet code has been optimised again.
+* The Travis build now runs on their new container-based infrastructure and skips tests that require the network.
+* The concept of lazy parsing of the `Message` hierarchy has been removed.
+* Block stores:
+  * All database backed block stores now expect lowercase column names (if their database engines care).
+  * There is a new `LevelDBFullPrunedBlockStore`!
+  * The `H2FullPrunedBlockStore` constructor now accepts database credentials.
+* Tools:
+  * The BuildCheckpoints tool now takes a couple of options (e.g. the desired network). Also see the --help option.
+  * Wallet-tool now can set the creation time of wallets, both retroactively and when creating a read-only wallet from an xpub.
+  * Wallet-tool also now uses checkpoints to speed up the blockchain sync.
+* Thanks to Oscar Guindzberg, the wallet now supports double spend forwarding. Two pending transactions double spending each other will be moved into the IN_CONFLICT state until the conflict is resolved.
+* Fee related changes:
+  * There is no "base fee" any more. All fees are to be specified as a fee rate (fee per kB).
+  * Fee is calculated on byte precision (rather than kB). Still all fee rates are per kB.
+  * The cent rule is removed.
+  * The REFERENCE_DEFAULT_MIN_TX_FEE is now 5000 satoshis, and thus MIN_NONDUST_OUTPUT is now 2730 satoshis.
+  * A new `Transaction.DEFAULT_TX_FEE` constant is used for the default fee rate.
+* The pull-tester tool (BitcoindComparisonTool) isn't packaged into pull-tests.jar any more.
 * Many misc cleanups and bug fixes.
+* There is a new HTTP seed available for the main network.
+* The wrappers for the native ECDSA implementation have been updated for the latest libsecp256k1.
 
 API changes:
 
 * Event listener APIs (for example on peer, peer group and wallet) are split into single-method interfaces, enabling easy use from languages that support lambda functions. The old functions and interfaces are still available but deprecated. This change to separate interfaces for each event means new events can be added without breaking existing code.
-* The Coin API has new method aliases to activate operator overloading support in Kotlin.
+* Coin API:
+  * New method aliases to activate operator overloading support in Kotlin.
+  * No chain-specifc limit of its value any more. The inherent long limit still applies though.
 * ProtobufParser, StreamParser and friends have been renamed to ProtobufConnection, StreamConnection etc to better reflect what they actually do.
+* Checkpoints:
+  * CheckpointManager now exposes a `openStream(NetworkParameters)` method to get an InputStream to the bundled checkpoints.
+  * The bundled checkpoints are now text bases, for easier audit. The binary format is still supported though.
+* Transaction.Purpose has a new value RAISE_FEE to indicate transactions that are simply meant to raise the fee of a previous transaction.
+* The VersionChecksummedBytes hierarchy now has a consistent fromBase58/toBase58 API.
+* These classes don't support Java serialization any more: ECKey, DeterministicKey, NetworkParameters, Block, StoredBlock, StoredUndoableBlock, TransactionConfidence, UTXO, DeterministicHierarchy, MemoryFullPrunedBlockStore, KeyCrypterScrypt, Wallet and the entire Message hierarchy.
+* Context now has a strict mode. If enabled, it throw if a Context is needed but doesn't exist.
+* Improvements to message serialization:
+  * A common `MessageSerializer` interface has been extracted from `BitcoinSerializer` so that other implementations can be plugged.
+  * Support for variable length block headers has been added.
+* There is now a specific `ChainFileLockedException` if a lock on a block store file could not be acquired.
+* `AddressFormatException` is now unchecked.
+* Better support for services in the seeds:
+  * `PeerDiscovery.getPeers()` now requires a services bitmask, which is used when querying HTTP seeds.
+  * A new `MultiplexingDiscovery forServices()` returns an appropriate MultiplexingDiscovery.
+  * PeerGroup can be told to connect only to peers that serve specific services with a new `PeerGroup.setRequiredServices()`.
+* A new `WalletProtobufSerializer.readWallet()` variant allows to load a wallet without loading its transactions. This is useful if you were going to reset it anyway.
+* A new `PeerGroup.setPeerDiscoveryTimeoutMillis()` allows to set the peer discovery timeout.
+* Protocol versions needed for specific features are now stored in the NetworkParameters.
+* A couple of new `Block.isBIP()` variants tell if a block conforms to a specific BIP.
+* Payment channels:
+  * Thanks to Will Shackleton, there is now support for modern CLTV-based payment channels!
+  * `StoredPaymentChannelServerStates.getChannelMap()` exposes a copy of the channel map.
+* The whole `org.bitcoinj.testing` package has been moved to the test classpath.
+* A new `BitcoinURI.convertToBitcoinURI()` variant allows to generate URIs for non-Bitcoin networks.
+* Wallet/SendRequest/Transaction improvements:
+  * All wallet related classes have been moved to the `org.bitcoinj.wallet` package!
+  * New `Wallet.isConsistentOrThrow()`, a variant of `.isConsistent()` that throws an exception describing the inconsistency.
+  * New statistical methods in Wallet: `getTotalReceived()` and `getTotalSent()`.
+  * There is now a `TransactionInput.clearScriptBytes()`.
+  * New `TransactionOutput.isDust()` to determine if a transaction containing that output is relayable.
+  * `TransactionInput.isOptInFullRBF()` and `Transaction.isOptInFullRBF()` tell if a transactions opt into being replaced. DefaultRiskAnalysis uses this to evaluate these transactions as risky.
+  * Moved `Transaction.isConsistent()` to `Wallet.isTxConsistent()`.
+  * `Wallet.getChangeAddress()` is now called `.currentChangeAddress()`.
+  * Added `TransactionConfidence.lastBroadcastedAt`, the time a transaction was last announced to us.
+  * Renamed `Wallet.doesAcceptRiskyTransactions()` to `.isAcceptRiskyTransactions()`.
+  * SendRequest is now a top level class.
+  * New `SendRequest.childPaysForParent()` method to construct a CPFP transaction.
+* Peer:
+  * The initial handshake now needs to complete both directions for the protocol to continue.
+  * `Wallet.getDownloadData()` was renamed to `.isDownloadData()`.
+  * `Wallet.getDownloadTxDependencies()` was renamed to `.isDownloadTxDependencies()`.
+  * A maximum recusion level when requesting dependent transactions can be configured with `.setDownloadTxDependencies()`.
+  * `Wallet.getKeyRotationTime()` will now return null if left unconfigured.
 
 ## Version 0.13.6
 
