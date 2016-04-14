@@ -119,7 +119,7 @@ if (identity != null) {
 
 // a bit later when the user has confirmed the payment
 
-Wallet.SendRequest req = session.getSendRequest();
+SendRequest req = session.getSendRequest();
 wallet.completeTx(req);  // may throw InsufficientMoneyException
 // No refund address specified, no user specified memo field.
 ListenableFuture<PaymentSession.Ack> ack = session.sendPayment(ImmutableList.of(req.tx), null, null);

@@ -172,7 +172,7 @@ The `waitForSufficientBalance` method is simple and not specific to micropayment
 {% highlight java %}
 private void waitForSufficientBalance(Coin amount) {
     // Not enough money in the wallet.
-    Coin amountPlusFee = amount.add(Wallet.SendRequest.DEFAULT_FEE_PER_KB);
+    Coin amountPlusFee = amount.add(SendRequest.DEFAULT_FEE_PER_KB);
     ListenableFuture<Coin> balanceFuture = appKit.wallet().getBalanceFuture(amountPlusFee, Wallet.BalanceType.AVAILABLE);
     if (!balanceFuture.isDone()) {
         System.out.println("Please send " + amountPlusFee.toFriendlyString() +

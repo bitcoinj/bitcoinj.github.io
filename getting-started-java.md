@@ -286,7 +286,7 @@ To send coins, we use the wallets `sendCoins` method. It takes three arguments: 
 Transactions in Bitcoin can have fees attached. This is useful as an anti-denial-of-service mechanism, but it's primarily intended to incentivise mining in later years of the system when inflation has dropped off. You can control the fee attached to a transaction by customizing a send request:
 
 {% highlight java %}
-Wallet.SendRequest req = Wallet.SendRequest.to(address, value);
+SendRequest req = SendRequest.to(address, value);
 req.feePerKb = Coin.parseCoin("0.0005");
 Wallet.SendResult result = wallet.sendCoins(peerGroup, req);
 Transaction createdTx = result.tx;

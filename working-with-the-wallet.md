@@ -124,7 +124,7 @@ At a lower level, we can do these steps ourselves:
 
 {% highlight java %}
 // Make sure this code is run in a single thread at once.
-Wallet.SendRequest request = Wallet.SendRequest.to(address, value);
+SendRequest request = SendRequest.to(address, value);
 // The SendRequest object can be customized at this point to modify how the transaction will be created.
 wallet.completeTx(request);
 // Ensure these funds won't be spent again.
@@ -223,7 +223,7 @@ The concept of maintenance is general. In future, the wallet might generate main
 
 ## Creating multi-sends and other contracts
 
-The default `Wallet.SendRequest` static methods help you construct transactions of common forms, but what if you want something more advanced? You can customize or build your own transaction and put it into a `SendRequest` yourself.
+The default `SendRequest` static methods help you construct transactions of common forms, but what if you want something more advanced? You can customize or build your own transaction and put it into a `SendRequest` yourself.
 
 Here's a simple example - sending to multiple addresses at once. A fresh `Transaction` object is first created with the outputs specifying where to send various quantities of coins. Then the incomplete, invalid transaction is _completed_, meaning the wallet adds inputs (and a change output) as necessary to make the transaction valid.
 
@@ -233,7 +233,7 @@ Address target2 = new Address(params, "1RbxbA1yP2Lebauuef3cBiBho853f7jxs");
 Transaction tx = new Transaction(params);
 tx.addOutput(Utils.toNanoCoins(1, 10), target1);
 tx.addOutput(Utils.toNanoCoins(2, 20), target2);
-Wallet.SendRequest request = Wallet.SendRequest.forTx(tx);
+SendRequest request = SendRequest.forTx(tx);
 if (!wallet.completeTx(request)) {
   // Cannot afford this!
 } else {
@@ -256,7 +256,7 @@ Once encrypted, you will need to provide the AES key whenever you try and sign t
 
 {% highlight java %}
 Address a = new Address(params, "1RbxbA1yP2Lebauuef3cBiBho853f7jxs");
-Wallet.SendRequest req = Wallet.SendRequest.to(a, Coin.parseCoin("0.12"));
+SendRequest req = SendRequest.to(a, Coin.parseCoin("0.12"));
 req.aesKey = wallet.getKeyCrypter().deriveKey("password");
 wallet.sendCoins(req);
 {% endhighlight %}

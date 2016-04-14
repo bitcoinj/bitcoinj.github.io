@@ -46,7 +46,7 @@ contract.addOutput(amount, script);
 
 // We have said we want to make 0.5 coins controlled by us and them.
 // But it's not a valid tx yet because there are no inputs.
-Wallet.SendRequest req = Wallet.SendRequest.forTx(contract);
+SendRequest req = SendRequest.forTx(contract);
 wallet.completeTx(req);   // Could throw InsufficientMoneyException
 
 // Broadcast and wait for it to propagate across the network.
