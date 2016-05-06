@@ -14,9 +14,11 @@ title: "Release notes"
 
 # Release notes
 
-## Version 0.14
+## Version 0.15
 
 _This version is not yet released and corresponds to changes in git master_
+
+## Version 0.14
 
 * Thanks to Ross Nicoll, BIP 34 (height in coinbase) is now supported and enforced in fully verifying mode.
 * The Wallet code has been optimised again.
