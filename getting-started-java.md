@@ -18,9 +18,9 @@ bitcoinj has logging and assertions built in. Assertions are always checked by d
 
 bitcoinj uses Maven as its build system and is distributed via git. There are source code/jar downloads you can use, but it's more secure to get it directly from the source repository.
 
-To get the code and install it, grab Maven from [the Maven website](http://maven.apache.org), and add it to your path. Also make sure you have git installed. Probably your Java IDE has some Maven and Git integration too, but having them available via the command line is still very useful.
+To get the code and install it, grab [Maven](https://maven.apache.org) or [Gradle](https://gradle.org), and add it to your path. Also make sure you have git installed. Probably your Java IDE has some Maven/Gradle and Git integration too, but having them available via the command line is still very useful.
 
-Now get the latest version of the code. You can use the instructions on the [Using Maven](/using-maven) page - just run the commands there and you'll get the right version of the code (unless this website is itself compromised). This is intended to protect against compromised mirrors or source downloads - because git works using source tree hashes, if you get a source hash in the right manner, you are guaranteed to end up with the right code.
+Now get the latest version of the code. You can use the instructions on the [Using Maven](/using-maven) or [Using Gradle](/using-gradle) page - just run the commands there and you'll get the right version of the code (unless this website is itself compromised). This is intended to protect against compromised mirrors or source downloads - because git works using source tree hashes, if you get a source hash in the right manner, you are guaranteed to end up with the right code.
 
 You can [read the full program here](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/java/org/bitcoinj/examples/ForwardingService.java).
 
