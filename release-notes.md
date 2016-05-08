@@ -18,6 +18,12 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.14.1
+
+This is a bug fix / maintenance release:
+
+* There are no code changes. The quick followup release in order to get all binaries deployed to Maven Central.
+
 ## Version 0.14
 
 * Thanks to Ross Nicoll, BIP 34 (height in coinbase) is now supported and enforced in fully verifying mode.
