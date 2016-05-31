@@ -18,6 +18,13 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.14.2
+
+This is a bug fix / maintenance release:
+
+* Fixes a rare occurence of wrong balance calculation.
+* Misc other bug fixes.
+
 ## Version 0.14.1
 
 This is a bug fix / maintenance release:
