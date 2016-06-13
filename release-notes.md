@@ -18,6 +18,13 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.14.3
+
+This is a bug fix / maintenance release:
+
+* Fixed a crash when broadcasting unconfirmed transactions after two conflicting transactions were received.
+* The OP_RETURN limit was doubled to allow 80 bytes.
+
 ## Version 0.14.2
 
 This is a bug fix / maintenance release:
