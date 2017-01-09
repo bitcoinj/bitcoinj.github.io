@@ -93,7 +93,7 @@ You will see checkNotNull not only verifying arguments but used in other places 
 
 ## Java
 
-We target Java 6. This is because that's the version supported by Android phones. Due to our desire to make Bitcoin universally usable, we want to support developing countries where even new phones ship with Gingerbread for cost reasons. Therefore it will be a long time until we can use any JDK7 features that require runtime support, as Java 7 started being supported only with Android KitKat. Fortunately smart IDE's can take away most of the painful parts of working with Java 6.
+We target Java 6, though we can use Java 7 language features (except multi-catches). This is because that's the version supported by Android phones. Due to our desire to make Bitcoin universally usable, we want to support developing countries where even new phones ship with old Android versions for cost reasons. Therefore it will be a long time until we can use any Java 8 features, as Java 7 started being supported only with Android KitKat.
 
 We make minimal use of fancy tricks like code synthesis or reflection. Thus we also avoid frameworks that rely on them too. One reason is to keep things simple and readable, another reason is to avoid closing doors to things like trans-compilation into other languages or aggressive dead code elimination.
 
