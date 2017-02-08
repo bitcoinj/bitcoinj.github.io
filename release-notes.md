@@ -18,6 +18,12 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.14.4
+
+This is a bug fix / maintenance release:
+
+* Fixed a protobuf wallet corruption if a transaction version 2 is received and added to the wallet.
+
 ## Version 0.14.3
 
 This is a bug fix / maintenance release:
