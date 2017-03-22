@@ -35,6 +35,11 @@ For a full list, see [the bug tracker](https://github.com/bitcoinj/bitcoinj/issu
 * Some features, like seeing pending transactions, rely on polling your randomly selected peers. This opens up users/wallets that are relying on unconfirmed transactions to sybil attacks. In future versions we may switch to using Tor by default to resolve this.
 * The code has not been professionally audited by security specialists and may have other, unexpected security holes (unfortunately this is true for most bitcoin related software). The library has been written for mobile wallets that don't contain large amounts of value and that is still the primary focus.
 
+## Consensus
+
+* SPV mode always follows the chain with the most proof of work. In the event of a fork of the blockchain, the minority chain is expected to die off quickly. There is no solution for nodes who would like to stay on the minority chain.
+* In the event of a chain-split, bitcoinj does not protect against transactions being replayed on the minority chain. In other words, bitcoinj does not make any guarantee about what happens to a wallet's balance on the minority chain.
+
 ## Privacy issues
 
 * Bloom filters are always set very tightly at the moment. The reason is that the API has no notion of bandwidth modes, and no code to measure bandwidth usage and adjust FP rates to keep it within bounds. Additionally building chains of filters that "lie coherently" is a challenging research problem.
