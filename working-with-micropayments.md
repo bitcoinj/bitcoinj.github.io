@@ -225,4 +225,8 @@ To build a payment channel you have to choose a few parameters, notably, how muc
 
 Note that the expiry period for channels is currently unconfigurable - it's always a day.
 
+## Alternatives
+
+Note that these payment channels are not Lightning Network channels, those were standardized years after this implementation, which is originally from 2013.
+
 </div>
