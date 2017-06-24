@@ -227,6 +227,6 @@ Note that the expiry period for channels is currently unconfigurable - it's alwa
 
 ## Alternatives
 
-Note that these payment channels are not Lightning Network channels, those were standardized years after this implementation, which is originally from 2013.
+There is also an idea called [Lightning Network](https://lightning.network/lightning-network-paper.pdf), based on more modern, bidirectional payment channels.
 
 </div>
