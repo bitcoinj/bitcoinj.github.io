@@ -37,7 +37,7 @@ To simplify things, starting from Bitcoin Core 0.9 there is a new mode called re
 and once that's running, in another window you can do something like
 
 ~~~
-./bitcoin-cli -regtest setgenerate true 101
+./bitcoin-cli -regtest generate 101
 ~~~
 
 ... to create a new block on demand. Regtest mode requires the usage of yet another set of network params, `RegTestParams.get()`, and is designed to run only locally. There is no public regtest network. You can use `PeerGroup.connectToLocalHost()` to make it talk to the local bitcoind.
@@ -46,7 +46,7 @@ Note that newly mined coins have to mature (this is a general Bitcoin rule). Thi
 
 ~~~
 ./bitcoin-cli -regtest sendtoaddress <address of your app goes here> 10.0
-./bitcoin-cli -regtest setgenerate true 1
+./bitcoin-cli -regtest generate 1
 ~~~
 
 The block chain and so on is stored in ~/.bitcoin/regtest, so you can delete it to start over again, or use -datadir to make the files be saved in a different location.
