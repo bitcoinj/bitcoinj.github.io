@@ -18,6 +18,12 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.14.5
+
+This is a bug fix / maintenance release:
+
+* Disconnects from incompatible peers much quicker.
+
 ## Version 0.14.4
 
 This is a bug fix / maintenance release:
