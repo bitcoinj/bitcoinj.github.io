@@ -151,18 +151,7 @@ We want to know when we receive money so we can forward it. This is an _event_ a
 * `PeerEventListener` - for events related to a peer in the network
 * `TransactionConfidence.Listener` - for events related to the level of rollback security a transaction has
 
-Most apps don't need to use all of these. Because each interface provides a group of related events and you probably don't care about all of them, we also provide base classes that implement the interface with empty methods. These are called `Abstract*Listener`.
-
-The naming of these interfaces and classes is a little inconsistent and will likely change in a future release of the library.
-
-{% highlight java %}
-kit.wallet().addEventListener(new AbstractWalletEventListener() {
-    @Override
-    public void onCoinsReceived(Wallet w, Transaction tx, Coin prevBalance, Coin newBalance) {
-        // Runs in the dedicated "user thread".
-    }
-});
-{% endhighlight %}
+Most apps don't need to use all of these. Because each interface provides a group of related events and you probably don't care about all of them.
 
 Events in bitcoinj are run in a dedicated background thread that's just used for running event listeners, called the _user thread_. That means it may run in parallel to other code in your application, and if you're writing a GUI app, it means you aren't allowed to directly modify the GUI because you aren't in the GUI or "main" thread. However, your event listeners do not themselves need to be thread safe as events will queue up and execute in order. Nor do you have to worry about many other issues that commonly arise when using multi-threaded libraries (for instance, it's safe to re-enter the library and it's safe to do blocking operations).
 
