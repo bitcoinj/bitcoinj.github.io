@@ -154,10 +154,10 @@ We want to know when we receive money so we can forward it. This is an _event_ a
 Most apps don't need to use all of these. Because each interface provides a group of related events and you probably don't care about all of them.
 
 {% highlight java %}
-kit.wallet().addChangeEventListener(new WalletChangeEventListener() {
+kit.wallet().addCoinsReceivedEventListener(new WalletCoinsReceivedEventListener() {
     @Override
-    public void onWalletChanged(Wallet wallet) {
-    // Runs in the dedicated "user thread".
+    public void onCoinsReceived(Wallet w, Transaction tx, Coin prevBalance, Coin newBalance) {
+        // Runs in the dedicated "user thread".
     }
 });
 {% endhighlight %}
