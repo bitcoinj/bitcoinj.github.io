@@ -231,7 +231,7 @@ Here we can see what happens when our app receives money. We print out how much 
 Then we do something a bit more advanced. We call this method:
 
 {% highlight java %}
-ListenableFuture<Transaction> future = tx.getConfidence().getDepthFuture(1);
+ListenableFuture<TransactionConfidence> future = tx.getConfidence().getDepthFuture(1);
 {% endhighlight %}
 
 Every transaction has a confidence object associated with it. The notion of _confidence_ encapsulates the fact that Bitcoin is a global consensus system which constantly strives to reach agreement on a global ordering of transactions. Because this is a hard problem (when faced with malicious actors), it's possible for a transaction to be _double spent_ (in bitcoinj terminology we say it's "dead"). That is, it's possible for us to believe that we have received money, and later we discover the rest of the world disagrees with us.
