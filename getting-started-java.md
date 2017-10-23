@@ -110,7 +110,7 @@ kit = new WalletAppKit(params, new File("."), filePrefix) {
         // This is called in a background thread after startAndWait is called, as setting up various objects
         // can do disk and network IO that may cause UI jank/stuttering in wallet apps if it were to be done
         // on the main thread.
-        if (wallet().getKeychainSize() < 1)
+        if (wallet().getKeyChainGroupSize() < 1)
             wallet().importKey(new ECKey());
     }
 };
