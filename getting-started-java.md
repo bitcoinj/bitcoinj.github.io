@@ -153,6 +153,15 @@ We want to know when we receive money so we can forward it. This is an _event_ a
 
 Most apps don't need to use all of these. Because each interface provides a group of related events and you probably don't care about all of them.
 
+{% highlight java %}
+kit.wallet().addChangeEventListener(new WalletChangeEventListener() {
+    @Override
+    public void onWalletChanged(Wallet wallet) {
+    // Runs in the dedicated "user thread".
+    }
+});
+{% endhighlight %}
+
 Events in bitcoinj are run in a dedicated background thread that's just used for running event listeners, called the _user thread_. That means it may run in parallel to other code in your application, and if you're writing a GUI app, it means you aren't allowed to directly modify the GUI because you aren't in the GUI or "main" thread. However, your event listeners do not themselves need to be thread safe as events will queue up and execute in order. Nor do you have to worry about many other issues that commonly arise when using multi-threaded libraries (for instance, it's safe to re-enter the library and it's safe to do blocking operations).
 
 ## A note about writing GUI apps
