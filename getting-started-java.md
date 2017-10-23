@@ -110,7 +110,7 @@ kit = new WalletAppKit(params, new File("."), filePrefix) {
         // This is called in a background thread after startAndWait is called, as setting up various objects
         // can do disk and network IO that may cause UI jank/stuttering in wallet apps if it were to be done
         // on the main thread.
-        if (wallet().getKeychainSize() < 1)
+        if (wallet().getKeyChainGroupSize() < 1)
             wallet().importKey(new ECKey());
     }
 };
@@ -151,12 +151,10 @@ We want to know when we receive money so we can forward it. This is an _event_ a
 * `PeerEventListener` - for events related to a peer in the network
 * `TransactionConfidence.Listener` - for events related to the level of rollback security a transaction has
 
-Most apps don't need to use all of these. Because each interface provides a group of related events and you probably don't care about all of them, we also provide base classes that implement the interface with empty methods. These are called `Abstract*Listener`.
-
-The naming of these interfaces and classes is a little inconsistent and will likely change in a future release of the library.
+Most apps don't need to use all of these. Because each interface provides a group of related events and you probably don't care about all of them.
 
 {% highlight java %}
-kit.wallet().addEventListener(new AbstractWalletEventListener() {
+kit.wallet().addCoinsReceivedEventListener(new WalletCoinsReceivedEventListener() {
     @Override
     public void onCoinsReceived(Wallet w, Transaction tx, Coin prevBalance, Coin newBalance) {
         // Runs in the dedicated "user thread".
@@ -199,7 +197,7 @@ In some cases bitcoinj can generate a large number of events very fast, this is 
 ## Receiving money
 
 {% highlight java %}
-kit.wallet().addEventListener(new AbstractWalletEventListener() {
+kit.wallet().addCoinsReceivedEventListener(new WalletCoinsReceivedEventListener() {
     @Override
     public void onCoinsReceived(Wallet w, Transaction tx, Coin prevBalance, Coin newBalance) {
         // Runs in the dedicated "user thread".
@@ -214,9 +212,9 @@ kit.wallet().addEventListener(new AbstractWalletEventListener() {
         // to be double spent, no harm done. Wallet.allowSpendingUnconfirmedTransactions() would have to
         // be called in onSetupCompleted() above. But we don't do that here to demonstrate the more common
         // case of waiting for a block.
-        Futures.addCallback(tx.getConfidence().getDepthFuture(1), new FutureCallback<Transaction>() {
+        Futures.addCallback(tx.getConfidence().getDepthFuture(1), new FutureCallback<TransactionConfidence>() {
             @Override
-            public void onSuccess(Transaction result) {
+            public void onSuccess(TransactionConfidence result) {
                 // "result" here is the same as "tx" above, but we use it anyway for clarity.
                 forwardCoins(result);
             }
@@ -233,7 +231,7 @@ Here we can see what happens when our app receives money. We print out how much 
 Then we do something a bit more advanced. We call this method:
 
 {% highlight java %}
-ListenableFuture<Transaction> future = tx.getConfidence().getDepthFuture(1);
+ListenableFuture<TransactionConfidence> future = tx.getConfidence().getDepthFuture(1);
 {% endhighlight %}
 
 Every transaction has a confidence object associated with it. The notion of _confidence_ encapsulates the fact that Bitcoin is a global consensus system which constantly strives to reach agreement on a global ordering of transactions. Because this is a hard problem (when faced with malicious actors), it's possible for a transaction to be _double spent_ (in bitcoinj terminology we say it's "dead"). That is, it's possible for us to believe that we have received money, and later we discover the rest of the world disagrees with us.
