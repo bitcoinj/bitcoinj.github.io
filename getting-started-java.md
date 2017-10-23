@@ -197,12 +197,11 @@ In some cases bitcoinj can generate a large number of events very fast, this is 
 ## Receiving money
 
 {% highlight java %}
-kit.wallet().addEventListener(new AbstractWalletEventListener() {
+kit.wallet().addCoinsReceivedEventListener(new WalletCoinsReceivedEventListener() {
     @Override
     public void onCoinsReceived(Wallet w, Transaction tx, Coin prevBalance, Coin newBalance) {
         // Runs in the dedicated "user thread".
-        //
-        // The transaction "tx" can either be pending, or included into a block (we didn't see the broadcast).
+
         Coin value = tx.getValueSentToMe(w);
         System.out.println("Received tx for " + value.toFriendlyString() + ": " + tx);
         System.out.println("Transaction will be forwarded after it confirms.");
@@ -212,9 +211,9 @@ kit.wallet().addEventListener(new AbstractWalletEventListener() {
         // to be double spent, no harm done. Wallet.allowSpendingUnconfirmedTransactions() would have to
         // be called in onSetupCompleted() above. But we don't do that here to demonstrate the more common
         // case of waiting for a block.
-        Futures.addCallback(tx.getConfidence().getDepthFuture(1), new FutureCallback<Transaction>() {
+        Futures.addCallback(tx.getConfidence().getDepthFuture(1), new FutureCallback<TransactionConfidence>() {
             @Override
-            public void onSuccess(Transaction result) {
+            public void onSuccess(TransactionConfidence result) {
                 // "result" here is the same as "tx" above, but we use it anyway for clarity.
                 forwardCoins(result);
             }
@@ -222,6 +221,7 @@ kit.wallet().addEventListener(new AbstractWalletEventListener() {
             @Override
             public void onFailure(Throwable t) {}
         });
+
     }
 });
 {% endhighlight %}
