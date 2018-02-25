@@ -18,6 +18,16 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.14.6
+
+This is a bug fix / maintenance release:
+
+* New methods Transaction.hasRelativeLockTime() and TransactionInput.hasRelativeLockTime().
+* DefaultRiskAnalysis looks at version 2 transactions more closely and dislikes only those which have a relative lock time set.
+* Fix minimal number encoding in scripts for -1. This could lead to delayed confirmation for the affected transactions.
+* Fix base58 representation of DumpedPrivateKey for the case where the key is compressed.
+* Slash minimum fee by factor 5 to 1000 satoshis.
+
 ## Version 0.14.5
 
 This is a bug fix / maintenance release:
