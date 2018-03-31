@@ -18,6 +18,15 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.14.7
+
+This is a bug fix / maintenance release:
+
+* Fix DoS vector in Transaction.
+* New WalletFiles.getWallet() for getting the wallet that is managed by the WalletFiles.
+* Bugfixes with autosaving wallet after shutdown.
+* Another context propagation fix.
+
 ## Version 0.14.6
 
 This is a bug fix / maintenance release:
