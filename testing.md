@@ -18,7 +18,7 @@ Testing is obviously an important step for any software that uses money. This ar
 
 ## The testnet
 
-The Bitcoin community runs a separate, parallel instance of the Bitcoin network that features a slightly different and more relaxed ruleset, called the _testnet_. Most usefully, coins on the testnet have no value and can be obtained for free from testnet faucet sites like [http://faucet.xeno-genesis.com/](http://faucet.xeno-genesis.com/) or [http://tpfaucet.appspot.com/](http://tpfaucet.appspot.com/).
+The Bitcoin community runs a separate, parallel instance of the Bitcoin network that features a slightly different and more relaxed ruleset, called the _testnet_. Most usefully, coins on the testnet have no value and can be obtained for free from testnet faucet sites like [http://faucet.xeno-genesis.com/](http://faucet.xeno-genesis.com/), [http://tpfaucet.appspot.com/](http://tpfaucet.appspot.com/) or [https://testnet-faucet.mempool.co/](https://testnet-faucet.mempool.co/)
 
 You can make your app use the testnet by instantiating your objects with `TestNetParams.get()` instead of `MainNetParams.get()`. The wallet-tool app accepts a flag `--net=TEST` as well.
 
