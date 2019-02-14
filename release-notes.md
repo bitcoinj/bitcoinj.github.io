@@ -18,6 +18,143 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+Wallet:
+
+* Use `Wallet.createBasic()` if you want just a basic keychain and no key derivation.
+* Use `Wallet.createDeterministic()` if you want a deterministic keychain.
+* Avoid the old-style contructors, they are now mostly deprecated.
+
+Segregated witness:
+
+* Bech32/Native Segwit addresses are supported via the new `SegwitAddress` class. The `Address` class for old Base58 addresses has been renamed to `LegacyAddress`.
+  A new common ancestor class tries to stay compatible to the old `Address` class as closely as possible. Notable changes:
+  * Use `Address.fromKey()`, `LegacyAddress.fromKey()` or `SegwitAddress.fromKey()` rather than the removed `ECKey.toAddress()`.
+  * Use `Address.fromString()`, `LegacyAddress.fromString()` or `SegwitAddress.fromString()` rather than the deprecated `Address.fromBase58()`.
+  * Use `Address.toString()` rather than the deprecated `toBase58()`.
+  * Use `Address.getHash()` rather than the deprecated `getHash160()`.
+  * The new base class for the entire hierarchy is now `PrefixedChecksummedBytes` rather than `VersionedChecksummedBytes`.
+  * Exceptions:
+    * Renamed `WrongNetworkException` to `AddressFormatException.WrongNetwork`.
+    * Add `AddressFormatException.InvalidChecksum` that is thrown when a Base58 or Bech32 checksum is invalid.
+    * Add `AddressFormatExcepiion.InvalidCharacter` that is thrown when a character is used that is invalid in the encoding.
+    * Add `AddressFormatException.InvalidDataLength` that is thrown when the data part isn't of the right size.
+    * Add `AddressFormatException.InvalidPrefix` that is thrown when the prefix (version header or HRP) is invalid.
+* New low-level utility classes `Bech32` (thanks Coinomi) and `Base58` (extracted from the old `Address` class).
+* New low-level methods for calculating witness signatures `Transaction.calculateWitnessSignature()` and
+  witness signature hashes `hashForWitnessSignature()` (thanks Chang Ming)
+* Support for sending to any segwit address (Bech32 or Base58).
+* Support for receiving to and spending from `P2WPKH` (native segwit addresses).
+* `DeterministicKeyChain` now has an output script type, which determines the type of addresses derived.
+* Made the `BitcoinURI` class aware of native segwit addresses.
+* New `TransactionWitness` class that holds the script witnesses (thanks Nicolas Dorier, Oscar Guindzberg, Fabrice Drouin).
+* Use `Transaction.getTdId()` or `getWTxId()` rather than `getHash()` and `getHashAsString()`.
+* Support for new extended public keys: `zpub` (Mainnet) and `vpub` (Testnet) for `P2WPKH` chains via `Wallet.fromWatchingKeyB58()`.
+* `KeyChainGroup` now manages multiple active keychains (sharing a common seed). The newest active keychain is the default.
+  All other active keychains are meant as fallback for if a sender doesn't understand a certain new script type.
+* Limitation: Full verificiation is incomplete for Segwit (as it always was for pre-segwit as well). However a few basic building blocks are implemented:
+  * Blocks are fetched including witnesses.
+  * New method `Transaction.findWitnessCommitment()` to find the witness commitment (if any) in a coinbase transaction.
+  * New methods `Block.getWitnessRoot()` to calculate the witness root hash, and `checkWitnessRoot()` to check it.
+
+Block store:
+
+* `SPVBlockStore` can now be configured to a larger capacity. Migration for growing blockstores is seamless, while shrinking is unsupported. 
+* `SPVBlockStore` got rid of the mmap hack that is needed for Windows, but prevents Java 9 compatibility.
+
+Networking (Peer, PeerGroup):
+
+* Also connect to peers which serve only the last two days worth of blocks (`NODE_NETWORK_LIMITED`), but download only from those
+  that have the full blockchain (`NODE_NETWORK`).
+* Peer is now dropping Bitcoin Cash nodes early.
+* Peer now requests witnesses for transactions.
+* Peer will honor `NODE_BLOOM` if bloom filtering is configured.
+
+Persistence (Protobuf):
+
+* The wallet protobuf has changed:
+  * The outptScriptType of a `DeterministicKeyChain` is persisted. Chains in old protobufs are assumed to be of
+    type `P2PKH`. As long as you don't use `P2WPKH` chains, you can switch back and forth bitcoinj 0.14 and 0.15.
+  * The `TransactionSigner` message has been removed, as the entire concept of stateful transaction signers. If
+    you haven't used stateful transaction signers, you can switch back and forth bitcoinj 0.14 and 0.15.
+  * A new `ScriptWitness` message is stored with `TransactionInputs`. It's currently not terribly useful, since after
+    braodcasting of transactions it isn't needed by bitcoinj and script execution isn't implemented for segwit yet.
+    If you switch from 0.15 to 0.15 and you've got unbroadcasted witness transactions in your wallet, those will not
+    be accepted by the network any more.
+* The buffer size used for the saving of wallets can now be specified using
+  `WalletProtobufSerializer.setWalletWriteBufferSize()` (thanks Justas Dobiliauskas).
+* Loading wallets can be made to fail on an unknown extension via
+  `WalletProtobufSerializer.setRequireAllExtensionsKnown()` (thanks Jarl Fransson).
+
+Full verification:
+
+* Implemented the `CHECKSEQUENCEVERIFY` script operator (thanks Nicola Atzei).
+* Added `ScriptBuilder.opTrue()` and `opFalse()` helpers (thanks Nicola Atzei).
+
+Misc:
+
+* `Transaction.calculateSignature()` now supports signing with an encrypted key (thanks Will Shackleton).
+* Increased the `OP_RETURN` payload limit to 80 bytes (thanks johnygeorge).
+* New method `AbstractBitcoinNetParams.isRewardHalvingPoint()` tells if a certain height is a reward halving point.
+* Added `ClientChannelProperties` and `ServerChannelProperties` to allow configuration of payment channels (thanks cyberzac).
+* `Monetary.parseCoinInexact()` and `Fiat.parseFiatInexact()` works like their exact counterparts except that they round rather than throw on fractional satoshis.
+* `SendRequest.recipientsPayFees` will make the recipients pay the fee, rather than the sender as usual.
+* New `SendHeaders` message (thanks Anton Kumaigorodski).
+* Moved `ScriptException` from the `.core` to the `.script` package.
+* Support for version 2 transactions.
+* Support for creating wallets with an arbitrary account path (thanks Nelson Meilna, Giuseppe Magnotta).
+* Wallets can also follow an account structure using the new `KeyChainGroupStructure` class. `KeyChainGroupStructure.DEFAULT` is used as a default.
+* New class `ScriptPattern` offers matchers and data extractors for the common types of scripts (thanks John L. Jegutanis). 
+* Ability to import an account key that allows for a wallet to spend from it (thanks HashEngineering, Nelson Melina).
+* The `UTXOProvider` interface has been changed to take a list of publlic keys rather than addresses.
+* The `Script.ScriptType.PUB_KEY` has been changed to `P2PK` to be more consistent with the other script types.
+* The address fields in `VersionMessage` were confusing. They're now clearly named `fromAddr` and `receivingAddr`.
+* New `BlockLocator` class to represent block locators as used in `GetBlocksMessage` and `GetHeadersMessage` (thanks BigAdam2005).
+* Removed most constructors from `KeyChainGroup`, `DeterministicKeyChain` and `MarriedKeyChain`. Please use the `builder()` helper
+  and follow the builder pattern.
+* New `Wallet.isAddressMine()` and `findKeyFromAddress()` convenience methods.
+* Method `KeyBag.findKeyFromPubHash()` has been renamed to `findKeyFromPubKeyHash()` for consistency.
+* Add `TransactionInput.getIndex()` helper, same as the already existing `TransactionOutput.getIndex()`.
+* Many `toString()` implementations have been added or reformatted for better readability.
+* The bundled checkpoints have been updated to the 2019 era.
+* The bundled seeds have been updated.
+* Most dependencies have been brought up to the latest versions. We switched back from SpongyCastle to BouncyCastle.
+* Adjusted `DEFAULT_TX_FEE`, `REFERENCE_DEFAULT_MIN_TX_FEE` and `MIN_NONDUST_OUTPUT` to the 2019 era.
+* `WalletAppKit`, Wallet-Tool and Wallet-Template have been brought up to date with the new features -- most notably segwit.
+* Add `Utils.isLinux()` and `isMac()` helpers to complement the existing `isWindows()` helper.
+* Likewise, add `Utils.isOpenJDKRuntime()` and `isJavaSERuntime()`.
+* New `MonetaryFormat()` constructor that uses the new Unicode Bitcoin symbol at code point `U+20BF`.
+* Many bugs have been fixed. For details see the git log.
+
+Removals:
+
+* Removed Tor support via Orchid. If you need Tor, you could configure it at OS level.
+* Finally removed `TransactionInput.getFromAddress()` and `Script.getFromAddress()`.
+* Removed `acceptableAddressCodes` from `NetworkParameters`. The two codes we will likely ever need are now hardcoded.
+* Removed `WalletEventListener`. Use one or more of the finer grained listners instead.
+* Removed concept of stateful transaction signers.
+* TestNet2 is gone. Use TestNet3.
+* Remove ability to change default `KeyChainGroup` lookaheadSize and lookaheadThreshold after construction. Use
+  the builder, or manage lookahead on `DeterministicKeyChains` directly.
+* There is no implicit wallet upgrade (e.g. from Basic to Deterministic) any more, since for encrypted wallets this
+  requires the encryption key. Use `Wallet.upgradeToDeterministic()` explicitly.
+* The bundled jar is gone from the distribution.
+
+Development:
+
+* Gradle for building!
+  * `gradle test` to run the unit tests
+  * `gradle build` to build
+  * `gradle install` to install the aritfacts into your local Maven repository
+  * `gradle eclipse` to generate the Eclipse project files
+* Java requirements:
+  * `.core` can now use Java 7 language features and Java 7 API / Android API level 19.
+  * `.wallettemplate` now uses Java 11.
+  * `.examples` and `.tools` stay at Java 8.
+* The Travis configuration has been updated to use their Ubuntu Xenial image.
+* The build has been made compatible with Jitpack, so you can use it to fetch pre-compiled development SNAPSHOTs. See the README.md
+  for more information.
+* Manual installation of the `protoc` protobuf compiler is not necessary any more.
+
 ## Version 0.14.7
 
 This is a bug fix / maintenance release:
