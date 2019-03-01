@@ -14,7 +14,7 @@ If your project uses Maven for its build, you can depend on bitcoinj by adding t
     <dependency>
       <groupId>org.bitcoinj</groupId>
       <artifactId>bitcoinj-core</artifactId>
-      <version>0.14.7</version>
+      <version>0.15</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -26,10 +26,8 @@ To get the source you can also use git and check out your own copy:
 git clone https://github.com/bitcoinj/bitcoinj.git
 cd bitcoinj
 git fetch --all
-git checkout v0.14.7
+git checkout v0.15
 mvn install
 ~~~
 
-This will give you v0.14.7. If PGP is your thing, you can run `git tag -v v0.14.7` to check Andreas Schildbach's signature of the release.
-
-Note: If you are using OpenJDK, you may have to install the supporting OpenJFX package for your operating system distribution. For example, if you are running Ubuntu 15.10, and using `openjdk-8-jdk`, you will need to also install the `openjfx` package. This can be accomplished with a command such as `sudo apt-get install openjfx`.
+This will give you v0.15. If PGP is your thing, you can run `git tag -v v0.15` to check Andreas Schildbach's signature of the release.

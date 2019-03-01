@@ -14,9 +14,11 @@ title: "Release notes"
 
 # Release notes
 
-## Version 0.15
+## Version 0.16
 
 _This version is not yet released and corresponds to changes in git master_
+
+## Version 0.15
 
 Wallet:
 
