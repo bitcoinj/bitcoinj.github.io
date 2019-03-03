@@ -32,7 +32,7 @@ For a full list, see [the bug tracker](https://github.com/bitcoinj/bitcoinj/issu
 * SPV mode vs full verification is an important topic to understand, read the [SecurityModel](/security-model) page for more information on this.
 * Support for double spend detection is incomplete. Double spends are only handled in a few specific cases. General support requires upgrades to the global Bitcoin protocol.
 * BitcoinJ always bootstraps from DNS seeds. It does not store or use address broadcasts. That means if DNS seeds were all to go down, bitcoinj apps would stop working, and if they were compromised and started returning attacker-controlled nodes the apps would become subject to a Sybil attack (see the [SecurityModel](/security-model) page for more information on this).
-* Some features, like seeing pending transactions, rely on polling your randomly selected peers. This opens up users/wallets that are relying on unconfirmed transactions to sybil attacks. In future versions we may switch to using Tor by default to resolve this.
+* Some features, like seeing pending transactions, rely on polling your randomly selected peers. This opens up users/wallets that are relying on unconfirmed transactions to sybil attacks. In future versions we may switch to using Tor to resolve this.
 * The code has not been professionally audited by security specialists and may have other, unexpected security holes (unfortunately this is true for most bitcoin related software). The library has been written for mobile wallets that don't contain large amounts of value and that is still the primary focus.
 
 ## Consensus

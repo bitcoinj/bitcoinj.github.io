@@ -27,7 +27,6 @@ State that is planned to move in future:
 * The working directory where the library is allowed to store files
 * The user thread
 * URI of directory where static data files can be found, to work around lack of JAR support on Android
-* The `TorClient`, so different parts of the library can make requests via Tor (as opposed to just the P2P code today)
 
 Eventually this work should make it easier to connect to multiple alt-coins simultaneously, as well as simplify and clean up the API.
 

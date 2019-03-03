@@ -28,8 +28,6 @@ The `Main` class is the entry point of the program. It handles basic setup like 
 
 Once bitcoinj is initialised, the `MainController` class is informed that it's ready and the UI is shown. `MainController` is the controller class for the main window and its member variables are largely auto-wired by JavaFX. The `BitcoinUIModel` class exports data from bitcoinj in the form of up to date observable values which can then be bound directly to UI controls.
 
-Tor is also configured and set up here, but it's only used in testnet mode.
-
 ## Step 2. Add a transactions list to the UI.
 
 This part is easier explained by the video. Open Scene Builder 2.0 (you can download this from the Oracle website) and replace the "Your content goes here" label with a ListView which has an id of `transactionsList`. In the code, make sure there's a `ListView<Transaction>` member so the widget can be injected. Next, in `BitcoinUIModel` create an `ObservableList` and in the update method, call setAll with the results of `wallet.getTransactionsByTime()`. Finally, use `Bindings.bindContent` to bind this observable list to the list view items collection.
