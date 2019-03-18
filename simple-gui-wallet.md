@@ -14,11 +14,11 @@ title: "Building a simple GUI wallet tutorial"
 
 # Tutorial: Building a simple GUI wallet
 
+(Unfortunately, the video has been removed by the creator.)
+
 bitcoinj ships with a basic GUI wallet app as part of its source code. It's intended to be copied and used as a basis for any application that wishes to send and receive money. For example if you wanted to make a card game that let you gamble with real bitcoins, this would be a good place to start. 
 
 Although such apps don't have to be a generic consumer wallet, in this tutorial we'll customise the template a little bit by adding a transactions list. A screencast of this tutorial is below: as it involves GUI design work the video may be easier to follow.
-
-<iframe width="680" height="422" src="//www.youtube-nocookie.com/embed/9AK11JsZWVo?rel=0" frameborder="0" allowfullscreen></iframe>
 
 ## Step 1. Copy the code, rename the package and explore.
 
