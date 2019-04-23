@@ -49,7 +49,7 @@ Segregated witness:
 * `DeterministicKeyChain` now has an output script type, which determines the type of addresses derived.
 * Made the `BitcoinURI` class aware of native segwit addresses.
 * New `TransactionWitness` class that holds the script witnesses (thanks Nicolas Dorier, Oscar Guindzberg, Fabrice Drouin).
-* Use `Transaction.getTdId()` or `getWTxId()` rather than `getHash()` and `getHashAsString()`.
+* Use `Transaction.getTxId()` or `getWTxId()` rather than `getHash()` and `getHashAsString()`.
 * Support for new extended public keys: `zpub` (Mainnet) and `vpub` (Testnet) for `P2WPKH` chains via `Wallet.fromWatchingKeyB58()`.
 * `KeyChainGroup` now manages multiple active keychains (sharing a common seed). The newest active keychain is the default.
   All other active keychains are meant as fallback for if a sender doesn't understand a certain new script type.
