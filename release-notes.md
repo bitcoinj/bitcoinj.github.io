@@ -49,7 +49,7 @@ Segregated witness:
 * `DeterministicKeyChain` now has an output script type, which determines the type of addresses derived.
 * Made the `BitcoinURI` class aware of native segwit addresses.
 * New `TransactionWitness` class that holds the script witnesses (thanks Nicolas Dorier, Oscar Guindzberg, Fabrice Drouin).
-* Use `Transaction.getTdId()` or `getWTxId()` rather than `getHash()` and `getHashAsString()`.
+* Use `Transaction.getTxId()` or `getWTxId()` rather than `getHash()` and `getHashAsString()`.
 * Support for new extended public keys: `zpub` (Mainnet) and `vpub` (Testnet) for `P2WPKH` chains via `Wallet.fromWatchingKeyB58()`.
 * `KeyChainGroup` now manages multiple active keychains (sharing a common seed). The newest active keychain is the default.
   All other active keychains are meant as fallback for if a sender doesn't understand a certain new script type.
@@ -80,7 +80,7 @@ Persistence (Protobuf):
     you haven't used stateful transaction signers, you can switch back and forth bitcoinj 0.14 and 0.15.
   * A new `ScriptWitness` message is stored with `TransactionInputs`. It's currently not terribly useful, since after
     braodcasting of transactions it isn't needed by bitcoinj and script execution isn't implemented for segwit yet.
-    If you switch from 0.15 to 0.15 and you've got unbroadcasted witness transactions in your wallet, those will not
+    If you switch from 0.15 to 0.14 and you've got unbroadcasted witness transactions in your wallet, those will not
     be accepted by the network any more.
 * The buffer size used for the saving of wallets can now be specified using
   `WalletProtobufSerializer.setWalletWriteBufferSize()` (thanks Justas Dobiliauskas).
