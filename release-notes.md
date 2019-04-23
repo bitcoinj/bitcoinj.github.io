@@ -80,7 +80,7 @@ Persistence (Protobuf):
     you haven't used stateful transaction signers, you can switch back and forth bitcoinj 0.14 and 0.15.
   * A new `ScriptWitness` message is stored with `TransactionInputs`. It's currently not terribly useful, since after
     braodcasting of transactions it isn't needed by bitcoinj and script execution isn't implemented for segwit yet.
-    If you switch from 0.15 to 0.15 and you've got unbroadcasted witness transactions in your wallet, those will not
+    If you switch from 0.15 to 0.14 and you've got unbroadcasted witness transactions in your wallet, those will not
     be accepted by the network any more.
 * The buffer size used for the saving of wallets can now be specified using
   `WalletProtobufSerializer.setWalletWriteBufferSize()` (thanks Justas Dobiliauskas).
