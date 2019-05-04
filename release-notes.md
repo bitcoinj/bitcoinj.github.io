@@ -18,6 +18,22 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.15.2
+
+This is a bug fix / maintenance release:
+
+* Various crash fixes for basic wallets.
+* BitcoinURI: Allow uppercase schema.
+* KeyCrypterScrypt: Migrate AESFastEngine to AESEngine. See https://nvd.nist.gov/vuln/detail/CVE-2016-1000339
+* Fix script type in deprecated Wallet.findKeyFromPubHash().
+* Fix/improve a lot of logging.
+
+## Version 0.15.1
+
+This is a bug fix / maintenance release:
+
+* Fix crash when Wallet.isAddressMine() is called with a P2SH or a P2WSH address.
+
 ## Version 0.15
 
 Wallet:
