@@ -18,6 +18,19 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.15.4
+
+This is a bug fix / maintenance release:
+
+* Update dependencies:
+  * BouncyCastle to 1.63,
+  * slf4j to 1.7.28,
+  * Guava to 27.1-android,
+  * OkHttp to 3.12.3.
+* Use Bouncy Castle's Scrypt implementation rather than the standalone library.
+* Fix minor bugs.
+* Improve some logging.
+
 ## Version 0.15.2
 
 This is a bug fix / maintenance release:
