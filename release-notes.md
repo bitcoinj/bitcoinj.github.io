@@ -18,6 +18,12 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.15.5
+
+This is a bug fix / maintenance release:
+
+* Fix issue with Bloom filtering of P2WPKH transactions that send anything back to the wallet (e.g. sweeping).
+
 ## Version 0.15.4
 
 This is a bug fix / maintenance release:
