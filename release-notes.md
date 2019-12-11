@@ -18,6 +18,15 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.15.6
+
+This is a bug fix / maintenance release:
+
+* Select a download peer only if there is a clear consensus about a common chain height between connected peers.
+* For database-backed block stores, make sure the openoutputs.toaddress column is big enough for Bech32 addresses (74 chars).
+  Existing database schemas should be updated manually.
+* Update hardcoded DNS seeds and seed node addresses.
+
 ## Version 0.15.5
 
 This is a bug fix / maintenance release:
