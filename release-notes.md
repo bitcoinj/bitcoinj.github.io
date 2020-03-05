@@ -18,6 +18,20 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.15.7
+
+This is a bug fix / maintenance release:
+
+* Introduce a peer priority for connecting and being picked as for chain download.
+* Implement service bit filtering for DnsDiscovery.
+* When a transaction is broadcast, peers being broadcasted to are disconnected afterwards. Others will take their place.
+  This improves privacy and avoids rarely tested code paths.
+* Update dependencies:
+  * JUnit to 4.13,
+  * slf4j to 1.7.30,
+  * OkHttp to 3.12.8,
+  * Guava to 28.2-android.
+
 ## Version 0.15.6
 
 This is a bug fix / maintenance release:
