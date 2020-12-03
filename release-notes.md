@@ -18,6 +18,21 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.15.9
+
+This is a bug fix / maintenance release:
+
+* Fix P2WSH signing.
+* Fix listeners when decrypting/encrypting key chains.
+* Make PostgresFullPrunedBlockStore compatible with CockroachDB.
+
+## Version 0.15.8
+
+This is a bug fix / maintenance release:
+
+* Fix/remove special handling of single connected peer case.
+* Add PeerGroup.dropAllPeers() for gracefully dropping all connected peers.
+
 ## Version 0.15.7
 
 This is a bug fix / maintenance release:
