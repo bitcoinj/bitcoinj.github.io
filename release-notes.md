@@ -18,6 +18,17 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+## Version 0.15.10
+
+This is a bug fix and maintenance release. Notable changes:
+
+* Migrate repository from JCenter to Maven Central. JCenter is shutting down.
+* Updates BouncyCastle to 1.68. This makes it necessary that bitcoinj tracks point compression itself, rather
+  than BouncyCastle.
+* Fixes for blockchain confirmations of outgoing P2WPKH transactions sometimes missed.
+
+For a thorough list of changes, see the git history.
+
 ## Version 0.15.9
 
 This is a bug fix / maintenance release:
