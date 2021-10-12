@@ -18,6 +18,178 @@ title: "Release notes"
 
 _This version is not yet released and corresponds to changes in git master_
 
+New requirements for developers and users:
+
+* JDK 8+ and Gradle 4.4+ is required for building the project (except `bitcoinj-wallettenplate`).
+* JDK 11+ and Gradle 4.10+ is required for building `bitcoinj-wallettemplate`.
+* `bitcoinj-core` developers can use up to Java 8 language features, but need to stay API compatible to both Java 8 _and_ Android 6.0.
+  In practice, using only Java 7 API is a safe bet.
+* `bitcoinj-examples` and `bitcoinj-tools` developers can use language features and API from Java 8.
+* `bitcoinj-wallettemplate` developers can use language features and API from Java 11.
+* `bitcoinj-core` users on Java SE need to provide a Java 8+ runtime. We run CI on LTS releases, so Java 8, 11 and 17 are tested well.
+* `bitcoinj-core` users on Android need to provide API level 23 (Android 6.0).
+
+New features:
+
+* Implement BIP350 – Bech32m format for v1+ witness addresses.
+* Implement Taproot BIP341 – send to P2TR addresses. Receiving to and spending from P2TR addresses and chains will be implemented in a future release.
+* Support for BIP155 `addrv2` messages, including Tor hidden service addresses.
+* Support for BIP133 `feefilter` messages.
+
+Feature removals:
+
+* Remove micropayment channels.
+  Now that HTLC-based bi-directional payment channels are state of the art, nobody uses the old style any more.
+* Remove alert messages.
+  The alert message facility has been removed from the Bitcoin protocol due to its centralized nature.
+* Warning: Script execution/full verification is still on the hot seat.
+  It's still present, but it isn't maintained any more and will probably be removed in a future release.
+
+General improvements:
+
+* Lots of bug fixes everywhere!
+* Dependencies have been updated, and dependencies that are part of the API are now properly declared as such.
+* The `protobuf` dependency has been migrated to `protobuf-lite`. It's mostly API compatible, but you cannot use both at the same time.
+  So if you can't migrate to `protobuf-lite`, please exclude that dependency and continue referencing `protobuf`.
+* Lots of previously deprecated methods and variables are removed.
+* Work towards immutable data types has progressed.
+
+P2P network connection and protocol:
+
+* `Peer`/`PeerGroup`: P2P connection and blockchain download strategy has been improved:
+  * We now select a (new) download peer only if there is a clear consensus about a common chain height between
+    connected peers. This also meant more than maxConnections/2 peers need to be connected.
+    If there is a tie between two common heights, we stay safe and don't change anything.
+    Generally, a Segwit capable peer is required for downloading the blockchain.  
+    (This had already been backported to 0.15.6.)
+  * There is now also a priority for connecting and being selected for blockchain download.
+    This can be used to improve stickiness to trusted peers.  
+    (This had already been backported to 0.15.7.)
+  * Disconnect remote peers which repeatedly don't respond to pings.
+  * Drop any peer a transaction has been broadcast to.
+    These peers will not send us back useful broadcast confirmations.  
+    (This had already been backported to 0.15.7.)
+  * Add a method `PeerGroup.dropAllPeers()`for gracefully dropping all connected peers.  
+    (This had already been backported to 0.15.8.)
+* Support for BIP155 `addrv2` messages, including Tor hidden service addresses.
+* Support for BIP133 `feefilter` messages.
+* The protocol version has been moved from the various `Message` types to `MessageSerializer`.
+* `MultiplexingDiscovery`: Make shuffling of queried peers optional.
+* `MultiplexingDiscovery`: Allow serially queried seeds, too.
+* Change `PeerDiscovery.getPeers()` return type from array to list.
+* Implement service bit filtering in `DnsDiscovery`. This adds a hex subdomain – representing the filter – to the seed's domain.  
+  (This had already been backported to 0.15.7.)
+* Make `Message.readVarInt()` return a `VarInt` rather than long.
+
+Wallet:
+
+* Remove wallet-global coinSelector from `Wallet` and `allowSpendingUnconfirmedTransactions()`.
+  Coin selection is a per `SendRequest`, per `createSend()` or per `getBalance()` call affair.
+  Having it wallet-global leads to race conditions.
+* Introduce `Wallet.BadWalletEncryptionKeyException`
+  which is thrown if the private keys and seed of this wallet cannot be decrypted due to the supplied encryption key or password being wrong.
+* Rename `Wallet.addScriptChangeEventListener()` to `.addScriptsChangeEventListener()`,
+  and `removeScriptChangeEventListener()` to `removeScriptsChangeEventListener()`, for the sake of naming consistency.
+* New `HDPath` type to replace `ImmutableList<ChildNumber>` and helpers in `HDUtils` (which is now deprecated).
+* Add static convenience methods `HDKeyDerivation.deriveChildKeyFromPrivate()` and `.deriveChildKeyFromPublic()`.
+* New method `DeterministicKeyChain.getRootKey()` to get the root key.
+* New `CurrentKeyChangeEventListener` that fires when a current key and/or address changes.
+  It can be registered to `Wallet` and `KeyChainGroup`.
+* `DefaultCoinSelector` is now a singleton. Use `DefaultCoinSelector.get()` rather than the constructor.
+* Remove `PeerFilterProvider.isRequiringUpdateAllBloomFilter()`.
+  Bloom filters will now always be created with UPDATE_ALL.
+* New convenience method `SendRequest.allowUnconfirmed()` to allow spending unconfirmed outputs.
+
+Segregated witness latecomers:
+
+* New method `SendRequest.setFeePerVkb()` to set a fee per virtual 1000 bytes.
+* New method `Transaction.getWeight()` to calculate transaction weight.
+* New method `Transaction.getVsize()` to calculate virtual transaction size.
+* Consider the witness discount in `TransactionOutput.getMinNonDustValue()`.
+* Add method `TransactionWitness.redeemP2WSH()` to create the stack pushes necessary to redeem a P2WSH output.
+
+Block stores:
+
+* For database-backed block stores, make sure the `openoutputs.toaddress` column is big enough for Bech32 addresses (74 chars).
+  Existing database schemas should be updated manually.
+* Double the default capacity of `SPVBlockStore`. This has proven to be a sensible value for mobile devices.
+* New method `SPVBlockStore.clear()` to empty the store – useful for testing.
+* Make PostgresFullPrunedBlockStore compatible with CockroachDB.  
+  (This had already been backported to 0.15.9.)
+
+Crypto:
+
+* Introduce dedicated `KeyCrypterException.PublicPrivateMismatch` exception
+  for when a private key or seed is decrypted, it doesn't match its public key.
+* Introduce dedicated `KeyCrypterException.InvalidCipherText` exception
+  for when a private key or seed is decrypted, the decrypted message is damaged.
+* Migrate `AESFastEngine` to `AESEngine` in `KeyCrypterScrypt`. See https://nvd.nist.gov/vuln/detail/CVE-2016-1000339.  
+  (This had already been backported to 0.15.2.)
+* Use Bouncy Castle's Scrypt implementation rather than the standalone library.  
+  (This had already been backported to 0.15.4.)
+* Add helper method `ECKey.isPubKeyCompressed()` to determine if the given pubkey is in its compressed form..
+* Track point compression in `LazyECPoint`, rather than `ECPoint`. The reason is BouncyCastle 1.64 (and later) removed point compression tracking.  
+  (This had already been backported to 0.15.10.)
+* Move `ECKey.compressPoint()`/`.decompressPoint()` helpers to `LazyECPoint.compress()`/`.decompress()`.
+
+Development:
+
+* Migrate repository from JCenter to Maven Central, as JCenter has shut down.  
+  (This had already been backported to 0.15.10.)
+* `bitcoinj-core` now produces Java 8 bytecode.
+* Declare Automatic-Module-Name entry in `MANIFEST.MF` to make `bitcoinj-core` compatible to Java 9 modules.
+* The minimum Gradle version (4.4) is now enforced in `settings.gradle`.
+* Migrated from using Travis for CI to GitHub Actions and GitLab CI.
+* Migrate from maven to maven-publish plugin in `build.gradle`.
+  To publish to the local Maven repository, use `gradle publishToMavenLocal`.
+
+Wallet-Tool:
+
+* Use 'application' plugin to launch `WalletTool`. See main README for how to use.
+* New options `--fee-per-vkb` and `--fee-sat-per-vbyte` to specify fee, segwit style.
+* Migrate parsing of command line options from JOpt to picocli for `WalletTool`, and examples `BuildCheckpoints` and `FetchBlock`.
+* Implement two coin selection options for sending in `WalletTool`: `--select-addr` and `--select-output`.
+
+Wallet-Template:
+
+* Move most sub-packages of `wallettemplate` to `org.bitcoinj.walletfx`
+* Put wallet data files in app data directory.
+* Replace usage of QRGen by direct usage of ZXing 3.3.3 for generating QR codes.
+* Use testnet3, rather than mainnet. This reflects the fact that WalletTemplate is not ready for production.
+
+Misc:
+
+* Remove support for protocol versions older than 106 from `VersionMessage`.
+* Many `toString()` messages have been improved.
+* Support satoshi denomination in `MonetaryFormat`.
+* Allow all-caps `BITCOIN:` schema in `BitcoinURI`, to allow for smaller QR codes in combination with all-caps Bech32 addresses.  
+  (This had already been backported to 0.15.2.)
+* New method `DeterministicSeed.getMnemonicString()` to do the string concatenation.
+* Deprecate `Transaction.MIN_NONDUST_OUTPUT` and `NetworkParameters.getMinNonDustOutput()`,
+  and remove `DefaultRiskAnalysis.MIN_ANALYSIS_NONDUST_OUTPUT`.
+  The dust threshold has always been dependent on the actual output script type. Even more so with the
+  segwit discount. So use `TransactionOutput.getMinNonDustValue()` or `.isDust()`.
+* Accept `OP_FALSE` and `OP_TRUE` in `ScriptOpCodes.getOpCode()`.
+* Remove `ScriptChunk.startLocationInProgram`. This is breaking, if you have used it.
+* The `AppDataDirectory` class has been moved from `bitcoinj-wallettemplate` to `bitcoinj-core`, so it can be used by tools.
+* Update seeds in various network parameters.
+* Remove methods `Utils.maxOfMostFreq()`.
+* Rename parameter of `AbstractBitcoinNetParams.isRewardHalvingPoint()` and `.isDifficultyTransitionPoint()` to make unexpected API more obvious.
+* Remove unused mock sleep support from `Utils`.
+* Add `Comparable` interface to `Address`, remove from `PrefixedChecksummedBytes`.
+  Requires address subclasses to implement `compareTo()` and provide the `compareAddressPartial()` method for comparing the first two fields.
+  This changes the natural ordering of addresses, and removes the natural ordering entirely for other `PrefixedChecksummedBytes` subclasses.
+* New conversion helpers in `Coin`: `btcToSatoshi()`, `satoshiToBtc()`, `ofBtc()`, `toBtc()`.
+* Add `Transaction.toHexString()` for converting a transaction to raw hex format.
+* Deprecate non-segwit variant of `Script.correctlySpends()`.
+* Cut short script execution in `Script.correctlySpends()` for the standard P2PK and P2PKH cases. They are matched by pattern now.
+* Introduce `VarInt.intValue()` and `.longValue()` accessors.
+* Remove Java serialization from `UTXO`.
+* Migrate constructor that takes a stream to a static constructor `UTXO.fromStream()`.
+* Add method `Block.createGenesisTransaction()`.
+* Ignore `time` in `PeerAddress.equals()`/`.hashCode()`.
+* Replace deprecated `AccessControlException` by `SecurityException` in `Secp256k1Context`.
+
 ## Version 0.15.10
 
 This is a bug fix and maintenance release. Notable changes:
