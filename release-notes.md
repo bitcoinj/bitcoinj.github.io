@@ -20,7 +20,7 @@ _This version is not yet released and corresponds to changes in git master_
 
 New requirements for developers and users:
 
-* JDK 8+ and Gradle 4.4+ is required for building the project (except `bitcoinj-wallettenplate`).
+* JDK 8+ and Gradle 4.4+ is required for building the project (except `bitcoinj-wallettemplate`).
 * JDK 11+ and Gradle 4.10+ is required for building `bitcoinj-wallettemplate`.
 * `bitcoinj-core` developers can use up to Java 8 language features, but need to stay API compatible to both Java 8 _and_ Android 6.0.
   In practice, using only Java 7 API is a safe bet.
@@ -120,14 +120,14 @@ Block stores:
 Crypto:
 
 * Introduce dedicated `KeyCrypterException.PublicPrivateMismatch` exception
-  for when a private key or seed is decrypted, it doesn't match its public key.
+  for when a private key or seed is decrypted and it doesn't match its public key.
 * Introduce dedicated `KeyCrypterException.InvalidCipherText` exception
-  for when a private key or seed is decrypted, the decrypted message is damaged.
+  for when a private key or seed is decrypted and the decrypted message is damaged.
 * Migrate `AESFastEngine` to `AESEngine` in `KeyCrypterScrypt`. See https://nvd.nist.gov/vuln/detail/CVE-2016-1000339.  
   (This had already been backported to 0.15.2.)
 * Use Bouncy Castle's Scrypt implementation rather than the standalone library.  
   (This had already been backported to 0.15.4.)
-* Add helper method `ECKey.isPubKeyCompressed()` to determine if the given pubkey is in its compressed form..
+* Add helper method `ECKey.isPubKeyCompressed()` to determine if the given pubkey is in its compressed form.
 * Track point compression in `LazyECPoint`, rather than `ECPoint`. The reason is BouncyCastle 1.64 (and later) removed point compression tracking.  
   (This had already been backported to 0.15.10.)
 * Move `ECKey.compressPoint()`/`.decompressPoint()` helpers to `LazyECPoint.compress()`/`.decompress()`.
@@ -137,10 +137,10 @@ Development:
 * Migrate repository from JCenter to Maven Central, as JCenter has shut down.  
   (This had already been backported to 0.15.10.)
 * `bitcoinj-core` now produces Java 8 bytecode.
-* Declare Automatic-Module-Name entry in `MANIFEST.MF` to make `bitcoinj-core` compatible to Java 9 modules.
+* Declare `Automatic-Module-Name` entry in `MANIFEST.MF` to make `bitcoinj-core` as a first step into the world of the Java Module System.
 * The minimum Gradle version (4.4) is now enforced in `settings.gradle`.
 * Migrated from using Travis for CI to GitHub Actions and GitLab CI.
-* Migrate from maven to maven-publish plugin in `build.gradle`.
+* Migrate from the `maven` to `maven-publish` plugin in `build.gradle`.
   To publish to the local Maven repository, use `gradle publishToMavenLocal`.
 
 Wallet-Tool:
@@ -153,8 +153,9 @@ Wallet-Tool:
 Wallet-Template:
 
 * Move most sub-packages of `wallettemplate` to `org.bitcoinj.walletfx`
-* Put wallet data files in app data directory.
-* Replace usage of QRGen by direct usage of ZXing 3.3.3 for generating QR codes.
+* Refactor the `Main` class to use an `AppDelegate` class and other related changes to make customization of the `wallettemplate` easier. (Further work in this area is planned for the 0.17 branch)
+* Put wallet data files in a specified app data directory.
+* Replace usage of QRGen by direct usage of ZXing 3.4.1 for generating QR codes.
 * Use testnet3, rather than mainnet. This reflects the fact that WalletTemplate is not ready for production.
 
 Misc:
@@ -178,7 +179,7 @@ Misc:
 * Remove unused mock sleep support from `Utils`.
 * Add `Comparable` interface to `Address`, remove from `PrefixedChecksummedBytes`.
   Requires address subclasses to implement `compareTo()` and provide the `compareAddressPartial()` method for comparing the first two fields.
-  This changes the natural ordering of addresses, and removes the natural ordering entirely for other `PrefixedChecksummedBytes` subclasses.
+  This changes the natural ordering of addresses, and removes the natural ordering entirely for other `PrefixedChecksummedBytes` subclasses. It also fixes a big where in some corner cases different addresses could appear equal in a call to `compareTo()`. 
 * New conversion helpers in `Coin`: `btcToSatoshi()`, `satoshiToBtc()`, `ofBtc()`, `toBtc()`.
 * Add `Transaction.toHexString()` for converting a transaction to raw hex format.
 * Deprecate non-segwit variant of `Script.correctlySpends()`.
