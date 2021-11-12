@@ -16,8 +16,6 @@ title: "Release notes"
 
 ## Version 0.16
 
-_This version is not yet released and corresponds to changes in git master_
-
 New requirements for developers and users:
 
 * JDK 8+ and Gradle 4.4+ is required for building the project (except `bitcoinj-wallettemplate`).
