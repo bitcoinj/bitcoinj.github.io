@@ -14,6 +14,12 @@ title: "Release notes"
 
 # Release notes
 
+## Version 0.16.1
+
+This is a bug fix and maintenance release. Notable changes:
+
+* Fix a fee miscalculation that can lead to slight fee underpaying for spends from P2WPKH.
+
 ## Version 0.16
 
 New requirements for developers and users:
