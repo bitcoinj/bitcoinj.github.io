@@ -14,7 +14,7 @@ title: "Coding conventions in bitcoinj"
 
 # Coding conventions in bitcoinj
 
-This article discusses various conventions and style rules that bitcoinj uses. If you want to contribute to the project, please read and understand this document first.
+This article discusses various conventions and style rules that **bitcoinj** uses. If you want to contribute to the project, please read and understand this document first.
 
 ## Coding style
 
@@ -65,9 +65,9 @@ Good JavaDocs look like this:
 
 ## Threading
 
-All bitcoinj code is thread safe by default, exceptions are marked. Objects that have event listeners should allow users to specify an executor and then use it. If no executor is specified then `Threading.USER_THREAD` should be used, this is an executor that marshals runnables onto a background thread. Sometimes library internal event handlers can use `Threading.SAME_THREAD` however they must be written carefully to avoid lock inversions.
+All **bitcoinj** code is thread safe by default, exceptions are marked. Objects that have event listeners should allow users to specify an executor and then use it. If no executor is specified then `Threading.USER_THREAD` should be used, this is an executor that marshals runnables onto a background thread. Sometimes library internal event handlers can use `Threading.SAME_THREAD` however they must be written carefully to avoid lock inversions.
 
-Event listeners are stored using CopyOnWriteArrayLists so they can be modified concurrently with execution (when they run in the same thread), in particular, this means that listeners can add or remove more listeners during their own execution without problems. We use Guava cycle detecting locks to find cases where locks get accidentally inverted, which is almost always due to chains of event listeners. Prefer bitcoinj `Threading.lock` to the use of synchronized statements where possible. `Threading.lock` performs cycle detection whereas Java language level locks don't.
+Event listeners are stored using CopyOnWriteArrayLists so they can be modified concurrently with execution (when they run in the same thread), in particular, this means that listeners can add or remove more listeners during their own execution without problems. We use Guava cycle detecting locks to find cases where locks get accidentally inverted, which is almost always due to chains of event listeners. Prefer **bitcoinj** `Threading.lock` to the use of synchronized statements where possible. `Threading.lock` performs cycle detection whereas Java language level locks don't.
 
 We make use of volatile variables for references and booleans. For integers we use AtomicInteger. Variables that can be accessed by multiple threads should be marked as volatile and named with a v prefix, ie "thingiesPerSecond" becomes "vThingiesPerSecond". This is so when you read the bodies of methods that are thread safe, you can quickly spot class member variables that are not volatile.
 
@@ -93,8 +93,8 @@ You will see checkNotNull not only verifying arguments but used in other places 
 
 ## Java
 
-We target Java 6, though we can use Java 7 language features (except multi-catches). This is because that's the version supported by Android phones. Due to our desire to make Bitcoin universally usable, we want to support developing countries where even new phones ship with old Android versions for cost reasons. Therefore it will be a long time until we can use any Java 8 features, as Java 7 started being supported only with Android KitKat.
+`bitcoinj-core` targets Java 8 *and* **Android** 6.0 (Android API Level 23.) This is because we want to support a wide variety of Android phones. Due to our desire to make Bitcoin universally usable, we want to support developing countries where even new phones ship with old Android versions for cost reasons. Therefore, we abstain from using the latest Java language features and APIs in `bitcoinj-core`. Other components of **bitcoinj** generally target Java 11. (See the [release notes](https://bitcoinj.org/release-notes) for details and updates.)
 
-We make minimal use of fancy tricks like code synthesis or reflection. Thus we also avoid frameworks that rely on them too. One reason is to keep things simple and readable, another reason is to avoid closing doors to things like trans-compilation into other languages or aggressive dead code elimination.
+We make minimal use of fancy tricks like code synthesis or reflection. Thus we also avoid frameworks that rely on them too. One reason is to keep things simple and readable, another reason is to avoid closing doors to things like **GraalVM** native-image compilation, trans-compilation into other languages or aggressive dead code elimination.
 
 </div>
