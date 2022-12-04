@@ -14,6 +14,13 @@ title: "Release notes"
 
 # Release notes
 
+## Version 0.16.2
+
+This is a bug fix and maintenance release. Notable changes:
+
+* Support segwit in `addSignedInput()` methods.
+* Remove default HTTP seeds. For now, the `HttpDiscovery` class is still there to use.
+
 ## Version 0.16.1
 
 This is a bug fix and maintenance release. Notable changes:
