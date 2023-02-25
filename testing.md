@@ -57,6 +57,6 @@ Currently bitcoinj doesn't have a class that wraps the Bitcoin Core RPC interfac
 
 ## Unit tests
 
-Bitcoinj provides a `TestUtils` class that can do things like manufacture fake `Transaction` objects and so on. Take a look at the test suite for bitcoinj itself to see how to use the utilities. Unit tests are a great way to build robustness in your software, although due to the many subtle complexities of the Bitcoin protocol they're not always sufficient to ensure things work correctly.
+Bitcoinj provides a `FakeTxBuilder` class that can be used to manufacture fake `Transaction` objects. Take a look at the test suite for bitcoinj itself to see how to use the utilities. Unit tests are a great way to build robustness in your software, although due to the many subtle complexities of the Bitcoin protocol they're not always sufficient to ensure things work correctly.
 
 </div>
