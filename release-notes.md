@@ -14,6 +14,8 @@ title: "Release notes"
 
 # Release notes
 
+For information about upcoming releases, see the <a href="/pre-release-notes">pre-release notes</a>.
+
 ## Version 0.16.2
 
 This is a bug fix and maintenance release. Notable changes:
