@@ -116,4 +116,13 @@ General improvements:
       builds.
 * We now have a <a href="/#community">Matrix space</a>!
 
+TODO
+
+* vision of WalletAppKit
+* vision of `base` (and `crypto`?)
+* vision of GraalVM
+* vision of ForwardingService
+* modular-architecture.md
+* usage of Bech32 for Nostr?
+
 </div>
