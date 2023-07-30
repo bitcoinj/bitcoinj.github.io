@@ -1,6 +1,6 @@
 ---
 layout: base
-title: "Release notes"
+title: "Pre-release notes"
 ---
 
 <div markdown="1" id="toc" class="toc"><div markdown="1">
@@ -15,6 +15,58 @@ title: "Release notes"
 # Pre-release notes
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
+
+## Version 0.17 alpha 2
+
+See the preliminary <a href="/javadoc/0.17-alpha2/">API documentation</a>.
+
+* Message hierarchy refactoring:
+  * extract interface and add `BaseMessage` abstract class
+  * those classes are now immutable, got rid of caching
+  * many constructors have been migrated to static constructors
+  * constructors don't take `NetworkParameters` or `MessageSerializer` any more
+  * got rid of the concept of parent/child messages; removed `ChildMessage` from the hierarchy and made previous child
+    messages extend `Message` directly
+  * `TransactionOutPoint`, `TransactionInput`, `TransactionOutput`, `PartialMerkleTree`, `PeerAddress`
+    are not descendants of `Message` anymore (and made immutable)
+* Transaction:
+  * new `coinbase()` static helpers for coinbase transactions
+  * make `allowWitness()` static
+  * removed `toHexString()`
+  * moved `isMature()` to `Wallet.isTransactionMature()`
+  * made `verify()` a static helper method
+* Block:
+  * log warning if `solve()` runs a bit long
+  * made `verify*()` static helper methods
+* VersionMessage:
+  * requires extended version handshake messages
+  * deprecated `isPingPongSupported()` and `ProtocolVersion.PONG`
+  * moved `isBloomFilteringSupported()` to `Peer`
+  * removed field `fromAddr`; it's always filled up with zeros
+  * field `receivingAddress` now takes `InetSocketAddress` and `Services`
+  * dropped support for TORv2 messages; use TORv3
+* Script:
+  * new static constructors `parse()` and `of()`
+  * made more immutable
+* Services: wrapper for node services bitfield; use this in favor of the helpers in `VersionMessage`
+* Buffers: new utils class for common operations on P2P message `ByteBuffer`
+* ProtocolVersion: move to top-level class from `NetworkParameters`
+* BitcoinURI:
+  * the check against `maxMoney` has been removed
+  * the check for negative amounts now throws `OptionalFieldValidationException`
+* PaymentSession: doesn't validate the network of transactions in payment message any more; it's up to the caller to
+  not mix networks
+* MarriedKeyChain: removed the entire concept of married key chains
+* AddressParser: simpler address parsing by making it a `@FunctionalInterface`
+* Stopwatch: re-introduce tool for measuring time mainly for log messages
+* many APIs that used `NetworkParameters` now use `Network`; we're providing deprecation stubs where possible
+* again, many routines have been rewritten to use functional Java
+* again, many fields and even entire classes have been made immutable
+
+Notable fixes:
+
+* Wallet: always enforce `OP_RETURN` limit in `completeTx()`
+* Wallet: properly handle unconnected request inputs in `completeTx()`
 
 ## Version 0.17 alpha 1
 
