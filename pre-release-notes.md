@@ -16,6 +16,44 @@ title: "Pre-release notes"
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
 
+## Version 0.17 alpha 3
+
+See the preliminary <a href="/javadoc/0.17-alpha3/">API documentation</a>.
+
+New feature:
+
+* reproducible reference build, see `build.Containerfile`
+* OpenJDK 21 is now supported
+* Gradle up to 8.5 is now supported
+* WalletTool: new `--filter` option for setting type of filter used
+* BlockImporter: support signet and regtest
+
+Bugfix:
+
+* PBKDF2SHA512: set hLen to correct value of 64
+* some symbols removed in previous alphas have been re-added as deprecated
+
+Breaking changes:
+
+* various fields have been made private in our quest to make more classes immutable
+* protobuf:
+  * moved protobufs to `org.bitcoinj.protobuf.*` packages
+  * changed class generation into `build` directory, not under version control
+* CoinSelector: new static constructor `fromPredicate()`
+* TransactionInput/TransactionOutput/TransactionWitness/PartialMerkleTree: rename method `messageSize()` from `getMessageSize()`
+* BlockLocator: migrate from native to static constructor `ofBlocks()`
+* BlockFileLoader:
+  * cannot be used directly as `Iterator` any more, call `.iterator()` first
+  * added `.stream()` and `.streamBuffers()` to stream blocks
+* FilteringCoinSelector: require list of `TransactionOutPoint` to be passed to the constructor
+* PeerGroup, FilterMerger: deprecate setting false-positive rate
+* TorUtils: new utility for Tor/Onion addresses
+
+Feature removals:
+
+* ECKey: remove native interface to `libsecp256k1`
+* WalletTool: removed validation mode option
+
 ## Version 0.17 alpha 2
 
 See the preliminary <a href="/javadoc/0.17-alpha2/">API documentation</a>.
