@@ -14,7 +14,7 @@ title: "Getting started in Java"
 
 ## Initial setup
 
-**bitcoinj** has logging and assertions built in. Assertions are always checked by default regardless of whether the `-ea` flag is specified. Logging is handled by the [SLF4J](http://www.slf4j.org) library. It lets you choose which logging system you'd prefer to use, eg, JDK logging, Android logging, etc. By default we use the simple logger which prints most stuff of interest to stderr. You can pick a new logger by switching out the jar file in the lib directory.
+**bitcoinj** has logging and assertions built in. Assertions are always checked by default regardless of whether the `-ea` flag is specified. Logging is handled by the [SLF4J](http://www.slf4j.org) library. It lets you choose which logging system you'd prefer to use; e.g. JDK logging, Android logging, etc. By default, we use the simple logger which prints most stuff of interest to stderr. You can pick a new logger by switching out the jar file in the lib directory.
 
 **bitcoinj** uses Gradle as its build system and is distributed via git. There are source code/jar downloads you can use, but it's more secure to get it directly from the source repository.
 
@@ -83,9 +83,9 @@ In regtest mode there's no public infrastructure, but you can get a new block wh
 
 ## Keys and addresses
 
-Bitcoin transactions typically send money to a public elliptic curve key. The sender creates a transaction containing the address of the recipient, where the address is an encoded form of a hash of their public key. The recipient then signs a transaction claiming the coins with their own private key. A key is represented with the `ECKey` class. `ECKey` can contain private keys, or just public keys that are missing the private part. Note that in elliptic curve cryptography public keys are derived from private keys, so knowing a private key inherently means knowing the public key as well. This is different to some other crypto systems you may be familiar with, like RSA.
+Bitcoin transactions typically send money to a public elliptic curve key. The sender creates a transaction containing the address of the recipient, where the address is an encoded form of a hash of their public key. The recipient then signs a transaction claiming the coins with their own private key. A key is represented with the `ECKey` class. `ECKey` can contain private keys, or just public keys that are missing the private part. Note that in elliptic curve cryptography public keys are derived from private keys, so knowing a private key inherently means knowing the public key as well. This is different from some other crypto systems you may be familiar with, like RSA.
 
-An address is a textual encoding of a public key. Actually, it is a 160-bit hash of a public key, with a version byte and some checksum bytes, encoded into text using a Bitcoin-specific encoding called base58. Base58 is designed to avoid letters and numbers that could be confused with each other when written down, such as 1 and uppercase i.
+An address is a textual encoding of a public key. Actually, it is a 160-bit hash of a public key, with a version byte and some checksum bytes, encoded into text using a Bitcoin-specific encoding called base58. [Base58](https://datatracker.ietf.org/doc/html/draft-msporny-base58-03) is designed to avoid letters and numbers that could be confused with each other when written down, such as 1 and uppercase i.
 
 {% highlight java %}
 // Parse the address given as the first parameter.
