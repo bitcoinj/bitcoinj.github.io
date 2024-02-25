@@ -14,7 +14,7 @@ title: "Getting started in Java"
 
 ## Initial setup
 
-**bitcoinj** has logging and assertions built in. Assertions are always checked by default regardless of whether the `-ea` flag is specified. Logging is handled by the [SLF4J](http://www.slf4j.org) library. It lets you choose which logging system you'd prefer to use, eg, JDK logging, Android logging, etc. By default we use the simple logger which prints most stuff of interest to stderr. You can pick a new logger by switching out the jar file in the lib directory.
+**bitcoinj** has logging and assertions built in. Assertions are always checked by default regardless of whether the `-ea` flag is specified. Logging is handled by the [SLF4J](http://www.slf4j.org) library. It lets you choose which logging system you'd prefer to use, e.g. JDK logging, Android logging, etc. By default we use the simple logger which prints most stuff of interest to stderr. You can pick a new logger by switching out the jar file in the lib directory.
 
 **bitcoinj** uses Gradle as its build system and is distributed via git. There are source code/jar downloads you can use, but it's more secure to get it directly from the source repository.
 

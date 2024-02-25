@@ -64,7 +64,7 @@ A confidence object has one of several states:
 
 * If **BUILDING**, then the transaction is included in the best chain and your confidence in it is increasing.
 * If **PENDING**, then the transaction is unconfirmed and should be included shortly as long as it is being broadcast from time to time and is considered valid by the network. A pending transaction will be announced if the containing wallet has been attached to a live `PeerGroup` using `PeerGroup.addWallet()`. You can estimate how likely the transaction is to be included by measuring how many nodes announce it after sending it to one peer, using `TransactionConfidence.numBroadcastPeers()`. Or if you saw it from a trusted peer, you can assume it's valid and will get mined sooner or later as well. 
-* If **DEAD**, then it means the transaction won't confirm unless there is another re-org, because some other transaction is spending one of its inputs. Such transactions should be alerted to the user so they can take action, eg, suspending shipment of goods if they are a merchant.
+* If **DEAD**, then it means the transaction won't confirm unless there is another re-org, because some other transaction is spending one of its inputs. Such transactions should be alerted to the user so they can take action, e.g. suspending shipment of goods if they are a merchant.
 * **UNKNOWN** is used if we have no information about the confidence of this transaction, because for example it has been deserialized from a Bitcoin structure but not broadcast or seen in the chain yet. UNKNOWN is the default state.
 
 The confidence type, available via `TransactionConfidence.getConfidenceType()`, is a general statement of the transactions state. You can get a more precise view using getters on the object. For example, in the `BUILDING` state, `getDepthInBlocks()` should tell you how deeply buried the transaction is, in terms of blocks. The deeper it is buried in the chain, the less chance you have of the transaction being reversed.
@@ -94,7 +94,7 @@ It's possible to send someone money by directly giving them a transaction, which
 
 ### Participation in contracts
 
-[Contracts](https://en.bitcoin.it/wiki/Contracts) allow for a variety of low trust trades to take place, mediated by the Bitcoin network. By carefully constructing transactions with particular scripts, signatures and structures you can have low-trust dispute mediation, coins locked to arbitrary conditions (eg, futures contracts), assurance contracts, [smart property](https://en.bitcoin.it/wiki/Smart_Property) and many other possibilities.
+[Contracts](https://en.bitcoin.it/wiki/Contracts) allow for a variety of low trust trades to take place, mediated by the Bitcoin network. By carefully constructing transactions with particular scripts, signatures and structures you can have low-trust dispute mediation, coins locked to arbitrary conditions (e.g. futures contracts), assurance contracts, [smart property](https://en.bitcoin.it/wiki/Smart_Property) and many other possibilities.
 
 You can learn more about this topic in the article [WorkingWithContracts](working-with-contracts).
 
