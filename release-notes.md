@@ -914,7 +914,7 @@ Known issues:
 
 * Transaction confidence listeners are still run with the wallet lock held, which means it's possible to trigger unexpected lock inversions by doing certain things inside them. Also, confidence listeners sometimes run in places where the wallet code is not fully re-entrant, meaning that modifying the wallet whilst inside a confidence listener may cause problems. A simple fix is to run your listener code in a separate thread. A future release will fix this by ensuring that listeners only ever run at the end of wallet mutating operations and with the wallet unlocked. Core objects will also switch to using non-reentrant locks so unexpected reentrancy deadlocks early and reliably.
 * If multiple peers disconnect simultaneously it's possible for the system to deadlock due to Netty allowing uncontrolled reentrancy when sending outbound messages (issue 381).
-* The Wallet expects that it can store all transactions in memory (including spent transactions), eg, for rendering in lists and availability during re-orgs. On highly constrained devices like old Android phones it is possible to run out of RAM if a wallet gets very large.
+* The Wallet expects that it can store all transactions in memory (including spent transactions), e.g. for rendering in lists and availability during re-orgs. On highly constrained devices like old Android phones it is possible to run out of RAM if a wallet gets very large.
 * There are some bugs that can cause the wallet to get into an inconsistent state in various rare situations. The wallets can be fixed by replaying them. These bugs will be addressed as the next highest priority.
 
 

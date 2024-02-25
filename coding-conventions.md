@@ -32,7 +32,7 @@ We like them as long as they add detail that is missing from the code. Comments 
 
 * Explain **what** the code is doing at a higher level than is obtainable from just examining the statement and surrounding code.
 * Explain **why** certain choices were made and the tradeoffs considered.
-* Don't be afraid of **redundancy**, many people will start reading your code in the middle with little or no idea of what it's about, eg, due to a bug or a need to introduce a new feature. It's OK to repeat basic facts or descriptions in different places if that increases the chance developers will see something important.
+* Don't be afraid of **redundancy**, many people will start reading your code in the middle with little or no idea of what it's about, e.g. due to a bug or a need to introduce a new feature. It's OK to repeat basic facts or descriptions in different places if that increases the chance developers will see something important.
 * Explain **how things can go wrong**, which is a detail often not easily seen just by reading the code.
 * Use good grammar with capital letters and full stops. This gets us in the right frame of mind for writing real explanations of things.
 
