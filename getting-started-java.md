@@ -85,7 +85,7 @@ In regtest mode there's no public infrastructure, but you can get a new block wh
 
 Bitcoin transactions typically send money to a public elliptic curve key. The sender creates a transaction containing the address of the recipient, where the address is an encoded form of a hash of their public key. The recipient then signs a transaction claiming the coins with their own private key. A key is represented with the `ECKey` class. `ECKey` can contain private keys, or just public keys that are missing the private part. Note that in elliptic curve cryptography public keys are derived from private keys, so knowing a private key inherently means knowing the public key as well. This is different from some other crypto systems you may be familiar with, like RSA.
 
-An address is a textual encoding of a public key. Actually, it is a 160-bit hash of a public key, with a version byte and some checksum bytes, encoded into text using a Bitcoin-specific encoding called base58. Base58 is designed to avoid letters and numbers that could be confused with each other when written down, such as 1 and uppercase i.
+An address is a textual encoding of a public key. Actually, it is a 160-bit hash of a public key, with a version byte and some checksum bytes, encoded into text using a Bitcoin-specific encoding called [base58](https://datatracker.ietf.org/doc/html/draft-msporny-base58-03). Base58 is designed to avoid letters and numbers that could be confused with each other when written down, such as 1 and uppercase i.
 
 {% highlight java %}
 // Parse the address given as the first parameter.
