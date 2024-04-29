@@ -16,6 +16,17 @@ title: "Pre-release notes"
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
 
+## Version 0.17 alpha 4
+
+See the preliminary <a href="/javadoc/0.17-alpha4/">API documentation</a>.
+
+This release mostly has small fixes, documentation updates and dependency updates.
+
+New feature:
+
+* Methods `BitcoinNetwork.isValidAddress(Address)` and `.checkAddress(Address)` to validate Bitcoin addresses
+* New service bits `Services.NODE_P2P_V2` and `.NODE_COMPACT_FILTERS`
+
 ## Version 0.17 alpha 3
 
 See the preliminary <a href="/javadoc/0.17-alpha3/">API documentation</a>.
