@@ -148,6 +148,6 @@ There are many other features in bitcoinj that this tutorial does not cover. You
 
 There is another Javascript example that implements the same forwarding program as the Java tutorial, [forwarding.js](https://github.com/bitcoinj/bitcoinj/blob/master/examples/src/main/javascript/forwarding.js). You can read that program to learn how to use the wallet and how to receive and send money.
 
-Have fun and if you have any questions, find us on Matrix or the mailing list.
+Have fun and if you have any questions, please ask the [community](/#community) for advice.
 
 </div>

@@ -20,7 +20,7 @@ _How to design and implement contract based applications._
 
 [Contracts](https://en.bitcoin.it/wiki/Contracts) are an exciting feature of Bitcoin that has opened up a new research field - using flexible digital money to produce compelling and innovative applications. The linked wiki page contains some examples of what can be done, but it can sometimes be unclear how to convert them into code.
 
-In this article, we'll look at a few common techniques that are used when implementing contract-based applications. It assumes you're already familiar with how the Bitcoin protocol works and have understood the theory on the contracts page - if something is unclear, please ask on the mailing list.
+In this article, we'll look at a few common techniques that are used when implementing contract-based applications. It assumes you're already familiar with how the Bitcoin protocol works and have understood the theory on the contracts page - if something is unclear, please ask the [community](/#community) for advice.
 
 ## Creating multi-signature outputs
 

@@ -29,7 +29,7 @@ This library is not like other libraries. A Bitcoin API allows you to directly h
 
 **FAILURE TO UNDERSTAND WHAT YOU ARE DOING CAN CAUSE MONEY TO BE STOLEN OR PERMANENTLY DESTROYED**
 
-These documents will help you learn how to use bitcoinj, but they are not yet completely comprehensive. If you are ever in any doubt at all, or just want some code review, please ask on our mailing list or on our forum for advice and a second opinion. Also, make sure you keep up with the latest versions of the software. Bug fixes happen all the time and any one of them could be required for the safety of your wallet. It's important that you frequently rebase onto new versions of the library, even though bitcoinj does not have a stable API.
+These documents will help you learn how to use bitcoinj, but they are not yet completely comprehensive. If you are ever in any doubt at all, or just want some code review, please ask the [community](/#community) for advice and a second opinion. Also, make sure you keep up with the latest versions of the software. Bug fixes happen all the time and any one of them could be required for the safety of your wallet. It's important that you frequently rebase onto new versions of the library, even though bitcoinj does not have a stable API.
 
 ## Pick your language
 
