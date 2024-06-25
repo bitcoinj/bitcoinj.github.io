@@ -16,6 +16,15 @@ title: "Release notes"
 
 For information about upcoming releases, see the <a href="/pre-release-notes">pre-release notes</a>.
 
+## Version 0.16.3
+
+This is a bug fix and maintenance release. Notable changes:
+
+* Fix a bug that prevents blockchain sync of mainnet blocks 849,138 and beyond.
+* Fix many cases of spurious test failures.
+* Update Bouncy Castle dependency to 1.73. That version was picked as base version for the
+  LTS version (2.73) of Bouncy Castle.
+
 ## Version 0.16.2
 
 This is a bug fix and maintenance release. Notable changes:
