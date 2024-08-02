@@ -16,6 +16,26 @@ title: "Pre-release notes"
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
 
+## Version 0.17 alpha 5
+
+See the preliminary <a href="/javadoc/0.17-alpha5/">API documentation</a>.
+
+Bugfix:
+
+* Properly fixes the bug that prevents blockchain sync of mainnet blocks 849,138 and beyond:
+  * As a quick fix, the current 12 chain work bytes have been made unsigned, to make use of an additional bit
+  * Checkpoint records (as consumed by `CheckpointManager` can now use 32 bytes for chain work, and need to as soon as 12 bytes are exhausted
+  * `SPVBlockStore` creates (and automatically migrates existing stores to) a new V2 format that uses 32 bytes for chain work
+
+Breaking change:
+
+* Rename some of the new java.time-based methods back to getters
+
+Various:
+
+* In wallet.proto, rename `ENCRYPTED_SCRYPT_AES` to just `ENCRYPTED`
+* Improvements to `ForwardingService`
+
 ## Version 0.17 alpha 4
 
 See the preliminary <a href="/javadoc/0.17-alpha4/">API documentation</a>.
