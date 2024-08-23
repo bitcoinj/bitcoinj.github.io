@@ -16,6 +16,18 @@ title: "Pre-release notes"
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
 
+## Version 0.17 beta 1
+
+See the preliminary <a href="/javadoc/0.17-beta1/">API documentation</a>.
+
+Breaking changes:
+
+* Moved `TorUtils` to `core.internal`.
+
+New feature:
+
+* Gradle up to 8.10 is now supported
+
 ## Version 0.17 alpha 5
 
 See the preliminary <a href="/javadoc/0.17-alpha5/">API documentation</a>.
