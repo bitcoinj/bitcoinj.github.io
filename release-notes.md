@@ -16,6 +16,12 @@ title: "Release notes"
 
 For information about upcoming releases, see the <a href="/pre-release-notes">pre-release notes</a>.
 
+## Version 0.16.4
+
+This is a bug fix and maintenance release. Notable changes:
+
+* Support NODE_COMPACT_FILTERS and NODE_P2P_V2 service bits.
+
 ## Version 0.16.3
 
 This is a bug fix and maintenance release. Notable changes:
