@@ -16,6 +16,20 @@ title: "Pre-release notes"
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
 
+## Version 0.17 release candidate 1
+
+See the preliminary <a href="/javadoc/0.17-rc1/">API documentation</a>.
+
+Breaking change:
+
+* Make sure in the 0.17 cycle, migrate all usage of Guava `ListenableFuture` to Java 8 `CompletableFuture`. The former will be removed after 0.17.
+
+Various:
+
+* More `Date` to `Instant` conversions
+* Some removed methods are added back as deprecated
+* Clarify concept of `Script` creation time in the JavaDoc
+
 ## Version 0.17 beta 1
 
 See the preliminary <a href="/javadoc/0.17-beta1/">API documentation</a>.
