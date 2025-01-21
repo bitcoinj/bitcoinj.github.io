@@ -16,6 +16,12 @@ title: "Pre-release notes"
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
 
+## Version 0.17 release candidate 2
+
+See the preliminary <a href="/javadoc/0.17-rc2/">API documentation</a>.
+
+* Updated all dependencies
+
 ## Version 0.17 release candidate 1
 
 See the preliminary <a href="/javadoc/0.17-rc1/">API documentation</a>.
