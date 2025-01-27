@@ -11,6 +11,6 @@ If your project uses Gradle for its build, you can depend on bitcoinj by adding 
 
 {% highlight xml %}
 dependencies {
-    compile 'org.bitcoinj:bitcoinj-core:0.16.4'
+    compile 'org.bitcoinj:bitcoinj-core:0.16.5'
 }
 {% endhighlight %}

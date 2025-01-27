@@ -16,6 +16,19 @@ title: "Release notes"
 
 For information about upcoming releases, see the <a href="/pre-release-notes">pre-release notes</a>.
 
+## Version 0.16.5
+
+This is a bug fix and maintenance release. Notable changes:
+
+* Support SPV block stores with more than 12 bytes of chain work.
+  Note that old V1 block stores will automatically be migrated to a new V2 format, slightly growing them in byte size.
+  **Warning:** previous bitcoinj versions are *not* able to read the V2 format.
+* Support checkpoints with more than 12 bytes of chain work in the textual format.
+  Note: the binary format doesn't support more than 12 bytes of work, and will likely never be.
+
+Without these changes, apps syncing the block chain will crash or be stuck when chain work exceeds 12 bytes.
+The new limit is 32 bytes, same as Bitcoin Core.
+
 ## Version 0.16.4
 
 This is a bug fix and maintenance release. Notable changes:
