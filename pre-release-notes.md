@@ -16,6 +16,13 @@ title: "Pre-release notes"
 
 These versions are not yet released. For official releases, see the <a href="/release-notes">release notes</a>.
 
+## Version 0.17 release candidate 3
+
+See the preliminary <a href="/javadoc/0.17-rc3/">API documentation</a>.
+
+* Fixed a performance problem because transaction IDs were not cached any more
+* Renamed `Wallet.CompletionException` to `Wallet.TransactionCompletionException`
+
 ## Version 0.17 release candidate 2
 
 See the preliminary <a href="/javadoc/0.17-rc2/">API documentation</a>.
