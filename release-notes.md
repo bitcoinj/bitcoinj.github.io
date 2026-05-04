@@ -16,6 +16,15 @@ title: "Release notes"
 
 For information about upcoming releases, see the <a href="/pre-release-notes">pre-release notes</a>.
 
+## Version 0.17.1
+
+This is a bug fix and maintenance release. Notable changes:
+
+* Fix two security issues in `ScriptExecution.correctlySpends()`. It is recommended to update your dependency to
+  this version.
+  More details: [GHSA-hfcf-v2f8-x9pc](https://github.com/bitcoinj/bitcoinj/security/advisories/GHSA-hfcf-v2f8-x9pc)
+* Reduce default transaction fee to 10000 sat per vkB.
+
 ## Version 0.17
 
 Requirements for developers and consumers:
