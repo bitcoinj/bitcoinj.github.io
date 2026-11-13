@@ -20,7 +20,7 @@ title: "bitcoinj"
 
 <ul class="features">
   <li>Highly optimised <b>lightweight simplified payment verification</b> (SPV) mode. In this mode, only a small part of the block chain is downloaded, making bitcoinj suitable for usage on constrained devices like smartphones or cheap virtual private servers.</li>
-  <li>Experimental <b>full verification mode</b>, which does the same verification work as Bitcoin Core. In this mode, the unspent transaction output set (UTXO set) is calculated and, thanks to a PostgreSQL store, can be indexed into a database allowing for fast lookup of balance by address.</li>
+  <li>Experimental <b>full verification mode</b>, which aims to do the same verification work as Bitcoin Core. In this mode, the unspent transaction output set (UTXO set) is calculated and, thanks to a PostgreSQL store, can be indexed into a database allowing for fast lookup of balance by address.</li>
   <li>A <b>wallet class</b> with encryption, fee calculation, multi-signing, deterministic key derivation, pluggable coin selection/coin control, extensions support and event listeners that let you stay up to date with changes in your balance.</li>
   <li>Support for <b>micropayment channels</b> that let you set up a multi-signature contract between client and server, and then negotiate on the channel, allowing fast micropayments that avoid miner fees.</li>
   <li>Provides both <b>async and thread-per-connection</b> for network IO, allowing you to choose between scalability and blocking-only features like SOCKS proxying.</li>
